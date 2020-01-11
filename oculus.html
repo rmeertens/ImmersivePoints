@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Oculus example</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+    <style>
+        body {
+            margin: 0;
+        }
+
+    </style>
+</head>
+
+<body>
+    <script src="//cdn.rawgit.com/mrdoob/three.js/master/build/three.min.js"></script>
+    <script src="VRController.js"></script>
+    <script type="module">
+        import * as THREE from '//cdn.rawgit.com/mrdoob/three.js/master/build/three.module.js';
+        import { OrbitControls } from '//cdn.rawgit.com/mrdoob/three.js/master/examples/jsm/controls/OrbitControls.js';
+		import { VRButton } from '//cdn.rawgit.com/mrdoob/three.js/master/examples/jsm/webxr/VRButton.js';
+            
+
+
+var camera, scene, renderer;
+var geometry, material, mesh;
+var collectionBrainCoordinates = new THREE.Geometry();
+var controller1, controller2;
+var controls;
+        
+var points;     
+var selectionDirection = 0.0;
+
+var cursor = new THREE.Vector3();
+
+init();
+animate();
+
+      
+startLoadingData();
+var nodes = new Array();
+    
+
+var object1;
+var object2;
+ 
+        
+window.addEventListener( 'vr controller connected', function( event ){
+	//  Here it is, your VR controller instance.
+	//  It’s really a THREE.Object3D so you can just add it to your scene:
+	var controller = event.detail;
+    console.log(controller);
+    console.log("Controller connected");
+})
+        
+        
+window.addEventListener("gamepadconnected", function(e) { gamepadHandler(e, true); }, false);
+window.addEventListener("gamepaddisconnected", function(e) { gamepadHandler(e, false); }, false);
+        
+function getQueryVariable(variable, elsevalue) {
+    var query = window.location.search.substring(1);
+    var vars = query.split('&');
+    for (var i = 0; i < vars.length; i++) {
+        var pair = vars[i].split('=');
+        if (decodeURIComponent(pair[0]) == variable) {
+            return decodeURIComponent(pair[1]);
+        }
+    }
+    return elsevalue;
+}
+        
+function startLoadingData()
+{
+    var httpRequest = new XMLHttpRequest();
+    httpRequest.onreadystatechange = function() {
+        if (httpRequest.readyState === 4){
+            // everything is good, the response is received
+            if ((httpRequest.status == 200) || (httpRequest.status == 0)){
+                var buffer = httpRequest.response;
+                 var dataview = new DataView(buffer);
+                 var ints = new Float32Array(buffer.byteLength / 4);
+                 for (var i = 0; i < ints.length; i++) {
+                     ints[i] = dataview.getFloat32(i * 4);
+                 }
+                
+                for(var row=0; row < ints.length; row=row+4) {
+
+                    nodes[row/4] = new Array();
+                    nodes[row/4][0] = ints[row] //x
+                    nodes[row/4][1] = ints[row+1] //y
+                    nodes[row/4][2] = ints[row+2] //z
+                    nodes[row/4][3] = ints[row+3] //i
+                }
+
+                for (var row = 0; row < nodes.length; row++) {
+                    var particle = new THREE.Vector3(nodes[row][0], nodes[row][1], nodes[row][2]);
+                    collectionBrainCoordinates.vertices.push(particle);
+                }
+
+
+                var particles = nodes.length;
+            var geometry = new THREE.BufferGeometry();
+            var positions = [];
+            var colors = [];
+            var color = new THREE.Color();
+            var n = 100;
+            var n2 = n / 2; // particles spread in the cube
+            for ( var i = 0; i < particles; i ++ ) {
+                // positions
+                var x = nodes[i][0];
+                var y = nodes[i][1];
+                var z = nodes[i][2];
+                positions.push( x, y, z );
+                color.setHSL(nodes[i][3], 1.0, 0.5);
+                colors.push( color.r, color.g, color.b );
+            }
+            geometry.setAttribute( 'position', new THREE.Float32BufferAttribute( positions, 3 ) );
+            geometry.setAttribute( 'color', new THREE.Float32BufferAttribute( colors, 3 ) );
+            geometry.computeBoundingSphere();
+            //
+            var material = new THREE.PointsMaterial( { size: 0.01, vertexColors: THREE.VertexColors } );
+            points = new THREE.Points( geometry, material );
+            scene.add( points );
+
+        }}}
+        // Send the request
+    
+    
+    var filename = getQueryVariable('name', 'cars');
+    httpRequest.open("GET", "https://pointcloudvisualization.s3.eu-central-1.amazonaws.com/"+filename+".npy", true);
+    httpRequest.responseType = "arraybuffer";
+
+    httpRequest.send();
+    }
+      
+ function onSelectStart(){
+    selectionDirection = 1.0;
+     
+ }
+ function onSelectEnd(){
+    selectionDirection = 0.0;
+ }
+        
+        function onSelectStartRight(){
+    selectionDirection = -1.0;
+     
+ }
+ function onSelectEndRight(){
+    selectionDirection = 0.0;
+ }
+        
+        
+function getCircle(){
+    var radius = 0.02;
+    var geometry =  new THREE.ConeGeometry( radius, 3*radius, 8 );
+
+    var object=new THREE.Mesh( geometry, new THREE.MeshLambertMaterial( { color: Math.random() * 0xffffff } ) ); 
+    return object;
+}        
+
+function init() {
+    camera = new THREE.PerspectiveCamera( 27, window.innerWidth / window.innerHeight, 5, 3500 );
+    camera.position.z = 20;
+    scene = new THREE.Scene();
+    scene.background = new THREE.Color( 0x050505 );
+    
+    
+    renderer = new THREE.WebGLRenderer();
+    renderer.setPixelRatio( window.devicePixelRatio );
+    renderer.setSize( window.innerWidth, window.innerHeight );
+    renderer.xr.enabled = true;
+
+    controller1 = renderer.xr.getController( 0 );
+    console.log(controller1);
+    controller1.addEventListener( 'selectstart', onSelectStart );
+    controller1.addEventListener( 'selectend', onSelectEnd );
+    scene.add( controller1 );
+
+    controller2 = renderer.xr.getController( 1 );
+    scene.add( controller2 );
+    
+    controller2.addEventListener( 'selectstart', onSelectStartRight );
+    controller2.addEventListener( 'selectend', onSelectEndRight );
+
+    document.body.appendChild( renderer.domElement );
+    controls = new OrbitControls( camera, renderer.domElement );
+    controls.target.set( 0, 1.6, 0 );
+    controls.update();
+    
+    
+
+    document.body.appendChild( VRButton.createButton( renderer ) );
+    var light = new THREE.AmbientLight( 0xffffff ); // soft white light
+    scene.add( light );
+    
+    object1 = getCircle();
+    scene.add(object1);
+    
+    object2 = getCircle();
+    scene.add(object2);
+    
+}
+        
+        
+function handleController1( controller ) {
+    object1.position.x= controller.position.x; 
+    object1.position.y= controller.position.y; 
+    object1.position.z= controller.position.z; 
+    object1.rotation.x = controller.rotation.x;
+    object1.rotation.y = controller.rotation.y;
+    object1.rotation.z = controller.rotation.z;
+    object1.rotateX(-3.1415926/2);
+    
+}
+
+function handleController2( controller ) {
+    object2.position.x= controller.position.x; 
+    object2.position.y= controller.position.y; 
+    object2.position.z= controller.position.z; 
+    object2.rotation.x = controller.rotation.x;
+    object2.rotation.y = controller.rotation.y;
+    object2.rotation.z = controller.rotation.z;
+    object2.rotateX(-3.1415926/2);
+
+}
+function animate() {
+    renderer.setAnimationLoop( function () {
+    
+    handleController1( controller1 );
+    handleController2( controller2 );
+        
+        if (selectionDirection != 0.0){
+            console.log(controller1);
+            let xrCamera = renderer.xr.getCamera(camera)
+            let e = xrCamera.matrixWorld.elements
+            let direction = new THREE.Vector3(selectionDirection*e[8], selectionDirection*e[9], selectionDirection*e[10]).normalize()
+            direction.multiplyScalar(-0.05);
+            
+            points.position.add(direction);
+            
+        }
+
+	renderer.render( scene, camera );
+
+} );
+}
+
+
+  </script>
+</body>
+
+</html>
