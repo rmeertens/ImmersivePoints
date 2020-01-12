@@ -151,10 +151,9 @@ function startLoadingData()
  }
         
         
-function getCircle(){
+function getHand(){
     var radius = 0.02;
     var geometry =  new THREE.ConeGeometry( radius, 3*radius, 8 );
-
     var object=new THREE.Mesh( geometry, new THREE.MeshLambertMaterial( { color: Math.random() * 0xffffff } ) ); 
     return object;
 }        
@@ -185,7 +184,7 @@ function init() {
 
     document.body.appendChild( renderer.domElement );
     controls = new OrbitControls( camera, renderer.domElement );
-    controls.target.set( 0, 1.6, 0 );
+    controls.target.set( 0, 0, 0 );
     controls.update();
     
     
@@ -194,10 +193,10 @@ function init() {
     var light = new THREE.AmbientLight( 0xffffff ); // soft white light
     scene.add( light );
     
-    object1 = getCircle();
+    object1 = getHand();
     scene.add(object1);
     
-    object2 = getCircle();
+    object2 = getHand();
     scene.add(object2);
     
 }
