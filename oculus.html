@@ -10,10 +10,21 @@
             margin: 0;
         }
 
+        #info {
+            position: absolute;
+            top: 10px;
+            width: 100%;
+            text-align: center;
+            z-index: 100;
+            display: block;
+            color: aqua;
+        }
     </style>
 </head>
 
 <body>
+    <div id="info">Description</div>
+
     <script src="//cdn.rawgit.com/mrdoob/three.js/master/build/three.min.js"></script>
     <script src="VRController.js"></script>
     <script type="module">
@@ -45,13 +56,17 @@ var nodes = new Array();
 var object1;
 var object2;
  
-        
+function log(text){
+    console.log(text);
+    document.getElementById("info").innerHTML += text + "</br>";
+
+}
 window.addEventListener( 'vr controller connected', function( event ){
 	//  Here it is, your VR controller instance.
 	//  It’s really a THREE.Object3D so you can just add it to your scene:
 	var controller = event.detail;
-    console.log(controller);
-    console.log("Controller connected");
+    log(controller);
+    log("Controller connected");
 })
         
         
@@ -92,20 +107,22 @@ function startLoadingData()
                     nodes[row/4][2] = ints[row+2] //z
                     nodes[row/4][3] = ints[row+3] //i
                 }
+                log("Loaded num points")
+                log(nodes.length)
 
-                for (var row = 0; row < nodes.length; row++) {
-                    var particle = new THREE.Vector3(nodes[row][0], nodes[row][1], nodes[row][2]);
-                    collectionBrainCoordinates.vertices.push(particle);
-                }
+//                for (var row = 0; row < nodes.length; row++) {
+//                    var particle = new THREE.Vector3(nodes[row][0], nodes[row][1], nodes[row][2]);
+//                    collectionBrainCoordinates.vertices.push(particle);
+//                }
 
 
-                var particles = nodes.length;
+            var particles = nodes.length;
             var geometry = new THREE.BufferGeometry();
             var positions = [];
             var colors = [];
             var color = new THREE.Color();
-            var n = 100;
-            var n2 = n / 2; // particles spread in the cube
+//            var n = 100;
+//            var n2 = n / 2; // particles spread in the cube
             for ( var i = 0; i < particles; i ++ ) {
                 // positions
                 var x = nodes[i][0];
@@ -127,8 +144,9 @@ function startLoadingData()
         // Send the request
     
     
-    var filename = getQueryVariable('name', 'cars');
+    var filename = getQueryVariable('name', 'cars2');
     httpRequest.open("GET", "https://pointcloudvisualization.s3.eu-central-1.amazonaws.com/"+filename+".npy", true);
+//    httpRequest.open("GET", filename+".npy", true);
     httpRequest.responseType = "arraybuffer";
 
     httpRequest.send();
@@ -171,7 +189,7 @@ function init() {
     renderer.xr.enabled = true;
 
     controller1 = renderer.xr.getController( 0 );
-    console.log(controller1);
+    log(controller1);
     controller1.addEventListener( 'selectstart', onSelectStart );
     controller1.addEventListener( 'selectend', onSelectEnd );
     scene.add( controller1 );
@@ -230,7 +248,7 @@ function animate() {
     handleController2( controller2 );
         
         if (selectionDirection != 0.0){
-            console.log(controller1);
+            log(controller1);
             let xrCamera = renderer.xr.getCamera(camera)
             let e = xrCamera.matrixWorld.elements
             let direction = new THREE.Vector3(selectionDirection*e[8], selectionDirection*e[9], selectionDirection*e[10]).normalize()
@@ -247,6 +265,4 @@ function animate() {
 
 
   </script>
-</body>
-
-</html>
+</body></html>
