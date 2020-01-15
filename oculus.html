@@ -19,6 +19,7 @@
             display: block;
             color: aqua;
         }
+
     </style>
 </head>
 
@@ -70,6 +71,19 @@ window.addEventListener( 'vr controller connected', function( event ){
 })
         
         
+        
+window.addEventListener("gamepadconnected", onGamepadConnected);
+window.addEventListener("gamepaddisconnected", onGamepadDisconnected);
+
+function onGamepadConnected() {
+  log("onGamepadConnected!!!");
+  
+}
+function onGamepadDisconnected() {
+  log("onGamepadDisconnected!!!");
+  
+}
+
 window.addEventListener("gamepadconnected", function(e) { gamepadHandler(e, true); }, false);
 window.addEventListener("gamepaddisconnected", function(e) { gamepadHandler(e, false); }, false);
         
@@ -84,6 +98,8 @@ function getQueryVariable(variable, elsevalue) {
     }
     return elsevalue;
 }
+        
+        
         
 function startLoadingData()
 {
@@ -243,7 +259,11 @@ function handleController2( controller ) {
 }
 function animate() {
     renderer.setAnimationLoop( function () {
+//    var gamepads = window.navigator.getGamepads();
+// log(gamepads);
+// for(var i =0; i < gamepads.length; i++){ // log(gamepads[i].id); // }
     
+        
     handleController1( controller1 );
     handleController2( controller2 );
         
@@ -265,4 +285,6 @@ function animate() {
 
 
   </script>
-</body></html>
+</body>
+
+</html>
