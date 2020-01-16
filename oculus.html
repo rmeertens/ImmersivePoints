@@ -10,24 +10,12 @@
             margin: 0;
         }
 
-        #info {
-            position: absolute;
-            top: 10px;
-            width: 100%;
-            text-align: center;
-            z-index: 100;
-            display: block;
-            color: aqua;
-        }
-
     </style>
 </head>
 
 <body>
-    <div id="info">Description</div>
-
     <script src="//cdn.rawgit.com/mrdoob/three.js/master/build/three.min.js"></script>
-    <script src="VRController.js"></script>
+    <!--<script src="VRController.js"></script>-->
     <script type="module">
         import * as THREE from '//cdn.rawgit.com/mrdoob/three.js/master/build/three.module.js';
         import { OrbitControls } from '//cdn.rawgit.com/mrdoob/three.js/master/examples/jsm/controls/OrbitControls.js';
@@ -56,37 +44,14 @@ var nodes = new Array();
 
 var object1;
 var object2;
- 
-function log(text){
-    console.log(text);
-    document.getElementById("info").innerHTML += text + "</br>";
+        
+var realcont1;
+var realcont1connected = false;
+var realcont2;
 
-}
-window.addEventListener( 'vr controller connected', function( event ){
-	//  Here it is, your VR controller instance.
-	//  It’s really a THREE.Object3D so you can just add it to your scene:
-	var controller = event.detail;
-    log(controller);
-    log("Controller connected");
-})
-        
-        
-        
-window.addEventListener("gamepadconnected", onGamepadConnected);
-window.addEventListener("gamepaddisconnected", onGamepadDisconnected);
 
-function onGamepadConnected() {
-  log("onGamepadConnected!!!");
-  
-}
-function onGamepadDisconnected() {
-  log("onGamepadDisconnected!!!");
-  
-}
 
-window.addEventListener("gamepadconnected", function(e) { gamepadHandler(e, true); }, false);
-window.addEventListener("gamepaddisconnected", function(e) { gamepadHandler(e, false); }, false);
-        
+
 function getQueryVariable(variable, elsevalue) {
     var query = window.location.search.substring(1);
     var vars = query.split('&');
@@ -99,7 +64,7 @@ function getQueryVariable(variable, elsevalue) {
     return elsevalue;
 }
         
-        
+
         
 function startLoadingData()
 {
@@ -123,22 +88,20 @@ function startLoadingData()
                     nodes[row/4][2] = ints[row+2] //z
                     nodes[row/4][3] = ints[row+3] //i
                 }
-                log("Loaded num points")
-                log(nodes.length)
-
+                
+                
 //                for (var row = 0; row < nodes.length; row++) {
 //                    var particle = new THREE.Vector3(nodes[row][0], nodes[row][1], nodes[row][2]);
 //                    collectionBrainCoordinates.vertices.push(particle);
 //                }
-
+            console.log("Loaded num points " + nodes.length)
 
             var particles = nodes.length;
             var geometry = new THREE.BufferGeometry();
             var positions = [];
             var colors = [];
             var color = new THREE.Color();
-//            var n = 100;
-//            var n2 = n / 2; // particles spread in the cube
+
             for ( var i = 0; i < particles; i ++ ) {
                 // positions
                 var x = nodes[i][0];
@@ -176,7 +139,7 @@ function startLoadingData()
     selectionDirection = 0.0;
  }
         
-        function onSelectStartRight(){
+function onSelectStartRight(){
     selectionDirection = -1.0;
      
  }
@@ -186,11 +149,12 @@ function startLoadingData()
         
         
 function getHand(){
-    var radius = 0.02;
-    var geometry =  new THREE.ConeGeometry( radius, 3*radius, 8 );
+    var radius = 0.08;
+    var geometry =  new THREE.ConeGeometry( radius, 4*radius, 8 );
     var object=new THREE.Mesh( geometry, new THREE.MeshLambertMaterial( { color: Math.random() * 0xffffff } ) ); 
     return object;
 }        
+
 
 function init() {
     camera = new THREE.PerspectiveCamera( 27, window.innerWidth / window.innerHeight, 5, 3500 );
@@ -205,9 +169,15 @@ function init() {
     renderer.xr.enabled = true;
 
     controller1 = renderer.xr.getController( 0 );
-    log(controller1);
+    //log(controller1);
     controller1.addEventListener( 'selectstart', onSelectStart );
     controller1.addEventListener( 'selectend', onSelectEnd );
+    controller1.addEventListener( 'connected', function ( event ) {
+                    console.log("Controller 1 connected");
+        console.log(event);
+        realcont1 = event.data;
+        realcont1connected = true;
+    } );
     scene.add( controller1 );
 
     controller2 = renderer.xr.getController( 1 );
@@ -221,7 +191,6 @@ function init() {
     controls.target.set( 0, 0, 0 );
     controls.update();
     
-    
 
     document.body.appendChild( VRButton.createButton( renderer ) );
     var light = new THREE.AmbientLight( 0xffffff ); // soft white light
@@ -231,8 +200,7 @@ function init() {
     scene.add(object1);
     
     object2 = getHand();
-    scene.add(object2);
-    
+    scene.add(object2);    
 }
         
         
@@ -257,26 +225,38 @@ function handleController2( controller ) {
     object2.rotateX(-3.1415926/2);
 
 }
+        
+//var totIndex = 0;
 function animate() {
     renderer.setAnimationLoop( function () {
-//    var gamepads = window.navigator.getGamepads();
-// log(gamepads);
-// for(var i =0; i < gamepads.length; i++){ // log(gamepads[i].id); // }
-    
+
+    if(realcont1connected){
+        var indexa = 7;
+        var gamepad = realcont1.gamepad;
+        for(var i=0; i < gamepad.buttons.length; i++){
+            // A = 4
+            // B = 5
+            // grip = 1
+            // center joystick = 3
+            // Select = 0
+//                if (gamepad.buttons[i].pressed){
+//                    console.log(i);
+//                }
+        }
+    }
         
     handleController1( controller1 );
     handleController2( controller2 );
-        
-        if (selectionDirection != 0.0){
-            log(controller1);
-            let xrCamera = renderer.xr.getCamera(camera)
-            let e = xrCamera.matrixWorld.elements
-            let direction = new THREE.Vector3(selectionDirection*e[8], selectionDirection*e[9], selectionDirection*e[10]).normalize()
-            direction.multiplyScalar(-0.05);
-            
-            points.position.add(direction);
-            
-        }
+
+    if (selectionDirection != 0.0){
+        let xrCamera = renderer.xr.getCamera(camera)
+        let e = xrCamera.matrixWorld.elements
+        let direction = new THREE.Vector3(selectionDirection*e[8], selectionDirection*e[9], selectionDirection*e[10]).normalize()
+        direction.multiplyScalar(-0.05);
+
+        points.position.add(direction);
+
+    }
 
 	renderer.render( scene, camera );
 
