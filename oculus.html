@@ -9,7 +9,6 @@
         body {
             margin: 0;
         }
-
     </style>
 </head>
 
@@ -118,6 +117,9 @@ function startLoadingData()
             var material = new THREE.PointsMaterial( { size: 0.01, vertexColors: THREE.VertexColors } );
             points = new THREE.Points( geometry, material );
             scene.add( points );
+            console.log(points);
+                
+            
 
         }}}
         // Send the request
@@ -132,7 +134,7 @@ function startLoadingData()
     }
       
  function onSelectStart(){
-    selectionDirection = 1.0;
+    selectionDirection = 1.0 * points.scale.x;
      
  }
  function onSelectEnd(){
@@ -140,7 +142,7 @@ function startLoadingData()
  }
         
 function onSelectStartRight(){
-    selectionDirection = -1.0;
+    selectionDirection = -1.0 * points.scale.x;
      
  }
  function onSelectEndRight(){
@@ -203,36 +205,31 @@ function init() {
     scene.add(object2);    
 }
         
-        
-function handleController1( controller ) {
-    object1.position.x= controller.position.x; 
-    object1.position.y= controller.position.y; 
-    object1.position.z= controller.position.z; 
-    object1.rotation.x = controller.rotation.x;
-    object1.rotation.y = controller.rotation.y;
-    object1.rotation.z = controller.rotation.z;
-    object1.rotateX(-3.1415926/2);
-    
-}
 
-function handleController2( controller ) {
-    object2.position.x= controller.position.x; 
-    object2.position.y= controller.position.y; 
-    object2.position.z= controller.position.z; 
-    object2.rotation.x = controller.rotation.x;
-    object2.rotation.y = controller.rotation.y;
-    object2.rotation.z = controller.rotation.z;
-    object2.rotateX(-3.1415926/2);
-
+function handleController( object, controller ) {
+    object.position.set(controller.position.x, controller.position.y, controller.position.z);
+    object.rotation.set(controller.rotation.x, controller.rotation.y, controller.rotation.z);
+    object.rotateX(-3.1415926/2);
 }
         
 //var totIndex = 0;
 function animate() {
     renderer.setAnimationLoop( function () {
-
+        
+        
     if(realcont1connected){
         var indexa = 7;
         var gamepad = realcont1.gamepad;
+        if(gamepad.buttons[4].pressed){
+            points.scale.x = 4.0
+            points.scale.y = 4.0
+            points.scale.z = 4.0
+        }
+        if(gamepad.buttons[5].pressed){
+            points.scale.x = 1.0
+            points.scale.y = 1.0
+            points.scale.z = 1.0
+        }
         for(var i=0; i < gamepad.buttons.length; i++){
             // A = 4
             // B = 5
@@ -245,8 +242,10 @@ function animate() {
         }
     }
         
-    handleController1( controller1 );
-    handleController2( controller2 );
+//    handleController1( controller1 );
+//    handleController2( controller2 );
+    handleController( object1, controller1 );
+    handleController( object2, controller2 );
 
     if (selectionDirection != 0.0){
         let xrCamera = renderer.xr.getCamera(camera)
@@ -265,6 +264,4 @@ function animate() {
 
 
   </script>
-</body>
-
-</html>
+</body></html>
