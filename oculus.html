@@ -28,6 +28,7 @@ var collectionBrainCoordinates = new THREE.Geometry();
 var controller1, controller2;
 var controls;
 var POIs = new Array();
+
         
 var points;     
 var selectionDirection = 0.0;
@@ -42,8 +43,11 @@ var object2;
 var realcont1;
 var realcont1connected = false;
 var realcont2;
+var realcont2connected = false;
+        
 var colorBuffer;
-
+var placePOIButtonPressed = false;
+        
 // Start functions        
 init();
 animate();    
@@ -116,7 +120,7 @@ function startLoadingData()
             geometry.setAttribute( 'color', colorBuffer );
             geometry.computeBoundingSphere();
             //
-            var material = new THREE.PointsMaterial( { size: 0.08, vertexColors: THREE.VertexColors } );
+            var material = new THREE.PointsMaterial( { size: 0.04, vertexColors: THREE.VertexColors } );
             points = new THREE.Points( geometry, material );
             scene.add( points );
             console.log(points);
@@ -164,7 +168,6 @@ function init() {
     camera = new THREE.PerspectiveCamera( 27, window.innerWidth / window.innerHeight, 5, 3500 );
     camera.position.z = 20;
     scene = new THREE.Scene();
-//    scene.background = new THREE.Color( 0x050505 );
     scene.background = new THREE.Color( 0x2d4aa8 );
 
     
@@ -192,6 +195,12 @@ function init() {
     
     controller2.addEventListener( 'selectstart', onSelectStartRight );
     controller2.addEventListener( 'selectend', onSelectEndRight );
+    controller2.addEventListener( 'connected', function ( event ) {
+                    console.log("Controller 2 connected");
+        console.log(event);
+        realcont2 = event.data;
+        realcont2connected = true;
+    } );
 
     document.body.appendChild( renderer.domElement );
     controls = new OrbitControls( camera, renderer.domElement );
@@ -208,10 +217,6 @@ function init() {
     
     object2 = getHand();
     scene.add(object2); 
-    
-    placePOI( new THREE.Vector3(1.0, 0.0, 0.0));
-    placePOI( new THREE.Vector3(2.0, 0.0, 0.0));
-    
 }
         
 
@@ -224,7 +229,7 @@ function handleController( object, controller ) {
 
 function placePOI(location){
     // Place a point of interest in the given location
-    var geometry = new THREE.CylinderGeometry( 0.1, 0.1, 8.0, 6 );
+    var geometry = new THREE.CylinderGeometry( 0.1, 0.1, 0.6, 6 );
     var material = new THREE.MeshPhongMaterial({
       color: 0x00ff00,
       opacity: 0.5,
@@ -233,40 +238,18 @@ function placePOI(location){
     //var material = new THREE.MeshBasicMaterial( {color: 0x00ff00} );
     var cube = new THREE.Mesh( geometry, material );
     scene.add( cube );
-//    console.log(cube.position);
+
     cube.position.x = location.x;
-    cube.position.y = location.y;
+    cube.position.y = location.y+0.3;// Some offset for the hand rendering... 
     cube.position.z = location.z;
-    console.log(POIs);
-    POIs.push(cube);
-//    console.log("num pois: " + numPOIs);
-//    numPOIs += 1;
-    console.log(POIs);
+
+    POIs.push([cube, location]);
 }
 
         
 //var totIndex = 0;
 function animate() {
     renderer.setAnimationLoop( function () {
-        if(points){
-            
-            if(POIs.length < 10){
-                placePOI( new THREE.Vector3(POIs.length, 0.0, 0.0));
-//                placePOI( new THREE.Vector3(0.0, 0.0, 0.0));
-//                for(var j = 0; j < numPOIs; i++){
-//                    console.log(POIs[j]);
-//                    POIs[j].position.add(new THREE.Vector3(0.1, 0.1, 0.1).normalize());
-//                }
-            }
-            
-//            for(var property in POIs){
-//                property = POIs[property];
-////                console.log(property);
-//                if(property.position){
-//                    property.position.add(new THREE.Vector3(0.1, 0.1, 0.1).normalize());
-//                }
-//            }
-        }
         // Change colors in whatever way I want...
 //        if(colorBuffer){
 //            for(var i=0; i < colorBuffer.count*3; i++){
@@ -278,20 +261,48 @@ function animate() {
         
         
     if(realcont1connected){
-        var indexa = 7;
         var gamepad = realcont1.gamepad;
         if(gamepad.buttons[4].pressed){
-            points.scale.x = 4.0
-            points.scale.y = 4.0
-            points.scale.z = 4.0
+//            points.scale.x = 4.0
+//            points.scale.y = 4.0
+//            points.scale.z = 4.0
+//            
+//            for(var property in POIs){
+//                property = POIs[property];
+//                property[0].position.x = property[1].x*4.0;
+//                property[0].position.y = property[1].y*4.0;
+//                property[0].position.z = property[1].z*4.0;
+//                
+//                property[0].scale.x = 4.0
+//                property[0].scale.y = 4.0
+//                property[0].scale.z = 4.0
+//            }
         }
         if(gamepad.buttons[5].pressed){
-            points.scale.x = 1.0
-            points.scale.y = 1.0
-            points.scale.z = 1.0
+//            points.scale.x = 1.0
+//            points.scale.y = 1.0
+//            points.scale.z = 1.0
+//            
+//            for(var property in POIs){
+//                property = POIs[property];
+//                property[0].position.x = property[1].x*1.0;
+//                property[0].position.y = property[1].y*1.0;
+//                property[0].position.z = property[1].z*1.0;
+//                
+//                property[0].scale.x = 1.0
+//                property[0].scale.y = 1.0
+//                property[0].scale.z = 1.0
+//            }
         }
         if (gamepad.buttons[1].pressed){
-//            placePOI(gamepad.position);
+            if(!placePOIButtonPressed){
+                placePOIButtonPressed = true;
+                let toplace = new THREE.Vector3(gamepad.pose.position[0], gamepad.pose.position[1], gamepad.pose.position[2]);
+                placePOI(toplace); 
+            }
+        }
+        else{
+            placePOIButtonPressed = false;
         }
         for(var i=0; i < gamepad.buttons.length; i++){
             // A = 4
@@ -305,25 +316,36 @@ function animate() {
         }
     }
         
+    if(realcont2connected){
+        var gamepad = realcont2.gamepad;
+        
+        
+        if (gamepad.buttons[1].pressed){
+            // This removes everything.... 
+//             for(var property in POIs){
+//                property = POIs[property];
+//                scene.remove(property[0]);
+//            }   
+        }
+        
+    }
+        
 
     // Draw the controllers
     handleController( object1, controller1 );
     handleController( object2, controller2 );
 
     if (selectionDirection != 0.0){
-        let xrCamera = renderer.xr.getCamera(camera)
-        let e = xrCamera.matrixWorld.elements
-        let direction = new THREE.Vector3(selectionDirection*e[8], selectionDirection*e[9], selectionDirection*e[10]).normalize()
+        let xrCamera = renderer.xr.getCamera(camera);
+        let e = xrCamera.matrixWorld.elements;
+        let direction = new THREE.Vector3(selectionDirection*e[8], selectionDirection*e[9], selectionDirection*e[10]).normalize();
         direction.multiplyScalar(-0.05);
 
         points.position.add(direction);
         
-//        for(var j = 0; j < numPOIs; i++){
-//            POIs[j].position.add(direction);
-//        }
         for(var property in POIs){
             property = POIs[property];
-            property.position.add(direction);
+            property[0].position.add(direction);
         }
     }
 
