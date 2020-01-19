@@ -217,6 +217,8 @@ function init() {
     
     object2 = getHand();
     scene.add(object2); 
+    
+//    placePOI(new THREE.Vector3(0.0, 0.0, 0.0));
 }
         
 
@@ -237,6 +239,20 @@ function placePOI(location){
     });
     //var material = new THREE.MeshBasicMaterial( {color: 0x00ff00} );
     var cube = new THREE.Mesh( geometry, material );
+    
+    var geometry2 = new THREE.CylinderGeometry( 0.1, 0.1, 2.0, 6 );
+    var cube2 = new THREE.Mesh( geometry2, material );
+    
+    
+//    var geom = new THREE.Geometry();
+//    geom.mergeMesh(cube);
+//    geom.mergeMesh(cube2);
+//    cube = new THREE.Mesh(geom, material);
+
+    
+    
+    
+    
     scene.add( cube );
 
     cube.position.x = location.x;
