@@ -21,36 +21,36 @@
 		import { VRButton } from '//cdn.rawgit.com/mrdoob/three.js/master/examples/jsm/webxr/VRButton.js';
             
 
-
+// Global variables
 var camera, scene, renderer;
 var geometry, material, mesh;
 var collectionBrainCoordinates = new THREE.Geometry();
 var controller1, controller2;
 var controls;
+var POIs = new Array();
         
 var points;     
 var selectionDirection = 0.0;
 
 var cursor = new THREE.Vector3();
 
-init();
-animate();
-
-      
-startLoadingData();
 var nodes = new Array();
     
-
 var object1;
 var object2;
         
 var realcont1;
 var realcont1connected = false;
 var realcont2;
+var colorBuffer;
 
+// Start functions        
+init();
+animate();    
+startLoadingData();
 
-
-
+    
+        
 function getQueryVariable(variable, elsevalue) {
     var query = window.location.search.substring(1);
     var vars = query.split('&');
@@ -111,10 +111,12 @@ function startLoadingData()
                 colors.push( color.r, color.g, color.b );
             }
             geometry.setAttribute( 'position', new THREE.Float32BufferAttribute( positions, 3 ) );
-            geometry.setAttribute( 'color', new THREE.Float32BufferAttribute( colors, 3 ) );
+            colorBuffer = new THREE.Float32BufferAttribute( colors, 3 );
+            
+            geometry.setAttribute( 'color', colorBuffer );
             geometry.computeBoundingSphere();
             //
-            var material = new THREE.PointsMaterial( { size: 0.01, vertexColors: THREE.VertexColors } );
+            var material = new THREE.PointsMaterial( { size: 0.08, vertexColors: THREE.VertexColors } );
             points = new THREE.Points( geometry, material );
             scene.add( points );
             console.log(points);
@@ -162,10 +164,13 @@ function init() {
     camera = new THREE.PerspectiveCamera( 27, window.innerWidth / window.innerHeight, 5, 3500 );
     camera.position.z = 20;
     scene = new THREE.Scene();
-    scene.background = new THREE.Color( 0x050505 );
+//    scene.background = new THREE.Color( 0x050505 );
+    scene.background = new THREE.Color( 0x2d4aa8 );
+
     
     
     renderer = new THREE.WebGLRenderer();
+    
     renderer.setPixelRatio( window.devicePixelRatio );
     renderer.setSize( window.innerWidth, window.innerHeight );
     renderer.xr.enabled = true;
@@ -202,7 +207,11 @@ function init() {
     scene.add(object1);
     
     object2 = getHand();
-    scene.add(object2);    
+    scene.add(object2); 
+    
+    placePOI( new THREE.Vector3(1.0, 0.0, 0.0));
+    placePOI( new THREE.Vector3(2.0, 0.0, 0.0));
+    
 }
         
 
@@ -212,9 +221,60 @@ function handleController( object, controller ) {
     object.rotateX(-3.1415926/2);
 }
         
+
+function placePOI(location){
+    // Place a point of interest in the given location
+    var geometry = new THREE.CylinderGeometry( 0.1, 0.1, 8.0, 6 );
+    var material = new THREE.MeshPhongMaterial({
+      color: 0x00ff00,
+      opacity: 0.5,
+      transparent: true,
+    });
+    //var material = new THREE.MeshBasicMaterial( {color: 0x00ff00} );
+    var cube = new THREE.Mesh( geometry, material );
+    scene.add( cube );
+//    console.log(cube.position);
+    cube.position.x = location.x;
+    cube.position.y = location.y;
+    cube.position.z = location.z;
+    console.log(POIs);
+    POIs.push(cube);
+//    console.log("num pois: " + numPOIs);
+//    numPOIs += 1;
+    console.log(POIs);
+}
+
+        
 //var totIndex = 0;
 function animate() {
     renderer.setAnimationLoop( function () {
+        if(points){
+            
+            if(POIs.length < 10){
+                placePOI( new THREE.Vector3(POIs.length, 0.0, 0.0));
+//                placePOI( new THREE.Vector3(0.0, 0.0, 0.0));
+//                for(var j = 0; j < numPOIs; i++){
+//                    console.log(POIs[j]);
+//                    POIs[j].position.add(new THREE.Vector3(0.1, 0.1, 0.1).normalize());
+//                }
+            }
+            
+//            for(var property in POIs){
+//                property = POIs[property];
+////                console.log(property);
+//                if(property.position){
+//                    property.position.add(new THREE.Vector3(0.1, 0.1, 0.1).normalize());
+//                }
+//            }
+        }
+        // Change colors in whatever way I want...
+//        if(colorBuffer){
+//            for(var i=0; i < colorBuffer.count*3; i++){
+//                colorBuffer.array[i] = 1.0;    
+//            }
+//            colorBuffer.needsUpdate = true;
+//        }
+//        
         
         
     if(realcont1connected){
@@ -230,6 +290,9 @@ function animate() {
             points.scale.y = 1.0
             points.scale.z = 1.0
         }
+        if (gamepad.buttons[1].pressed){
+//            placePOI(gamepad.position);
+        }
         for(var i=0; i < gamepad.buttons.length; i++){
             // A = 4
             // B = 5
@@ -242,8 +305,8 @@ function animate() {
         }
     }
         
-//    handleController1( controller1 );
-//    handleController2( controller2 );
+
+    // Draw the controllers
     handleController( object1, controller1 );
     handleController( object2, controller2 );
 
@@ -254,7 +317,14 @@ function animate() {
         direction.multiplyScalar(-0.05);
 
         points.position.add(direction);
-
+        
+//        for(var j = 0; j < numPOIs; i++){
+//            POIs[j].position.add(direction);
+//        }
+        for(var property in POIs){
+            property = POIs[property];
+            property.position.add(direction);
+        }
     }
 
 	renderer.render( scene, camera );
