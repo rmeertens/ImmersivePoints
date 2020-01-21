@@ -9,7 +9,6 @@
         body {
             margin: 0;
         }
-
     </style>
 </head>
 
@@ -54,8 +53,8 @@ init();
 animate();    
         
 var filename = getQueryVariable('name', 'cars3');
-var url = "https://pointcloudvisualization.s3.eu-central-1.amazonaws.com/"+filename+".npy", true);
-//var url = filename+".npy"
+var url = "https://pointcloudvisualization.s3.eu-central-1.amazonaws.com/"+filename+".npy";
+//var url = filename+".npy";
 startLoadingData(url);
 
     
@@ -380,6 +379,4 @@ function animate() {
 
 
   </script>
-</body>
-
-</html>
+</body></html>
