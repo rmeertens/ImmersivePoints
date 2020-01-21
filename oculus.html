@@ -9,6 +9,7 @@
         body {
             margin: 0;
         }
+
     </style>
 </head>
 
@@ -51,7 +52,11 @@ var placePOIButtonPressed = false;
 // Start functions        
 init();
 animate();    
-startLoadingData();
+        
+var filename = getQueryVariable('name', 'cars3');
+var url = "https://pointcloudvisualization.s3.eu-central-1.amazonaws.com/"+filename+".npy", true);
+//var url = filename+".npy"
+startLoadingData(url);
 
     
         
@@ -69,7 +74,9 @@ function getQueryVariable(variable, elsevalue) {
         
 
         
-function startLoadingData()
+
+        
+function startLoadingData(url)
 {
     var httpRequest = new XMLHttpRequest();
     httpRequest.onreadystatechange = function() {
@@ -131,13 +138,14 @@ function startLoadingData()
         // Send the request
     
     
-    var filename = getQueryVariable('name', 'cars2');
-    httpRequest.open("GET", "https://pointcloudvisualization.s3.eu-central-1.amazonaws.com/"+filename+".npy", true);
-//    httpRequest.open("GET", filename+".npy", true);
+    
+//    httpRequest.open("GET", "https://pointcloudvisualization.s3.eu-central-1.amazonaws.com/"+filename+".npy", true);
+    //httpRequest.open("GET", filename+".npy", true);
+    httpRequest.open("GET", url, true);
     httpRequest.responseType = "arraybuffer";
 
     httpRequest.send();
-    }
+}
       
  function onSelectStart(){
     selectionDirection = 1.0 * points.scale.x;
@@ -256,7 +264,7 @@ function placePOI(location){
     scene.add( cube );
 
     cube.position.x = location.x;
-    cube.position.y = location.y+0.3;// Some offset for the hand rendering... 
+    cube.position.y = location.y;// Some offset for the hand rendering... 
     cube.position.z = location.z;
 
     POIs.push([cube, location]);
@@ -372,4 +380,6 @@ function animate() {
 
 
   </script>
-</body></html>
+</body>
+
+</html>
