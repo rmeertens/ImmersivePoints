@@ -48,12 +48,15 @@ var realcont2connected = false;
 var colorBuffer;
 var placePOIButtonPressed = false;
         
+var user = new THREE.Group();        
 // Start functions        
 init();
-animate();    
+animate();   
         
-var filename = getQueryVariable('name', 'cars3');
-var url = "https://pointcloudvisualization.s3.eu-central-1.amazonaws.com/"+filename+".npy";
+        
+        
+var filename = getQueryVariable('name', 'cars3.npy');
+var url = "https://pointcloudvisualization.s3.eu-central-1.amazonaws.com/"+filename;
 //var url = filename+".npy";
 startLoadingData(url);
 
@@ -169,11 +172,13 @@ function getHand(){
     var object=new THREE.Mesh( geometry, new THREE.MeshLambertMaterial( { color: Math.random() * 0xffffff } ) ); 
     return object;
 }        
-
+    
 
 function init() {
     camera = new THREE.PerspectiveCamera( 27, window.innerWidth / window.innerHeight, 5, 3500 );
     camera.position.z = 20;
+    user.add( camera );
+    
     scene = new THREE.Scene();
     scene.background = new THREE.Color( 0x2d4aa8 );
 
@@ -224,6 +229,10 @@ function init() {
     
     object2 = getHand();
     scene.add(object2); 
+    
+
+    
+
     
 //    placePOI(new THREE.Vector3(0.0, 0.0, 0.0));
 }
@@ -360,16 +369,17 @@ function animate() {
 
     if (selectionDirection != 0.0){
         let xrCamera = renderer.xr.getCamera(camera);
-        let e = xrCamera.matrixWorld.elements;
-        let direction = new THREE.Vector3(selectionDirection*e[8], selectionDirection*e[9], selectionDirection*e[10]).normalize();
-        direction.multiplyScalar(-0.05);
-
-        points.position.add(direction);
-        
-        for(var property in POIs){
-            property = POIs[property];
-            property[0].position.add(direction);
-        }
+        user.position.x += 20.0;
+//        let e = xrCamera.matrixWorld.elements;
+//        let direction = new THREE.Vector3(selectionDirection*e[8], selectionDirection*e[9], selectionDirection*e[10]).normalize();
+//        direction.multiplyScalar(-0.05);
+//
+//        points.position.add(direction);
+//        
+//        for(var property in POIs){
+//            property = POIs[property];
+//            property[0].position.add(direction);
+//        }
     }
 
 	renderer.render( scene, camera );
