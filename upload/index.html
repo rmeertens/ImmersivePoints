@@ -19,6 +19,14 @@
             text-align: center;
         }
 
+        #explain {
+            background: #fff;
+            border-radius: 4px;
+            padding: 20px;
+            transition: all 0.2s;
+            text-align: left;
+        }
+
         #logo {
             width: 100px;
         }
@@ -44,25 +52,30 @@
             display: block;
             margin-bottom: 10px;
         }
+
     </style>
 </head>
 
 <body>
     <div id="app">
-        <h1>Upload your pointcloud</h1>
-
-        <div v-if="!image">
-            <h2>Select a file</h2>
-            <input type="file" @change="onFileChange">
+        <h1>Immersive Points: Upload your own!</h1>
+        <div id="explain">
+            Want to see your own pointcloud in virtual reality? Upload your binary file here! <br>
+            The binary file is expected to be in float32, and consist of XYZH values. <br>
+            X, Y, and Z are floating point numbers in any range, but it's wise to position them around the point of origin of the virtual reality environment. <br>
+            The H-value signifies the hue of that point, which should be between 0.0 and 1.0 according to <a href=https://threejs.org/docs/#api/en/math/Color.setHSL>this specification</a>. Note that saturation and lightness are currently always set to 1.0. </div> <div v-if="!image">
+                <h2>Select a file</h2>
+                <input type="file" @change="onFileChange">
         </div>
         <div v-else>
             <!--img :src="image" /-->
-            <button v-if="!uploadURL" @click="removeImage">Remove image</button>
-            <button v-if="!uploadURL" @click="uploadImage">Upload image</button>
+            <button v-if="!uploadURL" @click="removeImage">Remove pointcloud</button>
+            <button v-if="!uploadURL" @click="uploadImage">Upload pointcloud</button>
         </div>
-        <h2 v-if="uploadURL">Success! Point cloud uploaded to bucket.</h2>
-        <h2>{{errorMessage}}</h2>
-        <h2>{{resultURL}}</h2>
+        <h2 v-if="uploadURL">Success! Point cloud uploaded to the server.</h2>
+        <h2 v-if="errorMessage">{{errorMessage}}</h2>
+        <h2 v-if="readyToUploadMessage">{{readyToUploadMessage}}</h2>
+        <h2 v-if="resultURL">Ready to visualize in a few seconds at this address: <a href={{resultURL}}>{{resultURL}}</a></h2>
     </div>
 
 
@@ -74,12 +87,22 @@
         const MAX_IMAGE_SIZE = 10000000
         const API_ENDPOINT = 'https://w7kziwky2h.execute-api.us-east-1.amazonaws.com/default/uploadFilesToS3Python'
 
+        function formatBytes(a, b) {
+            if (0 == a) return "0 Bytes";
+            var c = 1024,
+                d = b || 2,
+                e = ["Bytes", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"],
+                f = Math.floor(Math.log(a) / Math.log(c));
+            return parseFloat((a / Math.pow(c, f)).toFixed(d)) + " " + e[f]
+        }
+
         new Vue({
             el: "#app",
             data: {
                 image: '',
                 uploadURL: '',
                 errorMessage: '',
+                readyToUploadMessage: '',
                 resultURL: '',
             },
             methods: {
@@ -92,12 +115,13 @@
                     // var image = new Image()
                     let reader = new FileReader()
                     reader.onload = (e) => {
-                        //                        if (!e.target.result.includes('data:image/jpeg')) {
-                        // return alert('Wrong file type - JPG only.')
-                        // }
-                        if (e.target.result.length > MAX_IMAGE_SIZE) {
+                        if (file.size > MAX_IMAGE_SIZE) {
                             return alert('Pointcloud is loo large - 10Mb maximum')
                         }
+
+                        console.log(file);
+                        console.log(formatBytes(file.size, 2));
+                        this.readyToUploadMessage = 'Ready to upload ' + file.name + ' of ' + formatBytes(file.size, 2) + " to a publicly available data storage for visualization in virtual reality";
                         this.image = e.target.result
                     }
                     reader.readAsDataURL(file)
@@ -105,6 +129,10 @@
                 removeImage: function(e) {
                     console.log('Remove clicked')
                     this.image = ''
+                    this.uploadURL = ''
+                    this.errorMessage = ''
+                    this.readyToUploadMessage = ''
+                    this.resultURL = ''
                 },
                 uploadImage: async function(e) {
                     console.log('Upload clicked')
@@ -114,7 +142,8 @@
                         url: API_ENDPOINT
                     })
 
-                    this.resultURL = response.data.url;
+                    this.readyToUploadMessage = ''
+                    this.resultURL = "https://rmeertens.github.io/ImmersivePoints/oculus.html?name=" + response.data.name + ".bin";
 
                     console.log('Uploading: ', this.image)
                     let binary = atob(this.image.split(',')[1])
@@ -141,5 +170,8 @@
                 }
             }
         })
+
     </script>
-</body></html>
+</body>
+
+</html>
