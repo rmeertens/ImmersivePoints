@@ -9,7 +9,6 @@
         body {
             margin: 0;
         }
-
     </style>
 </head>
 
@@ -280,6 +279,9 @@ function placePOI(location){
 //var totIndex = 0;
 function animate() {
     renderer.setAnimationLoop( function () {
+            controls.update(); // Very important otherwise you spend a few evenings debugging stuff... 
+
+        
         // Change colors in whatever way I want...
 //        if(colorBuffer){
 //            for(var i=0; i < colorBuffer.count*3; i++){
@@ -387,6 +389,4 @@ function animate() {
 
 
   </script>
-</body>
-
-</html>
+</body></html>
