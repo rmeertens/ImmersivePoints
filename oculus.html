@@ -9,6 +9,7 @@
         body {
             margin: 0;
         }
+
     </style>
 </head>
 
@@ -57,7 +58,7 @@ animate();
         
 var filename = getQueryVariable('name', 'cars3.npy');
 var url = "https://pointcloudvisualization.s3.eu-central-1.amazonaws.com/"+filename;
-//var url = filename+".npy";
+//var url = filename;
 startLoadingData(url);
 
     
@@ -101,11 +102,6 @@ function startLoadingData(url)
                     nodes[row/4][3] = ints[row+3] //i
                 }
                 
-                
-//                for (var row = 0; row < nodes.length; row++) {
-//                    var particle = new THREE.Vector3(nodes[row][0], nodes[row][1], nodes[row][2]);
-//                    collectionBrainCoordinates.vertices.push(particle);
-//                }
             console.log("Loaded num points " + nodes.length)
 
             var particles = nodes.length;
@@ -138,8 +134,6 @@ function startLoadingData(url)
 
     
     // Send the request
-//    httpRequest.open("GET", "https://pointcloudvisualization.s3.eu-central-1.amazonaws.com/"+filename+".npy", true);
-    //httpRequest.open("GET", filename+".npy", true);
     httpRequest.open("GET", url, true);
     httpRequest.responseType = "arraybuffer";
 
@@ -226,12 +220,6 @@ function init() {
     
     object2 = getHand();
     scene.add(object2); 
-    
-
-    
-
-    
-//    placePOI(new THREE.Vector3(0.0, 0.0, 0.0));
 }
         
 
@@ -256,16 +244,6 @@ function placePOI(location){
     var geometry2 = new THREE.CylinderGeometry( 0.1, 0.1, 2.0, 6 );
     var cube2 = new THREE.Mesh( geometry2, material );
     
-    
-//    var geom = new THREE.Geometry();
-//    geom.mergeMesh(cube);
-//    geom.mergeMesh(cube2);
-//    cube = new THREE.Mesh(geom, material);
-
-    
-    
-    
-    
     scene.add( cube );
 
     cube.position.x = location.x;
@@ -275,8 +253,7 @@ function placePOI(location){
     POIs.push([cube, location]);
 }
 
-        
-//var totIndex = 0;
+    
 function animate() {
     renderer.setAnimationLoop( function () {
             controls.update(); // Very important otherwise you spend a few evenings debugging stuff... 
@@ -361,7 +338,6 @@ function animate() {
         }
         
     }
-        
 
     // Draw the controllers
     handleController( object1, controller1 );
@@ -369,7 +345,7 @@ function animate() {
 
     if (selectionDirection != 0.0){
         let xrCamera = renderer.xr.getCamera(camera);
-        user.position.x += 20.0;
+        user.position.x += 20.0; // HEY! Maybe this IS working after all!
 //        let e = xrCamera.matrixWorld.elements;
 //        let direction = new THREE.Vector3(selectionDirection*e[8], selectionDirection*e[9], selectionDirection*e[10]).normalize();
 //        direction.multiplyScalar(-0.05);
@@ -389,4 +365,6 @@ function animate() {
 
 
   </script>
-</body></html>
+</body>
+
+</html>
