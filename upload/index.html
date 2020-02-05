@@ -141,6 +141,7 @@
                         method: 'GET',
                         url: API_ENDPOINT
                     })
+                    console.log(response)
 
                     this.readyToUploadMessage = ''
                     this.resultURL = "https://rmeertens.github.io/ImmersivePoints/oculus.html?name=" + response.data.name + ".bin";
