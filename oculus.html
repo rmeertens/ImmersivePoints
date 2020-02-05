@@ -127,6 +127,7 @@ function startLoadingData(url)
             //
             var material = new THREE.PointsMaterial( { size: 0.04, vertexColors: THREE.VertexColors } );
             points = new THREE.Points( geometry, material );
+            //points.frustumCulled = false;
             scene.add( points );
             
 
@@ -166,7 +167,7 @@ function getHand(){
     
 
 function init() {
-    camera = new THREE.PerspectiveCamera( 27, window.innerWidth / window.innerHeight, 5, 3500 );
+    camera = new THREE.PerspectiveCamera( 27, window.innerWidth / window.innerHeight, 0.1, 35 );
     camera.position.z = 20;
     user.add( camera );
     
@@ -225,6 +226,7 @@ function init() {
 
 function handleController( object, controller ) {
     object.position.set(controller.position.x, controller.position.y, controller.position.z);
+    object.position.add(user.position);
     object.rotation.set(controller.rotation.x, controller.rotation.y, controller.rotation.z);
     object.rotateX(-3.1415926/2);
 }
@@ -306,8 +308,7 @@ function animate() {
         if (gamepad.buttons[1].pressed){
             if(!placePOIButtonPressed){
                 placePOIButtonPressed = true;
-                let toplace = new THREE.Vector3(gamepad.pose.position[0], gamepad.pose.position[1], gamepad.pose.position[2]);
-                placePOI(toplace); 
+                placePOI(object1.position); 
             }
         }
         else{
@@ -340,15 +341,16 @@ function animate() {
     }
 
     // Draw the controllers
-    handleController( object1, controller1 );
-    handleController( object2, controller2 );
+    
 
     if (selectionDirection != 0.0){
         let xrCamera = renderer.xr.getCamera(camera);
-        user.position.x += 20.0; // HEY! Maybe this IS working after all!
-//        let e = xrCamera.matrixWorld.elements;
-//        let direction = new THREE.Vector3(selectionDirection*e[8], selectionDirection*e[9], selectionDirection*e[10]).normalize();
-//        direction.multiplyScalar(-0.05);
+//        user.position.x += 20.0; 
+        let e = xrCamera.matrixWorld.elements;
+        let direction = new THREE.Vector3(selectionDirection*e[8], selectionDirection*e[9], selectionDirection*e[10]).normalize();
+        direction.multiplyScalar(-0.05);
+        user.position.add(direction);// HEY! Maybe this IS working after all!
+        
 //
 //        points.position.add(direction);
 //        
@@ -357,7 +359,8 @@ function animate() {
 //            property[0].position.add(direction);
 //        }
     }
-
+    handleController( object1, controller1 );
+    handleController( object2, controller2 );
 	renderer.render( scene, camera );
 
 } );
