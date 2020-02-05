@@ -52,7 +52,6 @@
             display: block;
             margin-bottom: 10px;
         }
-
     </style>
 </head>
 
@@ -84,7 +83,7 @@
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 
     <script>
-        const MAX_IMAGE_SIZE = 10000000
+        const MAX_IMAGE_SIZE = 3100000
         const API_ENDPOINT = 'https://w7kziwky2h.execute-api.us-east-1.amazonaws.com/default/uploadFilesToS3Python'
 
         function formatBytes(a, b) {
@@ -116,7 +115,7 @@
                     let reader = new FileReader()
                     reader.onload = (e) => {
                         if (file.size > MAX_IMAGE_SIZE) {
-                            return alert('Pointcloud is loo large - 10Mb maximum')
+                            return alert('Pointcloud is loo large - ' + formatBytes(MAX_IMAGE_SIZE) + ' maximum')
                         }
 
                         console.log(file);
@@ -171,8 +170,5 @@
                 }
             }
         })
-
     </script>
-</body>
-
-</html>
+</body></html>
