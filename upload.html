@@ -66,7 +66,18 @@
 
                 Want to see some examples on how to export pointclouds? Take a look <a href="https://github.com/rmeertens/ImmersivePoints/blob/master/export_subsample.ipynb">at this subsampling example</a>, <a href="https://github.com/rmeertens/ImmersivePoints/blob/master/export_csv.ipynb">this example to export a CSV file.</a>, <a href="https://github.com/rmeertens/ImmersivePoints/blob/master/export_ply.ipynb">or this export of a PLY file</a>, <a href="https://github.com/rmeertens/ImmersivePoints/blob/master/export_AEV_data.ipynb">or finally: export data from a self-driving car</a>.
         </div>
+        <div>
+            Cloud type:<br>
 
+
+
+            <input type="radio" id="xyzi" value="xyzi" v-model="picked">
+            <label for="xyzi">xyzi</label>
+            <br>
+            <input type="radio" id="xyzrgb" value="xyzrgb" v-model="picked">
+
+            <label for="xyzrgb">xyzrgb</label>
+        </div>
 
         <div v-if="!image">
             <h2>Select a file</h2>
@@ -109,6 +120,7 @@
                 errorMessage: '',
                 readyToUploadMessage: '',
                 resultURL: '',
+                picked: 'xyzi'
             },
             methods: {
                 onFileChange(e) {
@@ -141,15 +153,19 @@
                 },
                 uploadImage: async function(e) {
                     console.log('Upload clicked')
+                    var x = this.picked;
+                    console.log(x);
                     // Get the presigned URL
+
                     const response = await axios({
                         method: 'GET',
-                        url: API_ENDPOINT
+                        url: API_ENDPOINT + "?mode=" + x,
+
                     })
                     console.log(response)
 
                     this.readyToUploadMessage = ''
-                    this.resultURL = "https://rmeertens.github.io/ImmersivePoints/oculus.html?name=" + response.data.name + ".bin";
+                    this.resultURL = "https://rmeertens.github.io/ImmersivePoints/oculus.html?name=" + response.data.name;
 
                     console.log('Uploading: ', this.image)
                     let binary = atob(this.image.split(',')[1])

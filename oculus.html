@@ -87,18 +87,26 @@ function startLoadingData(url)
             if ((httpRequest.status == 200) || (httpRequest.status == 0)){
                 var buffer = httpRequest.response;
                  var dataview = new DataView(buffer);
+                if(url.endsWith("xyzi")){
+                    var points_per_row = 4;
+                }
+                else{
+                    var points_per_row = 6;
+                }
+                
+                
+                // Note: 4 because of float32 has 4 bytes
                  var ints = new Float32Array(buffer.byteLength / 4);
                  for (var i = 0; i < ints.length; i++) {
                      ints[i] = dataview.getFloat32(i * 4);
                  }
                 
-                for(var row=0; row < ints.length; row=row+4) {
-
-                    nodes[row/4] = new Array();
-                    nodes[row/4][0] = ints[row] //x
-                    nodes[row/4][1] = ints[row+1] //y
-                    nodes[row/4][2] = ints[row+2] //z
-                    nodes[row/4][3] = ints[row+3] //i
+                for(var row=0; row < ints.length; row=row+points_per_row) {
+                    
+                    nodes[row/points_per_row] = new Array();
+                    for(var p=0; p < points_per_row; p++){ //xyz...
+                        nodes[row/points_per_row][p] = ints[row+p] 
+                    }
                 }
                 
             console.log("Loaded num points " + nodes.length)
@@ -115,8 +123,14 @@ function startLoadingData(url)
                 var y = nodes[i][1];
                 var z = nodes[i][2];
                 positions.push( x, y, z );
-                color.setHSL(nodes[i][3], 1.0, 0.5);
-                colors.push( color.r, color.g, color.b );
+                
+                if(points_per_row == 4){
+                    color.setHSL(nodes[i][3], 1.0, 0.5);
+                    colors.push( color.r, color.g, color.b );
+                }
+                else if(points_per_row == 6){
+                    colors.push( nodes[i][3], nodes[i][4], nodes[i][5] );
+                }
             }
             geometry.setAttribute( 'position', new THREE.Float32BufferAttribute( positions, 3 ) );
             colorBuffer = new THREE.Float32BufferAttribute( colors, 3 );
