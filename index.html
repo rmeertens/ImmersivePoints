@@ -9,19 +9,34 @@
     <!--<link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">-->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
 
+    <style>
+        .jumbotron {
+            background-image: url("immersivepoints.png");
+            background-size: cover;
+            min-height: 550px;
+        }
 
+        .jumbotron h1 {
+            color: #fff;
+        }
+
+        .jumbotron p {
+            color: #fff;
+        }
+    </style>
     <title>Immersive Pointcloud</title>
 </head>
 
 <body>
-    <main role="main" class="container">
-        <div class="jumbotron">
-            <div class="container">
-                <h1 class="display-3">Immersive Pointcloud</h1>
-                <p>Explore your 3D data by walking through it!</p>
-                <p><a class="btn btn-primary btn-lg" href="https://rmeertens.github.io/ImmersivePoints/upload.html" role="button">Upload your own</a></p>
-            </div>
+    <div class="jumbotron">
+        <div class="container">
+            <h1 class="display-3">Immersive Pointcloud</h1>
+            <p>Explore your 3D data by walking through it!</p>
+            <p><a class="btn btn-primary btn-lg" href="https://rmeertens.github.io/ImmersivePoints/upload.html" role="button">Upload your own</a></p>
         </div>
+    </div>
+
+    <main role="main" class="container">
 
         <div id="main_content_wrap" class="container-fluid">
             <section id="main_content" class="container-fluid">
@@ -65,6 +80,4 @@
         </div>
     </main>
 
-</body>
-
-</html>
+</body></html>
