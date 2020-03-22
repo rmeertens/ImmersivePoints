@@ -9,7 +9,6 @@
         body {
             margin: 0;
         }
-
     </style>
 </head>
 
@@ -37,6 +36,7 @@ var selectionDirection = 0.0;
 var cursor = new THREE.Vector3();
 
 var nodes = new Array();
+var bboxnodes = new Array();
     
 var object1;
 var object2;
@@ -59,8 +59,82 @@ animate();
 var filename = getQueryVariable('name', 'cars3.npy');
 var url = "https://pointcloudvisualization.s3.eu-central-1.amazonaws.com/"+filename;
 //var url = filename;
-startLoadingData(url);
+startLoadingData(url);      
+//startLoadingBoxes("cars5boxes.npy");
 
+
+        
+function get_bbox_vehicle(posx, posy, posz, sizex, sizey, sizez, rotationy){
+    var geometry = new THREE.BoxGeometry( sizex, sizey, sizez);
+
+    var material = new THREE.MeshPhongMaterial({
+      color: 0x00ff00,
+      opacity: 0.5,
+      transparent: true,
+    });
+
+    // parent
+    parent = new THREE.Object3D();
+    parent.rotation.z = 0;
+    parent.rotation.y = rotationy;
+    parent.position.x = -posx;
+    parent.position.y = -posy;
+    parent.position.z = -posz;
+
+    // mesh
+    var mesh1 = new THREE.Mesh( geometry, material );
+    
+    parent.add( mesh1 );
+    return parent;
+}
+        
+        
+function startLoadingBoxes(url){
+    var httpRequest = new XMLHttpRequest();
+    httpRequest.onreadystatechange = function() {
+        if (httpRequest.readyState === 4){
+            // everything is good, the response is received
+            if ((httpRequest.status == 200) || (httpRequest.status == 0)){
+                var buffer = httpRequest.response;
+                 var dataview = new DataView(buffer);
+                
+                var points_per_row = 7;
+                
+                // Note: 4 because of float32 has 4 bytes
+                 var ints = new Float32Array(buffer.byteLength / 4);
+                 for (var i = 0; i < ints.length; i++) {
+                     ints[i] = dataview.getFloat32(i * 4);
+                 }
+                
+                for(var row=0; row < ints.length; row=row+points_per_row) {
+                    
+                    bboxnodes[row/points_per_row] = new Array();
+                    for(var p=0; p < points_per_row; p++){ //xyz...
+                        bboxnodes[row/points_per_row][p] = ints[row+p] 
+                    }
+                }
+                
+            console.log("Loaded num bboxes " + bboxnodes.length)
+
+            var particles = bboxnodes.length;
+            var geometry = new THREE.BufferGeometry();
+            var positions = [];
+            var colors = [];
+            var color = new THREE.Color();
+
+            for ( var i = 0; i < particles; i ++ ) {
+                var temp = get_bbox_vehicle(bboxnodes[i][0], bboxnodes[i][1], bboxnodes[i][2], bboxnodes[i][3], bboxnodes[i][4], bboxnodes[i][5], bboxnodes[i][6]);
+                scene.add(temp);
+        }}}}
+
+    
+    // Send the request
+    console.log("Getting url for boxes", url)
+    httpRequest.open("GET", url, true);
+    httpRequest.responseType = "arraybuffer";
+
+    httpRequest.send();
+}
     
         
 function getQueryVariable(variable, elsevalue) {
@@ -75,9 +149,6 @@ function getQueryVariable(variable, elsevalue) {
     return elsevalue;
 }
         
-
-        
-
         
 function startLoadingData(url)
 {
@@ -95,7 +166,6 @@ function startLoadingData(url)
                     var points_per_row = 6;
                 }
                 
-                
                 // Note: 4 because of float32 has 4 bytes
                  var ints = new Float32Array(buffer.byteLength / 4);
                  for (var i = 0; i < ints.length; i++) {
@@ -103,7 +173,6 @@ function startLoadingData(url)
                  }
                 
                 for(var row=0; row < ints.length; row=row+points_per_row) {
-                    
                     nodes[row/points_per_row] = new Array();
                     for(var p=0; p < points_per_row; p++){ //xyz...
                         nodes[row/points_per_row][p] = ints[row+p] 
@@ -179,7 +248,6 @@ function getHand(){
     return object;
 }        
     
-
 function init() {
     camera = new THREE.PerspectiveCamera( 27, window.innerWidth / window.innerHeight, 0.1, 35 );
     camera.position.z = 20;
@@ -383,6 +451,4 @@ function animate() {
 
 
   </script>
-</body>
-
-</html>
+</body></html>
