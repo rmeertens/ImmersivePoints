@@ -9,6 +9,7 @@
         body {
             margin: 0;
         }
+
     </style>
 </head>
 
@@ -221,6 +222,7 @@ function init() {
 
     document.body.appendChild( renderer.domElement );
     controls = new OrbitControls( camera, renderer.domElement );
+    controls.autoRotate=true;
     controls.target.set( 0, 0, 0 );
     controls.update();
     
@@ -381,4 +383,6 @@ function animate() {
 
 
   </script>
-</body></html>
+</body>
+
+</html>

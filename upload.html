@@ -1,99 +1,120 @@
 <html>
 
 <head>
-
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
     <title>Upload immersive pointcloud</title>
 
     <style>
+        /*
         body {
-            background: #20262E;
-            padding: 20px;
-            font-family: sans-serif;
+        background: #20262E;
+        padding: 20px;
+        font-family: sans-serif;
         }
 
         #app {
-            background: #fff;
-            border-radius: 4px;
-            padding: 20px;
-            transition: all 0.2s;
-            text-align: center;
-        }
+        background: #fff;
+        border-radius: 4px;
+        padding: 20px;
+        transition: all 0.2s;
+        text-align: center;
+        }*/
 
+        /*
         #explain {
-            background: #fff;
-            border-radius: 4px;
-            padding: 20px;
-            transition: all 0.2s;
-            text-align: left;
+        background: #fff;
+        border-radius: 4px;
+        padding: 20px;
+        transition: all 0.2s;
+        text-align: left;
         }
 
         #logo {
-            width: 100px;
+        width: 100px;
         }
 
         h2 {
-            font-weight: bold;
-            margin-bottom: 15px;
+        font-weight: bold;
+        margin-bottom: 15px;
         }
 
         h1,
         h2 {
-            font-weight: normal;
-            margin-bottom: 15px;
+        font-weight: normal;
+        margin-bottom: 15px;
         }
 
         a {
-            color: #42b983;
+        color: #42b983;
         }
 
         img {
-            width: 30%;
-            margin: auto;
-            display: block;
-            margin-bottom: 10px;
+        width: 30%;
+        margin: auto;
+        display: block;
+        margin-bottom: 10px;
         }
+*/
     </style>
 </head>
 
 <body>
-    <div id="app">
-        <h1>Immersive Points: Upload your own!</h1>
-        <div id="explain">
-            Want to see your own pointcloud in virtual reality? Upload your binary file here! <br>
-            The binary file is expected to be in float32, and consist of XYZH values. <br>
-            X, Y, and Z are floating point numbers in any range, but it's wise to position them around the point of origin of the virtual reality environment. <br>
-            The H-value signifies the hue of that point, which should be between 0.0 and 1.0 according to <a href=https://threejs.org/docs/#api/en/math/Color.setHSL>this specification</a>. Note that saturation and lightness are currently always set to 1.0. <br>
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+            <a class="navbar-brand" href="/index.html">😎ImmersivePoints.com</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+                <div class="navbar-nav">
+                    <a class="nav-item nav-link" href="/index.html">Home</a>
+                    <a class="nav-item nav-link active" href="/upload.html">Upload <span class="sr-only">(current)</span></a>
+                    <a class="nav-item nav-link" href="/pricing.html">Pricing</a>
+                </div>
+            </div>
+        </nav>
+    </header>
 
-                Want to see some examples on how to export pointclouds? Take a look <a href="https://github.com/rmeertens/ImmersivePoints/blob/master/export_subsample.ipynb">at this subsampling example</a>, <a href="https://github.com/rmeertens/ImmersivePoints/blob/master/export_csv.ipynb">this example to export a CSV file.</a>, <a href="https://github.com/rmeertens/ImmersivePoints/blob/master/export_ply.ipynb">or this export of a PLY file</a>, <a href="https://github.com/rmeertens/ImmersivePoints/blob/master/export_AEV_data.ipynb">or finally: export data from a self-driving car</a>.
+    <main role="main" class="container">
+
+        <div id="app">
+            <h1>Upload your own!</h1>
+            <div id="explain">
+                Want to see your own pointcloud in virtual reality? Upload your binary file here! <br>
+                The binary file is expected to be in float32, and consist of XYZH values. <br>
+                X, Y, and Z are floating point numbers in any range, but it's wise to position them around the point of origin of the virtual reality environment. <br>
+                The H-value signifies the hue of that point, which should be between 0.0 and 1.0 according to <a href=https://threejs.org/docs/#api/en/math/Color.setHSL>this specification</a>. Note that saturation and lightness are currently always set to 1.0. <br>
+
+                    Want to see some examples on how to export pointclouds? Take a look <a href="https://github.com/rmeertens/ImmersivePoints/blob/master/export_subsample.ipynb">at this subsampling example</a>, <a href="https://github.com/rmeertens/ImmersivePoints/blob/master/export_csv.ipynb">this example to export a CSV file.</a>, <a href="https://github.com/rmeertens/ImmersivePoints/blob/master/export_ply.ipynb">or this export of a PLY file</a>, <a href="https://github.com/rmeertens/ImmersivePoints/blob/master/export_AEV_data.ipynb">or finally: export data from a self-driving car</a>.
+            </div>
+            <div>
+                Cloud type:<br>
+
+
+
+                <input type="radio" id="xyzi" value="xyzi" v-model="picked">
+                <label for="xyzi">xyzi</label>
+                <br>
+                <input type="radio" id="xyzrgb" value="xyzrgb" v-model="picked">
+
+                <label for="xyzrgb">xyzrgb</label>
+            </div>
+
+            <div v-if="!image">
+                <h2>Select a file</h2>
+                <input type="file" @change="onFileChange">
+            </div>
+            <div v-else>
+                <!--img :src="image" /-->
+                <button v-if="!uploadURL" @click="removeImage">Remove pointcloud</button>
+                <button v-if="!uploadURL" @click="uploadImage">Upload pointcloud</button>
+            </div>
+            <h2 v-if="uploadURL">Success! Point cloud uploaded to the server.</h2>
+            <h2 v-if="errorMessage">{{errorMessage}}</h2>
+            <h2 v-if="readyToUploadMessage">{{readyToUploadMessage}}</h2>
+            <h2 v-if="resultURL">Ready to visualize in a few seconds at this address: <a href={{resultURL}}>{{resultURL}}</a></h2>
         </div>
-        <div>
-            Cloud type:<br>
-
-
-
-            <input type="radio" id="xyzi" value="xyzi" v-model="picked">
-            <label for="xyzi">xyzi</label>
-            <br>
-            <input type="radio" id="xyzrgb" value="xyzrgb" v-model="picked">
-
-            <label for="xyzrgb">xyzrgb</label>
-        </div>
-
-        <div v-if="!image">
-            <h2>Select a file</h2>
-            <input type="file" @change="onFileChange">
-        </div>
-        <div v-else>
-            <!--img :src="image" /-->
-            <button v-if="!uploadURL" @click="removeImage">Remove pointcloud</button>
-            <button v-if="!uploadURL" @click="uploadImage">Upload pointcloud</button>
-        </div>
-        <h2 v-if="uploadURL">Success! Point cloud uploaded to the server.</h2>
-        <h2 v-if="errorMessage">{{errorMessage}}</h2>
-        <h2 v-if="readyToUploadMessage">{{readyToUploadMessage}}</h2>
-        <h2 v-if="resultURL">Ready to visualize in a few seconds at this address: <a href={{resultURL}}>{{resultURL}}</a></h2>
-    </div>
-
+    </main>
 
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/1.0.18/vue.min.js"></script>
@@ -165,7 +186,7 @@
                     console.log(response)
 
                     this.readyToUploadMessage = ''
-                    this.resultURL = "https://rmeertens.github.io/ImmersivePoints/oculus.html?name=" + response.data.name;
+                    this.resultURL = "https://immersivepoints.com/oculus.html?name=" + response.data.name;
 
                     console.log('Uploading: ', this.image)
                     let binary = atob(this.image.split(',')[1])
@@ -193,4 +214,5 @@
             }
         })
     </script>
+
 </body></html>

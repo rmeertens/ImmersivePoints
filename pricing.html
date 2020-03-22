@@ -1,47 +1,5 @@
 <!doctype html>
 <html>
-
-
-
-<!--
-    <!DOCTYPE html>
-    <html lang="en">
-
-    <head>
-        <title>Bootstrap Example</title>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
-        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
-        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
-    </head>
-
-    <body>
-
-        <nav class="navbar navbar-inverse">
-            <div class="container-fluid">
-                <div class="navbar-header">
-                    <a class="navbar-brand" href="#">WebSiteName</a>
-                </div>
-                <ul class="nav navbar-nav">
-                    <li class="active"><a href="#">Home</a></li>
-                    <li><a href="#">Page 1</a></li>
-                    <li><a href="#">Page 2</a></li>
-                    <li><a href="#">Page 3</a></li>
-                </ul>
-            </div>
-        </nav>
-
-        <div class="container">
-            <h3>Inverted Navbar</h3>
-            <p>An inverted navbar is black instead of gray.</p>
-        </div>
-
-    </body>
-
-    </html>
--->
-
 <head>
     <meta charset='utf-8'>
     <meta http-equiv="X-UA-Compatible" content="chrome=1">
@@ -49,10 +7,6 @@
 
     <!--<link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">-->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
-
-    <!--    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">-->
-    <!--    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>-->
-    <!--    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>-->
 
     <style>
         .jumbotron {
@@ -68,28 +22,33 @@
         .jumbotron p {
             color: #fff;
         }
-
     </style>
     <title>Immersive Pointcloud</title>
 </head>
 
 <body>
     <header>
-        <div class="navbar navbar-dark bg-dark shadow-sm">
-            <div class="container d-flex justify-content-between">
-                <a href="#" class="navbar-brand d-flex align-items-center">
-                    <strong>😎ImmersivePoints.com</strong>
-                </a>
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+            <a class="navbar-brand" href="/index.html">😎ImmersivePoints.com</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+                <div class="navbar-nav">
+                    <a class="nav-item nav-link" href="/index.html">Home</a>
+                    <a class="nav-item nav-link" href="/upload.html">Upload</a>
+                    <a class="nav-item nav-link active" href="/pricing.html">Pricing <span class="sr-only">(current)</span></a>
+                </div>
             </div>
-        </div>
+        </nav>
     </header>
 
 
 
     <div class="jumbotron">
         <div class="container">
-            <h1 class="display-3">Immersive Pointcloud</h1>
-            <p>Explore your 3D data by walking through it!</p>
+            <h1 class="display-3">ImmersivePoints</h1>
+            <p>Explore your data by walking through it!</p>
             <p><a class="btn btn-primary btn-lg" href="https://rmeertens.github.io/ImmersivePoints/upload.html" role="button">Upload your own</a></p>
         </div>
     </div>
@@ -108,7 +67,8 @@
                         <div class="card-body">
                             <h1 class="card-title pricing-card-title">$0 <small class="text-muted">/ mo</small></h1>
                             <ul class="list-unstyled mt-3 mb-4">
-                                <li>3MB upload</li>
+                                <li>Display points</li>
+                                <li>Max file size of 3MB upload</li>
                                 <li>Upload point clouds</li>
                                 <li>Occulus quest supported</li>
                             </ul>
@@ -120,10 +80,10 @@
                             <h4 class="my-0 font-weight-normal">Pro</h4>
                         </div>
                         <div class="card-body">
-                            <h1 class="card-title pricing-card-title">$75 <small class="text-muted">/ mo</small></h1>
+                            <h1 class="card-title pricing-card-title">$150 <small class="text-muted">/ mo</small></h1>
                             <ul class="list-unstyled mt-3 mb-4">
-                                <li>Points, vertices, and bounding boxes</li>
-                                <li>Storing 20GB of assets</li>
+                                <li>Display points, vertices, and bounding boxes</li>
+                                <li>Upload up to 20GB of assets</li>
                                 <li>Access to support</li>
                             </ul>
                             <button type="button" class="btn btn-lg btn-block btn-primary">Contact us</button>
@@ -149,6 +109,4 @@
         </div>
     </main>
 
-</body>
-
-</html>
+</body></html>
