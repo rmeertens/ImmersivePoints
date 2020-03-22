@@ -222,7 +222,7 @@ function init() {
 
     document.body.appendChild( renderer.domElement );
     controls = new OrbitControls( camera, renderer.domElement );
-    controls.autoRotate=true;
+    controls.autoRotate=false;
     controls.target.set( 0, 0, 0 );
     controls.update();
     
