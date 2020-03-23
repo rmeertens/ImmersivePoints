@@ -5,56 +5,40 @@
     <title>Upload immersive pointcloud</title>
 
     <style>
-        /*
         body {
-        background: #20262E;
-        padding: 20px;
-        font-family: sans-serif;
+            padding-top: 2rem;
+            padding-bottom: 2rem;
         }
 
-        #app {
-        background: #fff;
-        border-radius: 4px;
-        padding: 20px;
-        transition: all 0.2s;
-        text-align: center;
-        }*/
-
-        /*
-        #explain {
-        background: #fff;
-        border-radius: 4px;
-        padding: 20px;
-        transition: all 0.2s;
-        text-align: left;
+        h3 {
+            margin-top: 2rem;
         }
 
-        #logo {
-        width: 100px;
+        .row {
+            margin-bottom: 0rem;
         }
 
-        h2 {
-        font-weight: bold;
-        margin-bottom: 15px;
+        .row .row {
+            margin-top: 0rem;
+            margin-bottom: 0;
         }
 
-        h1,
-        h2 {
-        font-weight: normal;
-        margin-bottom: 15px;
+        [class*="col-"] {
+            padding-top: 0.5rem;
+            padding-bottom: 0.5rem;
+            background-color: rgba(86, 61, 124, .15);
+            border: 1px solid rgba(86, 61, 124, .2);
         }
 
-        a {
-        color: #42b983;
+        hr {
+            margin-top: 2rem;
+            margin-bottom: 2rem;
         }
 
-        img {
-        width: 30%;
-        margin: auto;
-        display: block;
-        margin-bottom: 10px;
+        .col-sm-16 {
+            padding-left: 0.5rem;
+            padding-right: 0.5rem;
         }
-*/
     </style>
 </head>
 
@@ -78,20 +62,52 @@
     <main role="main" class="container">
 
         <div id="app">
+            <br>
             <h1>Upload your own!</h1>
             <div id="explain">
                 Want to see your own pointcloud in virtual reality? Upload your binary file here! <br>
-                The binary file is expected to be in float32, and consist of XYZH values. <br>
+
+                All binary files are expected to be in float32. <br>
+
+
+                The binary file is expected to be in float32, and consist of XYZH values, or XYZRGB values <br>
+
                 X, Y, and Z are floating point numbers in any range, but it's wise to position them around the point of origin of the virtual reality environment. <br>
-                The H-value signifies the hue of that point, which should be between 0.0 and 1.0 according to <a href=https://threejs.org/docs/#api/en/math/Color.setHSL>this specification</a>. Note that saturation and lightness are currently always set to 1.0. <br>
+                The H-value signifies the hue of that point, which should be between 0.0 and 1.0 according to <a href=https://threejs.org/docs/#api/en/math/Color.setHSL>this specification</a>. Note that saturation and lightness are currently always set to 1.0. This means your file exists of the following columns: <br>
+                    <div class="row">
+                        <div class="col-sm-16">X (forwards) float32</div>
+                        <div class="col-sm-16">Y (upwards) float32</div>
+                        <div class="col-sm-16">Z (left) float32</div>
+                        <div class="col-sm-16">Hue (between 0 and 1) float32</div>
+                    </div>
 
-                    Want to see some examples on how to export pointclouds? Take a look <a href="https://github.com/rmeertens/ImmersivePoints/blob/master/export_subsample.ipynb">at this subsampling example</a>, <a href="https://github.com/rmeertens/ImmersivePoints/blob/master/export_csv.ipynb">this example to export a CSV file.</a>, <a href="https://github.com/rmeertens/ImmersivePoints/blob/master/export_ply.ipynb">or this export of a PLY file</a>, <a href="https://github.com/rmeertens/ImmersivePoints/blob/master/export_AEV_data.ipynb">or finally: export data from a self-driving car</a>.
+
+                    For the colour version:
+
+                    <div class="row">
+                        <div class="col-sm-16">X (forwards) float32</div>
+                        <div class="col-sm-16">Y (upwards) float32</div>
+                        <div class="col-sm-16">Z (left) float32</div>
+                        <div class="col-sm-16">Red (between 0 and 1) float32</div>
+                        <div class="col-sm-16">Green (between 0 and 1) float32</div>
+                        <div class="col-sm-16">Blue (between 0 and 1) float32</div>
+                    </div>
+
+                    <h3> Get inspired by these examples</h3>
+                    Want to see some examples on how to export pointclouds? Take a look at:
+
+                    <ul>
+                        <li><a href="https://github.com/rmeertens/ImmersivePoints/blob/master/export_subsample.ipynb">Subsample a big numpy file for display in virtual reality </a></li>
+                        <li> <a href="https://github.com/rmeertens/ImmersivePoints/blob/master/export_csv.ipynb">Export a CSV file.</a></li>
+                        <li><a href="https://github.com/rmeertens/ImmersivePoints/blob/master/export_ply.ipynb">Export a PLY file</a>,</li>
+                        <li><a href="https://github.com/rmeertens/ImmersivePoints/blob/master/export_AEV_data.ipynb"> Export data from a self-driving car</a></li>
+                    </ul>
             </div>
+
+
             <div>
-                Cloud type:<br>
-
-
-
+                <h2>🛠 Now upload yourself</h2>
+                <h3>🔧 Step 1: Select your cloud type:</h3>
                 <input type="radio" id="xyzi" value="xyzi" v-model="picked">
                 <label for="xyzi">xyzi</label>
                 <br>
@@ -100,19 +116,19 @@
                 <label for="xyzrgb">xyzrgb</label>
             </div>
 
+            <h3>🔨 Step 2: Select your file:</h3>
             <div v-if="!image">
-                <h2>Select a file</h2>
                 <input type="file" @change="onFileChange">
             </div>
             <div v-else>
                 <!--img :src="image" /-->
-                <button v-if="!uploadURL" @click="removeImage">Remove pointcloud</button>
-                <button v-if="!uploadURL" @click="uploadImage">Upload pointcloud</button>
+                <button v-if="!uploadURL" @click="removeImage">🚨 Remove pointcloud</button>
+                <button v-if="!uploadURL" @click="uploadImage">🔩 Step 3: Upload pointcloud</button>
             </div>
-            <h2 v-if="uploadURL">Success! Point cloud uploaded to the server.</h2>
-            <h2 v-if="errorMessage">{{errorMessage}}</h2>
-            <h2 v-if="readyToUploadMessage">{{readyToUploadMessage}}</h2>
-            <h2 v-if="resultURL">Ready to visualize in a few seconds at this address: <a href={{resultURL}}>{{resultURL}}</a></h2>
+            <h3 v-if="uploadURL">🥳 Success! Point cloud uploaded to the server.</h3>
+            <h3 v-if="errorMessage">{{errorMessage}}</h3>
+            <h3 v-if="readyToUploadMessage">{{readyToUploadMessage}}</h3>
+            <h3 v-if="resultURL">🦾 Ready to visualize in a few seconds at this address: <a href={{resultURL}}>{{resultURL}}</a></h3>
         </div>
     </main>
 

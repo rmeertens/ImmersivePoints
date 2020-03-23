@@ -23,6 +23,17 @@
         .jumbotron p {
             color: #fff;
         }
+
+
+
+        body {
+            padding-top: 2rem;
+            padding-bottom: 2rem;
+        }
+
+        h3 {
+            margin-top: 2rem;
+        }
     </style>
     <title>Immersive Pointcloud</title>
 </head>
@@ -57,37 +68,61 @@
         <div id="main_content_wrap" class="container-fluid">
             <section id="main_content" class="container-fluid">
 
-                <h3>What is it?</h3>
-                ImmersivePoints is a web-application for virtual reality devices to explore 3D data in the most natural way possible. <br>
-                To view the data you need to either attach a virtual reality device attached to your PC, or a stand-alone one, such as the oculus quest.
-                <h3>Explore examples</h3>
+                <h3>What is ImmersivePoints? 🧐</h3>
+                ImmersivePoints is a web-application for virtual reality devices to explore 3D data in the most natural way possible: virtual reality. <br>
+                To view your data you need to either attach a virtual reality device attached to your PC, or a stand-alone one, such as the oculus quest.
+                <h3>Explore examples of virtual reality data</h3>
+                <!--
+<div class="container">
 
-                <div class="row">
-                    <div class="col-md-8"><a href="https://rmeertens.github.io/ImmersivePoints/oculus.html?name=e2652aab-4ace-4a09-86f4-374b23cb677b.xyzi">https://rmeertens.github.io/ImmersivePoints/oculus.html?name=e2652aab-4ace-4a09-86f4-374b23cb677b.xyzi</a></div>
-                    <div class="col-md-4">A frame from the <a href="https://www.audi-electronics-venture.de/aev/web/de/driving-dataset.html">AEV dataset</a></div>
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card mb-4 shadow-sm">
+                <svg class="bd-placeholder-img card-img-top" width="100%" height="225" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice" focusable="false" role="img" aria-label="Placeholder: Thumbnail">
+                    <title>Placeholder</title>
+                    <rect width="100%" height="100%" fill="#55595c"></rect><text x="50%" y="50%" fill="#eceeef" dy=".3em">Thumbnail</text>
+                </svg>
+                <div class="card-body">
+                    <p class="card-text">This is a wider card with supporting text below as a natural lead-in to additional content. This content is a little bit longer.</p>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-sm btn-outline-secondary">View</button>
+                        </div>
+                    </div>
                 </div>
-                <div class="row">
-                    <div class="col-md-8"><a href="https://rmeertens.github.io/ImmersivePoints/oculus.html?name=816ca9a5-1eec-4e23-a34e-f409dbed1ff0.xyzi">https://rmeertens.github.io/ImmersivePoints/oculus.html?name=816ca9a5-1eec-4e23-a34e-f409dbed1ff0.xyzi</a></div>
-                    <div class="col-md-4">A frame from the <a href="https://www.audi-electronics-venture.de/aev/web/de/driving-dataset.html">AEV dataset</a> with semantic information</div>
-                </div>
-                <div class="row">
-                    <div class="col-md-8"><a href="https://rmeertens.github.io/ImmersivePoints/oculus.html?name=77b04781-5d7c-445f-9e6a-65956758d644.xyzi">https://rmeertens.github.io/ImmersivePoints/oculus.html?name=77b04781-5d7c-445f-9e6a-65956758d644.xyzi</a></div>
-                    <div class="col-md-4">A brain with some information of a clustering algorithm</div>
-                </div>
-                <div class="row">
+            </div>
+        </div>
+    </div>
+</div>-->
 
-                    <div class="col-md-8"><a href="https://rmeertens.github.io/ImmersivePoints/oculus.html?name=d6263c4a-7121-432f-8712-b0de530a78ff.xyzrgb">https://rmeertens.github.io/ImmersivePoints/oculus.html?name=d6263c4a-7121-432f-8712-b0de530a78ff.xyzrgb</a></div>
-                    <div class="col-md-4">The notre dame. Taken from <a href="https://sketchfab.com/3d-models/notre-dame-spire-reconstruction-2-newpalmyra-bcfc98fad3f24c4f959087c379af2666">this point scan</a> </div>
-                </div>
 
+
+                <ul>
+                    <li><a href="https://rmeertens.github.io/ImmersivePoints/oculus.html?name=e2652aab-4ace-4a09-86f4-374b23cb677b.xyzi">Click here for</a> a frame from the <a href="https://www.audi-electronics-venture.de/aev/web/de/driving-dataset.html">AEV dataset</a></li>
+
+
+                    <li>
+                        <a href="https://rmeertens.github.io/ImmersivePoints/oculus.html?name=816ca9a5-1eec-4e23-a34e-f409dbed1ff0.xyzi">Click here for</a> a frame from the <a href="https://www.audi-electronics-venture.de/aev/web/de/driving-dataset.html">AEV dataset</a> with semantic information
+                    </li>
+
+
+
+                    <li>
+                        <a href="https://rmeertens.github.io/ImmersivePoints/oculus.html?name=77b04781-5d7c-445f-9e6a-65956758d644.xyzi">Click here for</a> A brain with some information of a clustering algorithm
+                    </li>
+                    <li><a href="https://rmeertens.github.io/ImmersivePoints/oculus.html?name=d6263c4a-7121-432f-8712-b0de530a78ff.xyzrgb">Click here for</a> The notre dame. Taken from <a href="https://sketchfab.com/3d-models/notre-dame-spire-reconstruction-2-newpalmyra-bcfc98fad3f24c4f959087c379af2666">this point scan</a>
+                    </li>
+                </ul>
                 <h3>How can I upload my own pointclouds?</h3>
                 <a href="https://rmeertens.github.io/ImmersivePoints/upload.html">You can upload your own points here.</a> On that page it is described in what format your data should be. <br>
-                Exporting your own data is quite easy. Want to see some examples on how to export pointclouds? Take a look <a href="https://github.com/rmeertens/ImmersivePoints/blob/master/examples/export_subsample.ipynb">at this subsampling example</a>,
-                <a href="https://github.com/rmeertens/ImmersivePoints/blob/master/examples/export_csv.ipynb">this example to export a CSV file.</a>,
-                <a href="https://github.com/rmeertens/ImmersivePoints/blob/master/examples/export_ply.ipynb">or this export of a PLY file</a>,
-                <a href="https://github.com/rmeertens/ImmersivePoints/blob/master/examples/export_embeddings.ipynb">or this export of a neural network embedding</a>,
-                <a href="https://github.com/rmeertens/ImmersivePoints/blob/master/examples/export_AEV_data.ipynb">or finally: export data from a self-driving car</a>.
-
+                Exporting your own data is quite easy. Want to see some examples on how to export pointclouds? Take a look at:
+                <ul>
+                    <li><a href="https://github.com/rmeertens/ImmersivePoints/blob/master/examples/export_subsample.ipynb">An example on how to subsample a numpy array</a></li>
+                    <li><a href="https://github.com/rmeertens/ImmersivePoints/blob/master/examples/export_csv.ipynb">This example to export a CSV file.</a>,</li>
+                    <li><a href="https://github.com/rmeertens/ImmersivePoints/blob/master/examples/export_ply.ipynb">This export of a PLY file</a>,</li>
+                    <li><a href="https://github.com/rmeertens/ImmersivePoints/blob/master/examples/export_embeddings.ipynb">This export of a neural network embedding</a>,</li>
+                    <li><a href="https://github.com/rmeertens/ImmersivePoints/blob/master/examples/export_AEV_data.ipynb">Export data from a self-driving car</a>.</li>
+                </ul>
 
                 <h3>Why was this created?</h3>
                 About 5 years ago I was working an algorithm to cluster 3D brain data. It was hard to know whether the topological ordering made sense. The existing tools at the time were slow and uninformative, so I learned JavaScript to use a 3D visualisation library. That year <a href="https://www.youtube.com/watch?v"=wZXjoMMigJU>Google launched the google-cardboard</a> which allowed me to look around in my visualisation. <br>
