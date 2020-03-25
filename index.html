@@ -2,6 +2,20 @@
 <html>
 
 <head>
+
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-161822888-1"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+
+        function gtag() {
+            dataLayer.push(arguments);
+        }
+        gtag('js', new Date());
+        gtag('config', 'UA-161822888-1');
+
+    </script>
+
     <meta charset='utf-8'>
     <meta http-equiv="X-UA-Compatible" content="chrome=1">
     <meta name="description" content="Immersive Pointcloud">
@@ -34,6 +48,7 @@
         h3 {
             margin-top: 2rem;
         }
+
     </style>
     <title>Immersive Pointcloud</title>
 </head>
@@ -72,28 +87,53 @@
                 ImmersivePoints is a web-application for virtual reality devices to explore 3D data in the most natural way possible: virtual reality. <br>
                 To view your data you need to either attach a virtual reality device attached to your PC, or a stand-alone one, such as the oculus quest.
                 <h3>Explore examples of virtual reality data</h3>
-                <!--
-<div class="container">
+                <div class="container">
 
-    <div class="row">
-        <div class="col-md-4">
-            <div class="card mb-4 shadow-sm">
-                <svg class="bd-placeholder-img card-img-top" width="100%" height="225" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice" focusable="false" role="img" aria-label="Placeholder: Thumbnail">
-                    <title>Placeholder</title>
-                    <rect width="100%" height="100%" fill="#55595c"></rect><text x="50%" y="50%" fill="#eceeef" dy=".3em">Thumbnail</text>
-                </svg>
-                <div class="card-body">
-                    <p class="card-text">This is a wider card with supporting text below as a natural lead-in to additional content. This content is a little bit longer.</p>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div class="btn-group">
-                            <button type="button" class="btn btn-sm btn-outline-secondary">View</button>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="card mb-4 shadow-sm">
+                                <img class="card-img-top" src="images/aevdata.png" alt="Card image">
+
+                                <!--
+                                <svg class="bd-placeholder-img card-img-top" width="100%" height="225" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice" focusable="false" role="img" aria-label="Placeholder: Thumbnail">
+                                    <title>Self-driving car datad</title>
+                                    <rect width="100%" height="100%" fill="#55595c"></rect><text x="50%" y="50%" fill="#eceeef" dy=".3em">Thumbnail</text>
+                                </svg>
+-->
+                                <div class="card-body">
+                                    <p class="card-text">What a self-driving car sees with it's LiDAR scanner. This frame is taken from the <a href="https://www.audi-electronics-venture.de/aev/web/de/driving-dataset.html">AEV dataset</a></p>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div class="btn-group">
+                                            <button type="button" class="btn btn-sm btn-outline-secondary"><a href="https://rmeertens.github.io/ImmersivePoints/oculus.html?name=e2652aab-4ace-4a09-86f4-374b23cb677b.xyzi">View</a>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+
+                            <div class="card mb-4 shadow-sm">
+                                <img class="card-img-top" src="images/aevsemantic.png" alt="Card image">
+
+                                <!--
+                                <svg class="bd-placeholder-img card-img-top" width="100%" height="225" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice" focusable="false" role="img" aria-label="Placeholder: Thumbnail">
+                                    <title>Self-driving car datad</title>
+                                    <rect width="100%" height="100%" fill="#55595c"></rect><text x="50%" y="50%" fill="#eceeef" dy=".3em">Thumbnail</text>
+                                </svg>
+-->
+                                <div class="card-body">
+                                    <p class="card-text">Semantic information on what a self-driving car sees with it's LiDAR scanner. This frame is taken from the <a href="https://www.audi-electronics-venture.de/aev/web/de/driving-dataset.html">AEV dataset</a></p>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div class="btn-group">
+                                            <button type="button" class="btn btn-sm btn-outline-secondary"><a href="https://rmeertens.github.io/ImmersivePoints/oculus.html?name=816ca9a5-1eec-4e23-a34e-f409dbed1ff0.xyzi">View</a>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
-    </div>
-</div>-->
 
 
 
@@ -135,4 +175,6 @@
         </div>
     </main>
 
-</body></html>
+</body>
+
+</html>
