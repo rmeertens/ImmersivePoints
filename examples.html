@@ -1,0 +1,87 @@
+<!doctype html>
+<html>
+
+<head>
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-161822888-1"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+
+        function gtag() {
+            dataLayer.push(arguments);
+        }
+        gtag('js', new Date());
+        gtag('config', 'UA-161822888-1');
+
+    </script>
+
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="description" content="Immersive Pointcloud">
+
+    <!--<link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">-->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+    <style>
+        .jumbotron {
+            background-image: url("immersivepoints.png");
+            background-size: cover;
+            min-height: 550px;
+        }
+
+        .jumbotron h1 {
+            color: #fff;
+        }
+
+        .jumbotron p {
+            color: #fff;
+        }
+
+    </style>
+    <title>Immersive Pointcloud</title>
+</head>
+
+<body>
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+            <a class="navbar-brand" href="/index.html">😎ImmersivePoints.com</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+                <div class="navbar-nav">
+                    <a class="nav-item nav-link" href="/index.html">Home</a>
+                    <a class="nav-item nav-link" href="/upload.html">Upload</a>
+                    <a class="nav-item nav-link" href="/pricing.html">Pricing</a>
+                    <a class="nav-item nav-link active" href="/examples.html">Examples <span class="sr-only">(current)</span></a>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+
+
+    <div class="jumbotron">
+        <div class="container">
+            <h1 class="display-3">ImmersivePoints</h1>
+            <p>Explore your data by walking through it!</p>
+            <p><a class="btn btn-primary btn-lg" href="https://rmeertens.github.io/ImmersivePoints/upload.html" role="button">Upload your own</a></p>
+        </div>
+    </div>
+
+    <main role="main" class="container">
+
+        <div id="main_content_wrap" class="container-fluid">
+            <section id="main_content" class="container-fluid">
+
+                <h1>Examples</h1>
+                <h3>Visualise pointcloud with Python</h3>
+                Display a 3D pointcloud using Python.
+                Want you want to visualise a 3D pointcloud in Python, or want to visualise a large point cloud at all, try to look here: <a href="https://github.com/rmeertens/ImmersivePoints/blob/master/examples/export_subsample.ipynb">link</a>.
+            </section>
+        </div>
+    </main>
+
+</body>
+
+</html>
