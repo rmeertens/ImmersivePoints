@@ -96,8 +96,6 @@ else if(base64_str){
 }
 else if(json_base64){
     var decodedData = JSON.parse(atob(json_base64));            
-    console.log(decodedData);
-    console.log("^^^parsing this^^^");
     // Parse the JSON 
     if("points" in decodedData){
         // Currently multiple point clouds are not supported
@@ -111,13 +109,17 @@ else if(json_base64){
             scene.add(tempPoints);
         }
     }
+    if("bboxes" in decodedData){
+        var boxesToLoad = decodedData["bboxes"][0];
+        if(boxesToLoad['source'] == 'url'){
+            startLoadingBoxes(boxesToLoad['url']);
+        }
+    }
 }
 else{
     // For now: always load something just because it's cool... 
     var url = "https://pointcloudvisualization.s3.eu-central-1.amazonaws.com/cars3.npy";
-    console.log("Did not do blaat");
     startLoadingData(url, "XYZI");
-    
 }        
 
 /*
@@ -260,7 +262,6 @@ function getPointsFromBase64String(buffer, pointType){
     var tempNodes = new Array();
     var points_per_row = get_points_per_row(pointType);
     for(var row=0; row < ints.length; row=row+points_per_row) {
-        console.log(row);
         tempNodes[row/points_per_row] = new Array();
         for(var p=0; p < points_per_row; p++){ //xyz...
             tempNodes[row/points_per_row][p] = ints[row+p] 
