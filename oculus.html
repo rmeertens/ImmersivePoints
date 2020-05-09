@@ -2,6 +2,7 @@
 <html lang="en">
 
 <head>
+
     <!-- Global site tag (gtag.js) - Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=UA-161822888-1"></script>
     <script>
@@ -63,19 +64,90 @@ var realcont2connected = false;
 var colorBuffer;
 var placePOIButtonPressed = false;
         
-var user = new THREE.Group();        
+var user = new THREE.Group();     
+
+        
 // Start functions        
 init();
 animate();   
         
-        
-        
-var filename = getQueryVariable('name', 'cars3.npy');
-var url = "https://pointcloudvisualization.s3.eu-central-1.amazonaws.com/"+filename;
-//var url = filename;
-startLoadingData(url);      
-//startLoadingBoxes("cars5boxes.npy");
+// Option 1 (legacy?): pass the name variable to download that specific file from S3        
+var filename = getQueryVariable('name', null);
 
+// Option 2: get a base64 encoded json from the header...
+var json_base64 = getQueryVariable('jsonb64', null);
+
+// Option 3: get a base64 encoded pointcloud
+var base64_str = getQueryVariable('base64', null);
+        
+if(filename){
+    var url = "https://pointcloudvisualization.s3.eu-central-1.amazonaws.com/"+filename;
+
+    if(url.endsWith("xyzi")){
+        startLoadingData(url, "XYZI");
+    }
+    else{
+        startLoadingData(url, "XYZRGB");
+    }
+}
+else if(base64_str){
+    var tempPoints = getPointsFromBase64String(base64_str, "XYZI");
+    scene.add(tempPoints);
+}
+else if(json_base64){
+    var decodedData = JSON.parse(atob(json_base64));            
+    console.log(decodedData);
+    console.log("^^^parsing this^^^");
+    // Parse the JSON 
+    if("points" in decodedData){
+        // Currently multiple point clouds are not supported
+        var pointToLoad = decodedData["points"][0];
+
+        if(pointToLoad['source'] == 'url'){
+            startLoadingData(pointToLoad['url'], pointToLoad["type"]);
+        }
+        else if(pointToLoad['source'] == 'base64'){
+            var tempPoints = getPointsFromBase64String(pointToLoad["base64"], pointToLoad["type"]);
+            scene.add(tempPoints);
+        }
+    }
+}
+else{
+    // For now: always load something just because it's cool... 
+    var url = "https://pointcloudvisualization.s3.eu-central-1.amazonaws.com/cars3.npy";
+    console.log("Did not do blaat");
+    startLoadingData(url, "XYZI");
+    
+}        
+
+/*
+Example JSON: 
+{
+    "points": [
+        {
+            "source": "url",
+            "url": https://pointcloudvisualization.s3.eu-central-1.amazonaws.com/e2652aab-4ace-4a09-86f4-374b23cb677b.xyzi",
+            "type": "RGBI",
+        },
+        {
+            "source": "base64",
+            "base64": "Pttmyz4gkd8/BK5QPwvLhz3XReU9+osQPpbxoD9Yolw+tjy9PwRGQD8KfRU9YXGEP1TPlD9AG2M/M/e+Pv8/8j7JjBE/TdywPsiFpz9x8sg=",
+            "type": "RGBI"
+        }
+    ]
+    "bboxes": [
+        {
+            "source": "url",
+            "url": "https://pointcloudvisualization.s3.eu-central-1.amazonaws.com/test1.bbox"
+        },
+        {
+            "source": "base64",
+            "base64": "SDFLksf459fjssfhwDHFFhfs+fsfh=",
+        }
+    ]
+}
+*/
+        
 
         
 function get_bbox_vehicle(posx, posy, posz, sizex, sizey, sizez, rotationy){
@@ -114,11 +186,8 @@ function startLoadingBoxes(url){
                 
                 var points_per_row = 7;
                 
-                // Note: 4 because of float32 has 4 bytes
-                 var ints = new Float32Array(buffer.byteLength / 4);
-                 for (var i = 0; i < ints.length; i++) {
-                     ints[i] = dataview.getFloat32(i * 4);
-                 }
+                // Note: divide by 4 because of float32 has 4 bytes
+                var ints = dataViewToFloat32Array(dataview, buffer.byteLength / 4)
                 
                 for(var row=0; row < ints.length; row=row+points_per_row) {
                     
@@ -162,9 +231,91 @@ function getQueryVariable(variable, elsevalue) {
     }
     return elsevalue;
 }
+
+function _base64ToArrayBuffer(base64) {
+    var binary_string = window.atob(base64);
+    var len = binary_string.length;
+    var bytes = new Uint8Array(len);
+    for (var i = 0; i < len; i++) {
+        bytes[i] = binary_string.charCodeAt(i);
+    }
+    return bytes.buffer;
+}
+
+function dataViewToFloat32Array(dataview, lengthArray){
+     var ints = new Float32Array(lengthArray);
+     for (var i = 0; i < ints.length; i++) {
+         ints[i] = dataview.getFloat32(i * 4);
+     }
+    return ints;
+}
         
+function getPointsFromBase64String(buffer, pointType){
+    buffer = _base64ToArrayBuffer(buffer);
+    var dataview = new DataView(buffer);
+    
+    // Note: divide by 4 because of float32 has 4 bytes
+    var ints = dataViewToFloat32Array(dataview, buffer.byteLength / 4)
+
+    var tempNodes = new Array();
+    var points_per_row = get_points_per_row(pointType);
+    for(var row=0; row < ints.length; row=row+points_per_row) {
+        console.log(row);
+        tempNodes[row/points_per_row] = new Array();
+        for(var p=0; p < points_per_row; p++){ //xyz...
+            tempNodes[row/points_per_row][p] = ints[row+p] 
+        }
+    }
+
+    console.log("Loaded num points " + tempNodes.length)
+
+    var particles = tempNodes.length;
+    var geometry = new THREE.BufferGeometry();
+    var positions = [];
+    var colors = [];
+    var color = new THREE.Color();
+
+    for ( var i = 0; i < particles; i ++ ) {
+        // positions
+        var x = tempNodes[i][0];
+        var y = tempNodes[i][1];
+        var z = tempNodes[i][2];
+        positions.push( x, y, z );
         
-function startLoadingData(url)
+        if(pointType == "XYZI"){
+            color.setHSL(tempNodes[i][3], 1.0, 0.5);
+            colors.push( color.r, color.g, color.b );
+        }
+        else if(pointType == "XYZRGB"){
+            colors.push( tempNodes[i][3], nodes[i][4], nodes[i][5] );
+        }
+    }
+    
+    geometry.setAttribute( 'position', new THREE.Float32BufferAttribute( positions, 3 ) );
+    colorBuffer = new THREE.Float32BufferAttribute( colors, 3 );
+
+    geometry.setAttribute( 'color', colorBuffer );
+    geometry.computeBoundingSphere();
+    
+    var material = new THREE.PointsMaterial( { size: 0.04, vertexColors: THREE.VertexColors } );
+    var tempPoints = new THREE.Points( geometry, material );
+    
+    return tempPoints;
+}        
+
+function get_points_per_row(pointType){
+    if(pointType == "XYZ"){
+        return 3;
+    }
+    else if(pointType == "XYZI"){
+        return 4;
+    }
+    else if(pointType == "XYZRGB"){
+        return 6;
+    }
+}
+
+function startLoadingData(url, pointType)
 {
     var httpRequest = new XMLHttpRequest();
     httpRequest.onreadystatechange = function() {
@@ -173,19 +324,12 @@ function startLoadingData(url)
             if ((httpRequest.status == 200) || (httpRequest.status == 0)){
                 var buffer = httpRequest.response;
                  var dataview = new DataView(buffer);
-                if(url.endsWith("xyzi")){
-                    var points_per_row = 4;
-                }
-                else{
-                    var points_per_row = 6;
-                }
                 
-                // Note: 4 because of float32 has 4 bytes
-                 var ints = new Float32Array(buffer.byteLength / 4);
-                 for (var i = 0; i < ints.length; i++) {
-                     ints[i] = dataview.getFloat32(i * 4);
-                 }
                 
+                // Note: divide by 4 because of float32 has 4 bytes
+                var ints = dataViewToFloat32Array(dataview, buffer.byteLength / 4)
+                
+                var points_per_row = get_points_per_row(pointType);
                 for(var row=0; row < ints.length; row=row+points_per_row) {
                     nodes[row/points_per_row] = new Array();
                     for(var p=0; p < points_per_row; p++){ //xyz...
@@ -193,7 +337,7 @@ function startLoadingData(url)
                     }
                 }
                 
-            console.log("Loaded num points " + nodes.length)
+            console.log("Loaded num points " + nodes.length + " of point type " + pointType + " with ppr: " + points_per_row)
 
             var particles = nodes.length;
             var geometry = new THREE.BufferGeometry();
@@ -208,11 +352,11 @@ function startLoadingData(url)
                 var z = nodes[i][2];
                 positions.push( x, y, z );
                 
-                if(points_per_row == 4){
+                if(pointType == "XYZI"){
                     color.setHSL(nodes[i][3], 1.0, 0.5);
                     colors.push( color.r, color.g, color.b );
                 }
-                else if(points_per_row == 6){
+                else if(pointType == "XYZRGB"){
                     colors.push( nodes[i][3], nodes[i][4], nodes[i][5] );
                 }
             }
