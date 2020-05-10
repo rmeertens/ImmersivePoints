@@ -122,6 +122,8 @@ else{
     startLoadingData(url, "XYZI");
 }        
 
+
+  
 /*
 Example JSON: 
 {
@@ -148,8 +150,7 @@ Example JSON:
         }
     ]
 }
-*/
-        
+*/        
 
         
 function get_bbox_vehicle(posx, posy, posz, sizex, sizey, sizez, rotationy){
@@ -251,6 +252,16 @@ function dataViewToFloat32Array(dataview, lengthArray){
      }
     return ints;
 }
+    
+        
+function fillNodes(nodes, ints, pointsPerRow){
+    for(var row=0; row < ints.length; row=row+pointsPerRow) {
+        nodes[row/pointsPerRow] = new Array();
+        for(var p=0; p < pointsPerRow; p++){ //xyz...
+            nodes[row/pointsPerRow][p] = ints[row+p] 
+        }
+    }
+}
         
 function getPointsFromBase64String(buffer, pointType){
     buffer = _base64ToArrayBuffer(buffer);
@@ -261,39 +272,13 @@ function getPointsFromBase64String(buffer, pointType){
 
     var tempNodes = new Array();
     var points_per_row = get_points_per_row(pointType);
-    for(var row=0; row < ints.length; row=row+points_per_row) {
-        tempNodes[row/points_per_row] = new Array();
-        for(var p=0; p < points_per_row; p++){ //xyz...
-            tempNodes[row/points_per_row][p] = ints[row+p] 
-        }
-    }
-
+    fillNodes(tempNodes, ints, points_per_row);
     console.log("Loaded num points " + tempNodes.length)
+    var temp = getPositionsAndColors(tempNodes, pointType);
 
-    var particles = tempNodes.length;
     var geometry = new THREE.BufferGeometry();
-    var positions = [];
-    var colors = [];
-    var color = new THREE.Color();
-
-    for ( var i = 0; i < particles; i ++ ) {
-        // positions
-        var x = tempNodes[i][0];
-        var y = tempNodes[i][1];
-        var z = tempNodes[i][2];
-        positions.push( x, y, z );
-        
-        if(pointType == "XYZI"){
-            color.setHSL(tempNodes[i][3], 1.0, 0.5);
-            colors.push( color.r, color.g, color.b );
-        }
-        else if(pointType == "XYZRGB"){
-            colors.push( tempNodes[i][3], nodes[i][4], nodes[i][5] );
-        }
-    }
-    
-    geometry.setAttribute( 'position', new THREE.Float32BufferAttribute( positions, 3 ) );
-    colorBuffer = new THREE.Float32BufferAttribute( colors, 3 );
+    geometry.setAttribute( 'position', new THREE.Float32BufferAttribute( temp.positions, 3 ) );
+    colorBuffer = new THREE.Float32BufferAttribute( temp.colors, 3 );
 
     geometry.setAttribute( 'color', colorBuffer );
     geometry.computeBoundingSphere();
@@ -316,6 +301,32 @@ function get_points_per_row(pointType){
     }
 }
 
+function getPositionsAndColors(nodes, pointType){
+    var positions = [];
+    var colors = [];
+    var color = new THREE.Color();
+
+    for ( var i = 0; i < nodes.length; i ++ ) {
+        // positions
+        var x = nodes[i][0];
+        var y = nodes[i][1];
+        var z = nodes[i][2];
+        positions.push( x, y, z );
+
+        if(pointType == "XYZI"){
+            color.setHSL(nodes[i][3], 1.0, 0.5);
+            colors.push( color.r, color.g, color.b );
+        }
+        else if(pointType == "XYZRGB"){
+            colors.push( nodes[i][3], nodes[i][4], nodes[i][5] );
+        }
+    }
+    return {
+        positions: positions,
+        colors: colors
+    };
+}        
+
 function startLoadingData(url, pointType)
 {
     var httpRequest = new XMLHttpRequest();
@@ -324,53 +335,49 @@ function startLoadingData(url, pointType)
             // everything is good, the response is received
             if ((httpRequest.status == 200) || (httpRequest.status == 0)){
                 var buffer = httpRequest.response;
-                 var dataview = new DataView(buffer);
-                
-                
+                var dataview = new DataView(buffer);
+
+
                 // Note: divide by 4 because of float32 has 4 bytes
                 var ints = dataViewToFloat32Array(dataview, buffer.byteLength / 4)
-                
+
                 var points_per_row = get_points_per_row(pointType);
-                for(var row=0; row < ints.length; row=row+points_per_row) {
-                    nodes[row/points_per_row] = new Array();
-                    for(var p=0; p < points_per_row; p++){ //xyz...
-                        nodes[row/points_per_row][p] = ints[row+p] 
-                    }
-                }
-                
-            console.log("Loaded num points " + nodes.length + " of point type " + pointType + " with ppr: " + points_per_row)
+                fillNodes(nodes, ints, points_per_row);
 
-            var particles = nodes.length;
-            var geometry = new THREE.BufferGeometry();
-            var positions = [];
-            var colors = [];
-            var color = new THREE.Color();
+                console.log("Loaded num points " + nodes.length + " of point type " + pointType + " with ppr: " + points_per_row)
 
-            for ( var i = 0; i < particles; i ++ ) {
-                // positions
-                var x = nodes[i][0];
-                var y = nodes[i][1];
-                var z = nodes[i][2];
-                positions.push( x, y, z );
+                var particles = nodes.length;
+                var geometry = new THREE.BufferGeometry();
                 
-                if(pointType == "XYZI"){
-                    color.setHSL(nodes[i][3], 1.0, 0.5);
-                    colors.push( color.r, color.g, color.b );
-                }
-                else if(pointType == "XYZRGB"){
-                    colors.push( nodes[i][3], nodes[i][4], nodes[i][5] );
-                }
-            }
-            geometry.setAttribute( 'position', new THREE.Float32BufferAttribute( positions, 3 ) );
-            colorBuffer = new THREE.Float32BufferAttribute( colors, 3 );
-            
-            geometry.setAttribute( 'color', colorBuffer );
-            geometry.computeBoundingSphere();
-            //
-            var material = new THREE.PointsMaterial( { size: 0.04, vertexColors: THREE.VertexColors } );
-            points = new THREE.Points( geometry, material );
-            //points.frustumCulled = false;
-            scene.add( points );
+                var temp = getPositionsAndColors(nodes, pointType);
+                
+                
+//                
+//                for ( var i = 0; i < particles; i ++ ) {
+//                    // positions
+//                    var x = nodes[i][0];
+//                    var y = nodes[i][1];
+//                    var z = nodes[i][2];
+//                    positions.push( x, y, z );
+//
+//                    if(pointType == "XYZI"){
+//                        color.setHSL(nodes[i][3], 1.0, 0.5);
+//                        colors.push( color.r, color.g, color.b );
+//                    }
+//                    else if(pointType == "XYZRGB"){
+//                        colors.push( nodes[i][3], nodes[i][4], nodes[i][5] );
+//                    }
+//                }
+                geometry.setAttribute( 'position', new THREE.Float32BufferAttribute( temp.positions, 3 ) );
+                colorBuffer = new THREE.Float32BufferAttribute( temp.colors, 3 );
+
+                geometry.setAttribute( 'color', colorBuffer );
+                geometry.computeBoundingSphere();
+                //
+                var material = new THREE.PointsMaterial( { size: 0.04, vertexColors: THREE.VertexColors } );
+                points = new THREE.Points( geometry, material );
+                //points.frustumCulled = false;
+                scene.add( points );
             
 
         }}}
