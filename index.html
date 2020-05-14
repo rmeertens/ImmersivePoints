@@ -25,9 +25,9 @@
 
     <style>
         .jumbotron {
-            background-image: url("immersivepoints.png");
+            background-image: url("images/immersivepoints_jumbotron.png");
             background-size: cover;
-            # min-height: 550px;
+            /*            min-height: 550px;*/
         }
 
         .jumbotron h1 {
@@ -55,8 +55,9 @@
 <body>
     <header>
         <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-            <a class="navbar-brand" href="/index.html">😎ImmersivePoints.com</a>
-
+            <a class="navbar-brand" href="#">
+                <img src="images/immersive_points_logo/logo_cutout.png" height="40" class="d-inline-block align-top" alt="">
+            </a>
 
             <div class="navbar-nav">
                 <a class="nav-item nav-link active" href="/index.html">Home <span class="sr-only">(current)</span></a>
@@ -68,8 +69,9 @@
 
     <div class="jumbotron">
         <div class="container">
+
             <h1 class="display-3">ImmersivePoints</h1>
-            <p>Explore your data by walking through it!</p>
+            <p>Explore your data in virtual reality</p>
             <p><a class="btn btn-primary btn-lg" href="https://rmeertens.github.io/ImmersivePoints/upload.html" role="button">📤Upload your own</a></p>
         </div>
     </div>
@@ -80,9 +82,11 @@
             <section id="main_content" class="container-fluid">
 
                 <h3>What is ImmersivePoints? 🧐</h3>
-                ImmersivePoints is a web-application for virtual reality devices to explore 3D data in the most natural way possible: virtual reality. <br>
-                To view your data you need to either attach a virtual reality device attached to your PC, or a stand-alone one, such as the oculus quest.
-                <h3>Explore examples of virtual reality data</h3>
+                ImmersivePoints is an application which displays your 3D data in virtual reality. <br>
+                It is supported by virtual reality headers for your PC, and stand-alone headsets such as the oculus quest.<br>
+                You can either visualise data on your own server, or upload data to my server on the <a href="/upload.html">upload page</a>.<br>
+                Getting started with your own data is easy: take a look at <a href="https://github.com/rmeertens/ImmersivePoints/blob/master/examples/">these programming examples</a>.
+                <h3>View examples of virtual reality data</h3>
                 <div class="container">
 
                     <div class="row">
@@ -163,10 +167,10 @@
                 <h3>Why was this created?</h3>
                 About 5 years ago I was working an algorithm to cluster 3D brain data. It was hard to know whether the topological ordering made sense. The existing tools at the time were slow and uninformative, so I learned JavaScript to use a 3D visualisation library. That year <a href="https://www.youtube.com/watch?v"=wZXjoMMigJU>Google launched the google-cardboard</a> which allowed me to look around in my visualisation. <br>
                 Although this was impressive, you still could not move around freely. This year Facebook launched the <a href="https://www.youtube.com/watch?v=yYxrJ2L8Xl4">Oculus Quest</a>, which is an untethered virtual reality headset! I bought it and adjusted my old code to finally be able to walk around in the data like I wanted 5 years ago!<br>
-                After a lot of positive feedback from others I also made an upload function, so you can look at your own data as well. Enjoy!
+                After a lot of positive feedback from others I made this into a website, so you can look at your own data as well. Enjoy!
 
                 <h3>More information:</h3>
-                <p class='noTop'>In case you have any questions, my e-mail addres is: rolandmeertens@gmail.com </p>
+                <p class='noTop'>In case you have any questions, feel free to reach out to me. My e-mail addres is: rolandmeertens@gmail.com </p>
             </section>
         </div>
     </main>
