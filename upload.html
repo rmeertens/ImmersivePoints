@@ -11,6 +11,7 @@
         }
         gtag('js', new Date());
         gtag('config', 'UA-161822888-1');
+
     </script>
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
@@ -51,6 +52,7 @@
             padding-left: 0.5rem;
             padding-right: 0.5rem;
         }
+
     </style>
 </head>
 
@@ -154,10 +156,14 @@
                 <button v-if="!uploadURL" @click="removeImage">🚨 Remove pointcloud</button>
                 <button v-if="!uploadURL" @click="uploadImage">🔩 Step 3: Upload pointcloud</button>
             </div>
-            <h3 v-if="uploadURL">🥳 Success! Point cloud uploaded to the server.</h3>
+            <h3 v-if="uploadURL">🥳 Success! Point cloud uploaded to the server. You can see it at this address: <a href={{uploadURL}}>{{uploadURL}}</a></h3>
             <h3 v-if="errorMessage">{{errorMessage}}</h3>
             <h3 v-if="readyToUploadMessage">{{readyToUploadMessage}}</h3>
-            <h3 v-if="resultURL">🦾 Ready to visualize in a few seconds at this address: <a href={{resultURL}}>{{resultURL}}</a></h3>
+            <h3 v-if="resultURL">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="sr-only">Loading...</span>
+                </div>🦾 Currently uploading! Ready to visualize in a few seconds!
+            </h3>
         </div>
     </main>
 
@@ -251,13 +257,18 @@
                     console.log('Result: ', result)
                     if (result.ok) {
                         // Final URL for the user doesn't need the query string params
-                        this.uploadURL = response.data.uploadURL.split('?')[0];
+                        //                        this.uploadURL = response.data.uploadURL.split('?')[0];
+                        this.uploadURL = "https://immersivepoints.com/oculus.html?name=" + response.data.name;
+                        this.resultURL = null;
                     } else {
                         this.errorMessage = "Error occured" + result.statusText;
                     }
                 }
             }
         })
+
     </script>
 
-</body></html>
+</body>
+
+</html>
