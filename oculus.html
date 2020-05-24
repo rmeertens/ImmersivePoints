@@ -66,11 +66,13 @@ var placePOIButtonPressed = false;
         
 var user = new THREE.Group();     
 
+var showAxes = getQueryVariable('showAxes', false);
         
 // Start functions        
 init();
 animate();   
-        
+
+
 // Option 1 (legacy?): pass the name variable to download that specific file from S3        
 var filename = getQueryVariable('name', null);
 
@@ -151,24 +153,46 @@ Example JSON:
     ]
 }
 */        
+        
+/*
+
+For the boxes this goes: 
+
+
+Center X (forwards) float32
+Center Y (upwards) float32
+Center Z (left) float32
+Size X float32
+Size Y float32
+Size Z float32
+Rotation around X float32
+Rotation around Y float32
+Rotation around Z float32
+Red (between 0 and 1) float32
+Green (between 0 and 1) float32
+Blue (between 0 and 1) float32
+Opacity (between 0 and 1) float32
+*/
 
         
-function get_bbox_vehicle(posx, posy, posz, sizex, sizey, sizez, rotationy){
+function get_bbox_vehicle(posx, posy, posz, sizex, sizey, sizez, rotationx, rotationy, rotationz, red, green, blue, opacity){
     var geometry = new THREE.BoxGeometry( sizex, sizey, sizez);
 
     var material = new THREE.MeshPhongMaterial({
-      color: 0x00ff00,
-      opacity: 0.5,
+      color: new THREE.Color(red, green, blue),
+      opacity: opacity,
       transparent: true,
     });
 
     // parent
     parent = new THREE.Object3D();
-    parent.rotation.z = 0;
+    parent.rotation.x = rotationx;
     parent.rotation.y = rotationy;
-    parent.position.x = -posx;
-    parent.position.y = -posy;
-    parent.position.z = -posz;
+    parent.rotation.z = rotationz;
+
+    parent.position.x = posx;
+    parent.position.y = posy;
+    parent.position.z = posz;
 
     // mesh
     var mesh1 = new THREE.Mesh( geometry, material );
@@ -187,7 +211,7 @@ function startLoadingBoxes(url){
                 var buffer = httpRequest.response;
                  var dataview = new DataView(buffer);
                 
-                var points_per_row = 7;
+                var points_per_row = 13;  
                 
                 // Note: divide by 4 because of float32 has 4 bytes
                 var ints = dataViewToFloat32Array(dataview, buffer.byteLength / 4)
@@ -209,7 +233,7 @@ function startLoadingBoxes(url){
             var color = new THREE.Color();
 
             for ( var i = 0; i < particles; i ++ ) {
-                var temp = get_bbox_vehicle(bboxnodes[i][0], bboxnodes[i][1], bboxnodes[i][2], bboxnodes[i][3], bboxnodes[i][4], bboxnodes[i][5], bboxnodes[i][6]);
+                var temp = get_bbox_vehicle(bboxnodes[i][0], bboxnodes[i][1], bboxnodes[i][2], bboxnodes[i][3], bboxnodes[i][4], bboxnodes[i][5], bboxnodes[i][6], bboxnodes[i][7], bboxnodes[i][8], bboxnodes[i][9], bboxnodes[i][10], bboxnodes[i][11], bboxnodes[i][12]);
                 scene.add(temp);
         }}}}
 
@@ -458,6 +482,7 @@ function init() {
     controls = new OrbitControls( camera, renderer.domElement );
     controls.autoRotate=false;
     controls.target.set( 0, 0, 0 );
+    controls.keyPanSpeed = 28.0;
     controls.update();
     
 
@@ -470,6 +495,12 @@ function init() {
     
     object2 = getHand();
     scene.add(object2); 
+    
+    if(showAxes){
+        var axesHelper = new THREE.AxesHelper( 5 );
+        scene.add( axesHelper );
+    }
+
 }
         
 
