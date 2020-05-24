@@ -13,7 +13,6 @@
         }
         gtag('js', new Date());
         gtag('config', 'UA-161822888-1');
-
     </script>
 
     <title>Oculus example</title>
@@ -23,7 +22,6 @@
         body {
             margin: 0;
         }
-
     </style>
 </head>
 
@@ -67,6 +65,7 @@ var placePOIButtonPressed = false;
 var user = new THREE.Group();     
 
 var showAxes = getQueryVariable('showAxes', false);
+var autoRotate = getQueryVariable('autoRotate', false);
         
 // Start functions        
 init();
@@ -480,7 +479,7 @@ function init() {
 
     document.body.appendChild( renderer.domElement );
     controls = new OrbitControls( camera, renderer.domElement );
-    controls.autoRotate=false;
+    controls.autoRotate=autoRotate;
     controls.target.set( 0, 0, 0 );
     controls.keyPanSpeed = 28.0;
     controls.update();
@@ -648,6 +647,4 @@ function animate() {
 
 
   </script>
-</body>
-
-</html>
+</body></html>
