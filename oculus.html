@@ -13,6 +13,7 @@
         }
         gtag('js', new Date());
         gtag('config', 'UA-161822888-1');
+
     </script>
 
     <title>Oculus example</title>
@@ -22,6 +23,7 @@
         body {
             margin: 0;
         }
+
     </style>
 </head>
 
@@ -51,8 +53,8 @@ var cursor = new THREE.Vector3();
 var nodes = new Array();
 var bboxnodes = new Array();
     
-var object1;
-var object2;
+var handMesh1;
+var handMesh2;
         
 var realcont1;
 var realcont1connected = false;
@@ -245,7 +247,10 @@ function startLoadingBoxes(url){
     httpRequest.send();
 }
     
-        
+
+// Takes the text in the address-bar in the browser, and parses what's behind the ampersend (&) character. 
+// You can query a variable, and if the string contains variable=value it returns the value. 
+// If not found it will return the elsevalue supplied by whoever calls the function
 function getQueryVariable(variable, elsevalue) {
     var query = window.location.search.substring(1);
     var vars = query.split('&');
@@ -268,6 +273,9 @@ function _base64ToArrayBuffer(base64) {
     return bytes.buffer;
 }
 
+// Given a so-called dataviwe object (https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/DataView)
+// and the length of the array this function will return a new filled array from the dataview
+// given that the dataview contains float32 values. 
 function dataViewToFloat32Array(dataview, lengthArray){
      var ints = new Float32Array(lengthArray);
      for (var i = 0; i < ints.length; i++) {
@@ -429,12 +437,13 @@ function onSelectStartRight(){
     selectionDirection = 0.0;
  }
         
-        
+// Returns the 3D mesh object for a hand... 
+// Currently a cone. 
 function getHand(){
     var radius = 0.08;
     var geometry =  new THREE.ConeGeometry( radius, 4*radius, 8 );
-    var object=new THREE.Mesh( geometry, new THREE.MeshLambertMaterial( { color: Math.random() * 0xffffff } ) ); 
-    return object;
+    var handmesh =new THREE.Mesh( geometry, new THREE.MeshLambertMaterial( { color: Math.random() * 0xffffff } ) ); 
+    return handmesh;
 }        
     
 function init() {
@@ -453,8 +462,8 @@ function init() {
     renderer.setSize( window.innerWidth, window.innerHeight );
     renderer.xr.enabled = true;
 
+    // Add the events to the first found controller and add it to the scene. 
     controller1 = renderer.xr.getController( 0 );
-    //log(controller1);
     controller1.addEventListener( 'selectstart', onSelectStart );
     controller1.addEventListener( 'selectend', onSelectEnd );
     controller1.addEventListener( 'connected', function ( event ) {
@@ -465,6 +474,7 @@ function init() {
     } );
     scene.add( controller1 );
 
+    // Add the events to the second found controller and add it to the scene. 
     controller2 = renderer.xr.getController( 1 );
     scene.add( controller2 );
     
@@ -477,7 +487,10 @@ function init() {
         realcont2connected = true;
     } );
 
+    // Add the render to the website
     document.body.appendChild( renderer.domElement );
+    
+    // Add controls so you can also use your mouse and keyboard to look at the scene. 
     controls = new OrbitControls( camera, renderer.domElement );
     controls.autoRotate=autoRotate;
     controls.target.set( 0, 0, 0 );
@@ -485,16 +498,20 @@ function init() {
     controls.update();
     
 
+    // Add the virtual reality button to the site. 
     document.body.appendChild( VRButton.createButton( renderer ) );
+    
+    // Add a white light to the whole scene so you can see all objects
     var light = new THREE.AmbientLight( 0xffffff ); // soft white light
     scene.add( light );
     
-    object1 = getHand();
-    scene.add(object1);
+    // Add both hand objects to the scene. 
+    handMesh1 = getHand();
+    scene.add(handMesh1);
+    handMesh1 = getHand();
+    scene.add(handMesh2); 
     
-    object2 = getHand();
-    scene.add(object2); 
-    
+    // Possibly add an axis helper to the scene. 
     if(showAxes){
         var axesHelper = new THREE.AxesHelper( 5 );
         scene.add( axesHelper );
@@ -587,7 +604,7 @@ function animate() {
         if (gamepad.buttons[1].pressed){
             if(!placePOIButtonPressed){
                 placePOIButtonPressed = true;
-                placePOI(object1.position); 
+                placePOI(handMesh1.position); 
             }
         }
         else{
@@ -622,24 +639,17 @@ function animate() {
     // Draw the controllers
     
 
+    // If something triggered the selection-direction the user position moves in the direction of where the user is looking at. 
     if (selectionDirection != 0.0){
+        // Get the direction the user is looking at. 
         let xrCamera = renderer.xr.getCamera(camera);
-//        user.position.x += 20.0; 
         let e = xrCamera.matrixWorld.elements;
         let direction = new THREE.Vector3(selectionDirection*e[8], selectionDirection*e[9], selectionDirection*e[10]).normalize();
         direction.multiplyScalar(-0.05);
         user.position.add(direction);// HEY! Maybe this IS working after all!
-        
-//
-//        points.position.add(direction);
-//        
-//        for(var property in POIs){
-//            property = POIs[property];
-//            property[0].position.add(direction);
-//        }
     }
-    handleController( object1, controller1 );
-    handleController( object2, controller2 );
+    handleController( handMesh1, controller1 );
+    handleController( handMesh2, controller2 );
 	renderer.render( scene, camera );
 
 } );
@@ -647,4 +657,6 @@ function animate() {
 
 
   </script>
-</body></html>
+</body>
+
+</html>
