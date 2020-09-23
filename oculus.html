@@ -13,7 +13,6 @@
         }
         gtag('js', new Date());
         gtag('config', 'UA-161822888-1');
-
     </script>
 
     <title>Oculus example</title>
@@ -23,7 +22,6 @@
         body {
             margin: 0;
         }
-
     </style>
 </head>
 
@@ -508,7 +506,7 @@ function init() {
     // Add both hand objects to the scene. 
     handMesh1 = getHand();
     scene.add(handMesh1);
-    handMesh1 = getHand();
+    handMesh2 = getHand();
     scene.add(handMesh2); 
     
     // Possibly add an axis helper to the scene. 
@@ -516,6 +514,8 @@ function init() {
         var axesHelper = new THREE.AxesHelper( 5 );
         scene.add( axesHelper );
     }
+    
+    window.addEventListener( 'resize', onWindowResize, false );
 
 }
         
@@ -545,12 +545,22 @@ function placePOI(location){
     scene.add( cube );
 
     cube.position.x = location.x;
-    cube.position.y = location.y;// Some offset for the hand rendering... 
+    cube.position.y = location.y;
     cube.position.z = location.z;
 
     POIs.push([cube, location]);
 }
 
+
+
+function onWindowResize(){
+
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+
+    renderer.setSize( window.innerWidth, window.innerHeight );
+
+}        
     
 function animate() {
     renderer.setAnimationLoop( function () {
@@ -657,6 +667,4 @@ function animate() {
 
 
   </script>
-</body>
-
-</html>
+</body></html>
