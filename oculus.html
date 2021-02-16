@@ -32,7 +32,8 @@
         import * as THREE from '//cdn.rawgit.com/mrdoob/three.js/master/build/three.module.js';
         import { OrbitControls } from '//cdn.rawgit.com/mrdoob/three.js/master/examples/jsm/controls/OrbitControls.js';
 		import { VRButton } from '//cdn.rawgit.com/mrdoob/three.js/master/examples/jsm/webxr/VRButton.js';
-            
+        import {GLTFLoader} from '//cdn.rawgit.com/mrdoob/three.js/master/examples/jsm/loaders/GLTFLoader.js';
+    
 
 // Global variables
 var camera, scene, renderer;
@@ -116,6 +117,11 @@ else if(json_base64){
             startLoadingBoxes(boxesToLoad['url']);
         }
     }
+    if("objects" in decodedData){
+        console.log("got objects");
+        var objectsToLoad = decodedData['objects']; 
+        startLoadingObjects(objectsToLoad); 
+    }
 }
 else{
     // For now: always load something just because it's cool... 
@@ -148,6 +154,15 @@ Example JSON:
         {
             "source": "base64",
             "base64": "SDFLksf459fjssfhwDHFFhfs+fsfh=",
+        }
+    ]
+    "objects": [
+        {
+            "source": "url", 
+            "url": "https://pointcloudvisualization.s3.eu-central-1.amazonaws.com/test1.glb", 
+            "position": [1.0, 2.0, 3.0], 
+            "rotation": [1.0, 1.1, 1.2], 
+            "scale": [1.0, 1.0, 1.0], 
         }
     ]
 }
@@ -200,6 +215,30 @@ function get_bbox_vehicle(posx, posy, posz, sizex, sizey, sizez, rotationx, rota
     return parent;
 }
         
+        
+function startLoadingObjects(objectsToLoad){
+    const loader = new GLTFLoader();
+    for(var index in objectsToLoad){
+        var object = objectsToLoad[index];
+        loader.load( object['url'], function ( gltf ) {
+            gltf.scene.scale.x = object['scale'][0];
+            gltf.scene.scale.y = object['scale'][1];
+            gltf.scene.scale.z = object['scale'][2];
+            
+            gltf.scene.rotation.x = object['rotation'][0];
+            gltf.scene.rotation.y = object['rotation'][1];
+            gltf.scene.rotation.z = object['rotation'][2];
+            
+            gltf.scene.position.x = object['position'][0];
+            gltf.scene.position.y = object['position'][1];
+            gltf.scene.position.z = object['position'][2];
+            
+            scene.add( gltf.scene );
+            }, undefined, function ( error ) {
+                console.error( error );
+            } );
+    }
+}        
         
 function startLoadingBoxes(url){
     var httpRequest = new XMLHttpRequest();
@@ -380,23 +419,6 @@ function startLoadingData(url, pointType)
                 
                 var temp = getPositionsAndColors(nodes, pointType);
                 
-                
-//                
-//                for ( var i = 0; i < particles; i ++ ) {
-//                    // positions
-//                    var x = nodes[i][0];
-//                    var y = nodes[i][1];
-//                    var z = nodes[i][2];
-//                    positions.push( x, y, z );
-//
-//                    if(pointType == "XYZI"){
-//                        color.setHSL(nodes[i][3], 1.0, 0.5);
-//                        colors.push( color.r, color.g, color.b );
-//                    }
-//                    else if(pointType == "XYZRGB"){
-//                        colors.push( nodes[i][3], nodes[i][4], nodes[i][5] );
-//                    }
-//                }
                 geometry.setAttribute( 'position', new THREE.Float32BufferAttribute( temp.positions, 3 ) );
                 colorBuffer = new THREE.Float32BufferAttribute( temp.colors, 3 );
 
@@ -516,7 +538,6 @@ function init() {
     }
     
     window.addEventListener( 'resize', onWindowResize, false );
-
 }
         
 
