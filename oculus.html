@@ -33,9 +33,7 @@
         import { OrbitControls } from '//cdn.rawgit.com/mrdoob/three.js/master/examples/jsm/controls/OrbitControls.js';
 		import { VRButton } from '//cdn.rawgit.com/mrdoob/three.js/master/examples/jsm/webxr/VRButton.js';
         import {GLTFLoader} from '//cdn.rawgit.com/mrdoob/three.js/master/examples/jsm/loaders/GLTFLoader.js';
-    
 
-// Global variables
 var camera, scene, renderer;
 var geometry, material, mesh;
 var collectionBrainCoordinates = new THREE.Geometry();
@@ -118,7 +116,6 @@ else if(json_base64){
         }
     }
     if("objects" in decodedData){
-        console.log("got objects");
         var objectsToLoad = decodedData['objects']; 
         startLoadingObjects(objectsToLoad); 
     }
@@ -215,30 +212,42 @@ function get_bbox_vehicle(posx, posy, posz, sizex, sizey, sizez, rotationx, rota
     return parent;
 }
         
-        
-function startLoadingObjects(objectsToLoad){
+
+function loadObject(object){
     const loader = new GLTFLoader();
+    loader.load( object['url'], function ( gltf ) {
+        gltf.scene.traverse( function ( child ) {
+            if ( child.isMesh ) { 
+                child.material.opacity = 0.5;
+                child.material.transparent = true;
+             }
+        }  );
+
+        gltf.scene.scale.x = object['scale'][0];
+        gltf.scene.scale.y = object['scale'][1];
+        gltf.scene.scale.z = object['scale'][2];
+
+        gltf.scene.rotation.x = object['rotation'][0];
+        gltf.scene.rotation.y = object['rotation'][1] + 3.1415926 ; // TODO remove
+        gltf.scene.rotation.z = object['rotation'][2];
+
+        gltf.scene.position.x = object['position'][0];
+        gltf.scene.position.y = object['position'][1];
+        gltf.scene.position.z = object['position'][2];
+
+        scene.add( gltf.scene );
+    }, undefined, function ( error ) {
+        console.error( error );
+    } );
+    
+}
+
+function startLoadingObjects(objectsToLoad){
     for(var index in objectsToLoad){
-        var object = objectsToLoad[index];
-        loader.load( object['url'], function ( gltf ) {
-            gltf.scene.scale.x = object['scale'][0];
-            gltf.scene.scale.y = object['scale'][1];
-            gltf.scene.scale.z = object['scale'][2];
-            
-            gltf.scene.rotation.x = object['rotation'][0];
-            gltf.scene.rotation.y = object['rotation'][1];
-            gltf.scene.rotation.z = object['rotation'][2];
-            
-            gltf.scene.position.x = object['position'][0];
-            gltf.scene.position.y = object['position'][1];
-            gltf.scene.position.z = object['position'][2];
-            
-            scene.add( gltf.scene );
-            }, undefined, function ( error ) {
-                console.error( error );
-            } );
+        var object = objectsToLoad[index];  
+        loadObject(object);
     }
-}        
+}
         
 function startLoadingBoxes(url){
     var httpRequest = new XMLHttpRequest();
