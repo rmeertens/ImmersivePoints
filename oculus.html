@@ -36,14 +36,14 @@
 
 var camera, scene, renderer;
 var geometry, material, mesh;
-var collectionBrainCoordinates = new THREE.Geometry();
+//var collectionBrainCoordinates = new THREE.Geometry();
 var controller1, controller2;
 var controls;
 var POIs = new Array();
 
         
 var points;     
-var selectionDirection = 0.0;
+var movingSpeed = 0.0;
 
 var cursor = new THREE.Vector3();
 
@@ -228,7 +228,7 @@ function loadObject(object){
         gltf.scene.scale.z = object['scale'][2];
 
         gltf.scene.rotation.x = object['rotation'][0];
-        gltf.scene.rotation.y = object['rotation'][1] + 3.1415926 ; // TODO remove
+        gltf.scene.rotation.y = object['rotation'][1];
         gltf.scene.rotation.z = object['rotation'][2];
 
         gltf.scene.position.x = object['position'][0];
@@ -257,7 +257,6 @@ function startLoadingBoxes(url){
             if ((httpRequest.status == 200) || (httpRequest.status == 0)){
                 var buffer = httpRequest.response;
                  var dataview = new DataView(buffer);
-                
                 var points_per_row = 13;  
                 
                 // Note: divide by 4 because of float32 has 4 bytes
@@ -451,19 +450,19 @@ function startLoadingData(url, pointType)
 }
       
  function onSelectStart(){
-    selectionDirection = 1.0 * points.scale.x;
+    movingSpeed = 1.0 * points.scale.x;
      
  }
  function onSelectEnd(){
-    selectionDirection = 0.0;
+    movingSpeed = 0.0;
  }
         
 function onSelectStartRight(){
-    selectionDirection = -1.0 * points.scale.x;
+    movingSpeed = -1.0 * points.scale.x;
      
  }
  function onSelectEndRight(){
-    selectionDirection = 0.0;
+    movingSpeed = 0.0;
  }
         
 // Returns the 3D mesh object for a hand... 
@@ -550,11 +549,11 @@ function init() {
 }
         
 
-function handleController( object, controller ) {
-    object.position.set(controller.position.x, controller.position.y, controller.position.z);
-    object.position.add(user.position);
-    object.rotation.set(controller.rotation.x, controller.rotation.y, controller.rotation.z);
-    object.rotateX(-3.1415926/2);
+function setLocationController( controllerMesh, controller ) {
+    controllerMesh.position.set(controller.position.x, controller.position.y, controller.position.z);
+    controllerMesh.position.add(user.position);
+    controllerMesh.rotation.set(controller.rotation.x, controller.rotation.y, controller.rotation.z);
+    controllerMesh.rotateX(-3.1415926/2);
 }
         
 
@@ -680,16 +679,16 @@ function animate() {
     
 
     // If something triggered the selection-direction the user position moves in the direction of where the user is looking at. 
-    if (selectionDirection != 0.0){
+    if (movingSpeed != 0.0){
         // Get the direction the user is looking at. 
         let xrCamera = renderer.xr.getCamera(camera);
         let e = xrCamera.matrixWorld.elements;
-        let direction = new THREE.Vector3(selectionDirection*e[8], selectionDirection*e[9], selectionDirection*e[10]).normalize();
+        let direction = new THREE.Vector3(movingSpeed*e[8], movingSpeed*e[9], movingSpeed*e[10]).normalize();
         direction.multiplyScalar(-0.05);
         user.position.add(direction);// HEY! Maybe this IS working after all!
     }
-    handleController( handMesh1, controller1 );
-    handleController( handMesh2, controller2 );
+    setLocationController( handMesh1, controller1 );
+    setLocationController( handMesh2, controller2 );
 	renderer.render( scene, camera );
 
 } );
