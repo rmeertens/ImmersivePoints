@@ -49,6 +49,7 @@ var cursor = new THREE.Vector3();
 
 var nodes = new Array();
 var bboxnodes = new Array();
+var linesList = new Array();
     
 var handMesh1;
 var handMesh2;
@@ -109,6 +110,14 @@ else if(json_base64){
             scene.add(tempPoints);
         }
     }
+    if("lines" in decodedData){
+        console.log("found some lines")
+        var pointToLoad = decodedData["lines"][0];
+
+        if(pointToLoad['source'] == 'url'){
+            startLoadingLines(pointToLoad['url']);
+        }        
+    }
     if("bboxes" in decodedData){
         var boxesToLoad = decodedData["bboxes"][0];
         if(boxesToLoad['source'] == 'url'){
@@ -135,12 +144,12 @@ Example JSON:
         {
             "source": "url",
             "url": https://pointcloudvisualization.s3.eu-central-1.amazonaws.com/e2652aab-4ace-4a09-86f4-374b23cb677b.xyzi",
-            "type": "RGBI",
+            "type": "XYZI",
         },
         {
             "source": "base64",
             "base64": "Pttmyz4gkd8/BK5QPwvLhz3XReU9+osQPpbxoD9Yolw+tjy9PwRGQD8KfRU9YXGEP1TPlD9AG2M/M/e+Pv8/8j7JjBE/TdywPsiFpz9x8sg=",
-            "type": "RGBI"
+            "type": "XYZRGB"
         }
     ]
     "bboxes": [
@@ -153,6 +162,12 @@ Example JSON:
             "base64": "SDFLksf459fjssfhwDHFFhfs+fsfh=",
         }
     ]
+    "lines": [
+        {
+            "source": "url",
+            "url": "https://pointcloudvisualization.s3.eu-central-1.amazonaws.com/test1.lines"
+        },
+    ]
     "objects": [
         {
             "source": "url", 
@@ -164,12 +179,19 @@ Example JSON:
     ]
 }
 */        
+
+/* 
+For the points you can have either XYZI points, or XYZRGB points. 
+This means you either have input as a float32 array with 4 columns, or 6 columns (encoding the RGB colours). 
+For the XYZI points the intensity part is encoded as Hue (between 0 and 1) as a float32
+*/ 
+   
+/* 
+For the lines you give an array with X1, Y1, Z1, X2, Y2, Z2. It draws lines between the start end the end point. 
+*/ 
         
 /*
-
 For the boxes this goes: 
-
-
 Center X (forwards) float32
 Center Y (upwards) float32
 Center Z (left) float32
@@ -286,6 +308,60 @@ function startLoadingBoxes(url){
     
     // Send the request
     console.log("Getting url for boxes", url)
+    httpRequest.open("GET", url, true);
+    httpRequest.responseType = "arraybuffer";
+
+    httpRequest.send();
+}
+        
+        
+        
+function startLoadingLines(url)
+{
+    var httpRequest = new XMLHttpRequest();
+    httpRequest.onreadystatechange = function() {
+        if (httpRequest.readyState === 4){
+            // everything is good, the response is received
+            if ((httpRequest.status == 200) || (httpRequest.status == 0)){
+                var buffer = httpRequest.response;
+                var dataview = new DataView(buffer);
+
+                console.log('got them lines')
+
+                // Note: divide by 4 because of float32 has 4 bytes
+                var ints = dataViewToFloat32Array(dataview, buffer.byteLength / 4)
+
+                /*
+                This is actually a bit counter intuitive. 
+                We are assuming the input is X1, Y1, Z1, X2, Y2, Z2. 
+                However, we load each point separately, which gives us a points per row of 3. 
+                */                
+                var points_per_row = 3 ;                 
+                
+                for(var row=0; row < ints.length; row=row+points_per_row) {
+                    linesList[row/points_per_row] = new THREE.Vector3(ints[row+0], ints[row+1] , ints[row+2] );
+                }
+
+                var idx = new Array(); 
+                for(var i=0; i < linesList.length; i=i+2){
+                    idx.push(i);
+                    idx.push(i+1);
+                }
+                console.log("Loaded num lines " + linesList.length + " with ppr: " + points_per_row)    
+              
+                const bg = new THREE.BufferGeometry().setFromPoints(linesList);
+                bg.setIndex(idx);
+
+
+                var geometry = bg;
+ 	            var material = new THREE.LineBasicMaterial( { color: 0xffffff } );
+                var line = new THREE.Line( geometry, material );
+
+                scene.add( line );
+        }}}
+
+    
+    // Send the request
     httpRequest.open("GET", url, true);
     httpRequest.responseType = "arraybuffer";
 
