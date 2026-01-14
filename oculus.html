@@ -577,10 +577,16 @@ function init() {
     controller1.addEventListener( 'selectstart', onSelectStart );
     controller1.addEventListener( 'selectend', onSelectEnd );
     controller1.addEventListener( 'connected', function ( event ) {
-                    console.log("Controller 1 connected");
+        console.log("Controller 1 connected");
         console.log(event);
         realcont1 = event.data;
         realcont1connected = true;
+        handMesh1.visible = true;
+    } );
+    controller1.addEventListener( 'disconnected', function ( event ) {
+        console.log("Controller 1 disconnected");
+        realcont1connected = false;
+        handMesh1.visible = false;
     } );
     scene.add( controller1 );
 
@@ -591,10 +597,16 @@ function init() {
     controller2.addEventListener( 'selectstart', onSelectStartRight );
     controller2.addEventListener( 'selectend', onSelectEndRight );
     controller2.addEventListener( 'connected', function ( event ) {
-                    console.log("Controller 2 connected");
+        console.log("Controller 2 connected");
         console.log(event);
         realcont2 = event.data;
         realcont2connected = true;
+        handMesh2.visible = true;
+    } );
+    controller2.addEventListener( 'disconnected', function ( event ) {
+        console.log("Controller 2 disconnected");
+        realcont2connected = false;
+        handMesh2.visible = false;
     } );
 
     // Add the render to the website
@@ -615,10 +627,12 @@ function init() {
 //    var light = new THREE.AmbientLight( 0xffffff ); // soft white light
 //    scene.add( light );
     
-    // Add both hand objects to the scene. 
+    // Add both hand objects to the scene (hidden by default, shown when VR controllers connect)
     handMesh1 = getHand();
+    handMesh1.visible = false;
     scene.add(handMesh1);
     handMesh2 = getHand();
+    handMesh2.visible = false;
     scene.add(handMesh2); 
     
     // Possibly add an axis helper to the scene. 

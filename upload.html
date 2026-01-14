@@ -1,6 +1,7 @@
 <html>
 
 <head>
+    <meta charset="utf-8">
     <!-- Global site tag (gtag.js) - Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=UA-161822888-1"></script>
     <script>
@@ -16,7 +17,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
-    <title>Upload immersive pointcloud</title>
+    <title>Your Files - ImmersivePoints</title>
 
     <style>
         body {
@@ -27,30 +28,102 @@
             margin-top: 2rem;
         }
 
-        .row {
-            margin-bottom: 0rem;
-        }
-
-        .row .row {
-            margin-top: 0rem;
-            margin-bottom: 0;
-        }
-
-        [class*="col-"] {
-            padding-top: 0.5rem;
-            padding-bottom: 0.5rem;
-            background-color: rgba(86, 61, 124, .15);
-            border: 1px solid rgba(86, 61, 124, .2);
-        }
-
         hr {
             margin-top: 2rem;
             margin-bottom: 2rem;
         }
 
-        .col-sm-16 {
-            padding-left: 0.5rem;
-            padding-right: 0.5rem;
+        .format-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+            font-size: 0.95rem;
+        }
+
+        .format-table th,
+        .format-table td {
+            padding: 0.75rem 1rem;
+            text-align: left;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .format-table th {
+            background-color: #495057;
+            color: white;
+            font-weight: 600;
+        }
+
+        .format-table tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+
+        .format-table tr:hover {
+            background-color: #e9ecef;
+        }
+
+        .format-table .field-name {
+            font-weight: 500;
+            color: #495057;
+        }
+
+        .format-table .field-type {
+            font-family: monospace;
+            color: #6c757d;
+        }
+
+        .format-card {
+            background-color: #fff;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .format-card h3 {
+            margin-top: 0;
+            margin-bottom: 0.5rem;
+            color: #343a40;
+        }
+
+        .format-card .badge {
+            font-size: 0.8rem;
+            margin-left: 0.5rem;
+        }
+
+        .step-card {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            border-left: 4px solid #007bff;
+        }
+
+        .step-number {
+            display: inline-block;
+            width: 32px;
+            height: 32px;
+            background-color: #007bff;
+            color: white;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 32px;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        code {
+            background-color: #e9ecef;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        pre {
+            background-color: #2d2d2d;
+            color: #f8f8f2;
+            padding: 1rem;
+            border-radius: 8px;
+            overflow-x: auto;
         }
 
     </style>
@@ -65,209 +138,297 @@
 
             <div class="navbar-nav">
                 <a class="nav-item nav-link" href="/index.html">Home</a>
-                <a class="nav-item nav-link active" href="/upload.html">Upload <span class="sr-only">(current)</span></a>
-                <a class="nav-item nav-link" href="/pricing.html">Pricing</a>
+                <a class="nav-item nav-link active" href="/upload.html">Your files <span class="sr-only">(current)</span></a>
             </div>
         </nav>
     </header>
 
     <main role="main" class="container">
+        <br>
+        <h1>Your files</h1>
+        <p class="lead">Host your own pointcloud files and view them in virtual reality using ImmersivePoints.</p>
 
-        <div id="app">
-            <br>
-            <h1>Upload your own!</h1>
-            <div id="explain">
-                Want to see your own pointcloud in virtual reality? Upload your binary file here! <br>
+        <hr>
 
-                All binary files are expected to be in float32. <br>
+        <h2>How to host your own pointcloud files</h2>
+        <p>To view your pointcloud in VR, you need to host your binary file on a web server and pass its URL to the viewer. Here's how:</p>
 
-
-                The binary file is expected to be in float32, and consist of XYZH values, or XYZRGB values <br>
-
-                X, Y, and Z are floating point numbers in any range, but it's wise to position them around the point of origin of the virtual reality environment. <br>
-                The H-value signifies the hue of that point, which should be between 0.0 and 1.0 according to <a href=https://threejs.org/docs/#api/en/math/Color.setHSL>this specification</a>. Note that saturation and lightness are currently always set to 1.0. This means your file exists of the following columns: <br>
-                    <div class="row">
-                        <div class="col-sm-16">X (forwards) float32</div>
-                        <div class="col-sm-16">Y (upwards) float32</div>
-                        <div class="col-sm-16">Z (left) float32</div>
-                        <div class="col-sm-16">Hue (between 0 and 1) float32</div>
-                    </div>
-
-
-                    For the colour version:
-
-                    <div class="row">
-                        <div class="col-sm-16">X (forwards) float32</div>
-                        <div class="col-sm-16">Y (upwards) float32</div>
-                        <div class="col-sm-16">Z (left) float32</div>
-                        <div class="col-sm-16">Red (between 0 and 1) float32</div>
-                        <div class="col-sm-16">Green (between 0 and 1) float32</div>
-                        <div class="col-sm-16">Blue (between 0 and 1) float32</div>
-                    </div>
-
-
-                    Bounding boxes <b>can't be uploaded right now</b>, but when you can they will have the following format:
-
-                    <div class="row">
-                        <div class="col-sm-16">Center X (forwards) float32</div>
-                        <div class="col-sm-16">Center Y (upwards) float32</div>
-                        <div class="col-sm-16">Center Z (left) float32</div>
-                        <div class="col-sm-16">Size X float32</div>
-                        <div class="col-sm-16">Size Y float32</div>
-                        <div class="col-sm-16">Size Z float32</div>
-                        <div class="col-sm-16">Rotation around X float32</div>
-                        <div class="col-sm-16">Rotation around Y float32</div>
-                        <div class="col-sm-16">Rotation around Z float32</div>
-                        <div class="col-sm-16">Red (between 0 and 1) float32</div>
-                        <div class="col-sm-16">Green (between 0 and 1) float32</div>
-                        <div class="col-sm-16">Blue (between 0 and 1) float32</div>
-                        <div class="col-sm-16">Opacity (between 0 and 1) float32</div>
-                    </div>
-
-                    <h3> Get inspired by these examples</h3>
-                    Want to see some examples on how to export pointclouds? Take a look at:
-
-                    <ul>
-                        <li><a href="https://github.com/rmeertens/ImmersivePoints/blob/master/examples/export_subsample.ipynb">Subsample a big numpy file for display in virtual reality </a></li>
-                        <li> <a href="https://github.com/rmeertens/ImmersivePoints/blob/master/examples/export_csv.ipynb">Export a CSV file.</a></li>
-                        <li><a href="https://github.com/rmeertens/ImmersivePoints/blob/master/examples/export_ply.ipynb">Export a PLY file</a>,</li>
-                        <li><a href="https://github.com/rmeertens/ImmersivePoints/blob/master/examples/export_AEV_data.ipynb"> Export data from a self-driving car</a></li>
-                    </ul>
-            </div>
-
-
-            <div>
-                <h2>🛠 Now upload yourself</h2>
-                <h3>🔧 Step 1: Select your cloud type:</h3>
-                <input type="radio" id="xyzi" value="xyzi" v-model="picked">
-                <label for="xyzi">xyzi</label>
-                <br>
-                <input type="radio" id="xyzrgb" value="xyzrgb" v-model="picked">
-
-                <label for="xyzrgb">xyzrgb</label>
-            </div>
-
-            <h3>🔨 Step 2: Select your file:</h3>
-            <div v-if="!image">
-                <input type="file" @change="onFileChange">
-            </div>
-            <div v-else>
-                <!--img :src="image" /-->
-                <button v-if="!uploadURL" @click="removeImage">🚨 Remove pointcloud</button>
-                <button v-if="!uploadURL" @click="uploadImage">🔩 Step 3: Upload pointcloud</button>
-            </div>
-            <h3 v-if="uploadURL">🥳 Success! Point cloud uploaded to the server. You can see it at this address: <a href={{uploadURL}}>{{uploadURL}}</a></h3>
-            <h3 v-if="errorMessage">{{errorMessage}}</h3>
-            <h3 v-if="readyToUploadMessage">{{readyToUploadMessage}}</h3>
-            <h3 v-if="resultURL">
-                <div class="spinner-border text-primary" role="status">
-                    <span class="sr-only">Loading...</span>
-                </div>🦾 Currently uploading! Ready to visualize in a few seconds!
-            </h3>
+        <div class="step-card">
+            <h4><span class="step-number">1</span> Prepare your pointcloud file</h4>
+            <p>Export your pointcloud as a binary file in one of the supported formats (see file format specifications below).</p>
         </div>
-    </main>
 
+        <div class="step-card">
+            <h4><span class="step-number">2</span> Host your file</h4>
+            <p>Upload your binary file to any web hosting service that supports CORS. Some options include:</p>
+            <ul>
+                <li><strong>GitHub Pages</strong> - Free hosting for static files. Simply add your file to a repository and enable GitHub Pages.</li>
+                <li><strong>Amazon S3</strong> - Create a public bucket or configure CORS for your bucket.</li>
+                <li><strong>Google Cloud Storage</strong> - Upload to a bucket with public access or CORS configured.</li>
+                <li><strong>Your own web server</strong> - Ensure CORS headers are set to allow requests from immersivepoints.com</li>
+            </ul>
+            <p><small><strong>Important:</strong> The hosting server must allow cross-origin requests (CORS) from immersivepoints.com for the viewer to load your file.</small></p>
+        </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/1.0.18/vue.min.js"></script>
-    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+        <div class="step-card">
+            <h4><span class="step-number">3</span> View in VR</h4>
+            <p>Enter your hosted file URL below and we'll generate the viewer link for you:</p>
+            
+            <div class="form-group">
+                <label for="fileUrl"><strong>Your file URL:</strong></label>
+                <input type="url" class="form-control" id="fileUrl" placeholder="https://example.com/path/to/your/pointcloud.bin" oninput="generateViewerLink()">
+            </div>
+            
+            <div class="form-group">
+                <label><strong>File format:</strong></label>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="fileFormat" id="formatXyzi" value="xyzi" checked onchange="generateViewerLink()">
+                    <label class="form-check-label" for="formatXyzi">XYZI (position + hue)</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="fileFormat" id="formatXyzrgb" value="xyzrgb" onchange="generateViewerLink()">
+                    <label class="form-check-label" for="formatXyzrgb">XYZRGB (position + color)</label>
+                </div>
+            </div>
 
-    <script>
-        const MAX_IMAGE_SIZE = 310000000
-        const API_ENDPOINT = 'https://w7kziwky2h.execute-api.us-east-1.amazonaws.com/default/uploadFilesToS3Python'
+            <div id="viewerLinkContainer" style="display: none;">
+                <label><strong>Your viewer link:</strong></label>
+                <div class="input-group">
+                    <input type="text" class="form-control" id="viewerLink" readonly>
+                    <div class="input-group-append">
+                        <button class="btn btn-outline-secondary" type="button" onclick="copyLink()" id="copyBtn">📋 Copy</button>
+                    </div>
+                </div>
+                <div class="mt-3">
+                    <a id="openViewerBtn" href="#" class="btn btn-primary" target="_blank">🥽 Open in VR Viewer</a>
+                </div>
+            </div>
+        </div>
 
-        function formatBytes(a, b) {
-            if (0 == a) return "0 Bytes";
-            var c = 1024,
-                d = b || 2,
-                e = ["Bytes", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"],
-                f = Math.floor(Math.log(a) / Math.log(c));
-            return parseFloat((a / Math.pow(c, f)).toFixed(d)) + " " + e[f]
-        }
-
-        new Vue({
-            el: "#app",
-            data: {
-                image: '',
-                uploadURL: '',
-                errorMessage: '',
-                readyToUploadMessage: '',
-                resultURL: '',
-                picked: 'xyzi'
-            },
-            methods: {
-                onFileChange(e) {
-                    let files = e.target.files || e.dataTransfer.files
-                    if (!files.length) return
-                    this.createImage(files[0])
-                },
-                createImage(file) {
-                    // var image = new Image()
-                    let reader = new FileReader()
-                    reader.onload = (e) => {
-                        if (file.size > MAX_IMAGE_SIZE) {
-                            return alert('Pointcloud is loo large - ' + formatBytes(MAX_IMAGE_SIZE) + ' maximum')
-                        }
-
-                        console.log(file);
-                        console.log(formatBytes(file.size, 2));
-                        this.readyToUploadMessage = '🦾 Ready to upload ' + file.name + ' of ' + formatBytes(file.size, 2) + " to a publicly available data storage for visualization in virtual reality";
-                        this.image = e.target.result
-                    }
-                    reader.readAsDataURL(file)
-                },
-                removeImage: function(e) {
-                    console.log('Remove clicked')
-                    this.image = ''
-                    this.uploadURL = ''
-                    this.errorMessage = ''
-                    this.readyToUploadMessage = ''
-                    this.resultURL = ''
-                },
-                uploadImage: async function(e) {
-                    console.log('Upload clicked')
-                    var x = this.picked;
-                    console.log(x);
-                    // Get the presigned URL
-
-                    const response = await axios({
-                        method: 'GET',
-                        url: API_ENDPOINT + "?mode=" + x,
-
-                    })
-                    console.log(response)
-
-                    this.readyToUploadMessage = ''
-                    this.resultURL = "https://immersivepoints.com/oculus.html?name=" + response.data.name;
-
-                    console.log('Uploading: ', this.image)
-                    let binary = atob(this.image.split(',')[1])
-                    let array = []
-                    for (var i = 0; i < binary.length; i++) {
-                        array.push(binary.charCodeAt(i))
-                    }
-                    let blobData = new Blob([new Uint8Array(array)], {
-                        //                        type: 'image/jpeg'
-                        type: ''
-                    })
-                    console.log('Uploading to: ', response.data.uploadURL)
-                    const result = await fetch(response.data.uploadURL, {
-                        method: 'PUT',
-                        body: blobData
-                    })
-                    console.log('Result: ', result)
-                    if (result.ok) {
-                        // Final URL for the user doesn't need the query string params
-                        //                        this.uploadURL = response.data.uploadURL.split('?')[0];
-                        this.uploadURL = "https://immersivepoints.com/oculus.html?name=" + response.data.name;
-                        this.resultURL = null;
-                    } else {
-                        this.errorMessage = "Error occured" + result.statusText;
-                    }
+        <script>
+            function generateViewerLink() {
+                const fileUrl = document.getElementById('fileUrl').value.trim();
+                const format = document.querySelector('input[name="fileFormat"]:checked').value;
+                const container = document.getElementById('viewerLinkContainer');
+                const viewerLinkInput = document.getElementById('viewerLink');
+                const openBtn = document.getElementById('openViewerBtn');
+                
+                if (fileUrl) {
+                    const encodedUrl = encodeURIComponent(fileUrl);
+                    const baseUrl = window.location.origin;
+                    const viewerLink = `${baseUrl}/oculus.html?name=${encodedUrl}&mode=${format}`;
+                    viewerLinkInput.value = viewerLink;
+                    openBtn.href = viewerLink;
+                    container.style.display = 'block';
+                } else {
+                    container.style.display = 'none';
                 }
             }
-        })
+            
+            function copyLink() {
+                const viewerLink = document.getElementById('viewerLink');
+                viewerLink.select();
+                viewerLink.setSelectionRange(0, 99999);
+                navigator.clipboard.writeText(viewerLink.value);
+                
+                const copyBtn = document.getElementById('copyBtn');
+                copyBtn.textContent = '✓ Copied!';
+                setTimeout(() => {
+                    copyBtn.textContent = '📋 Copy';
+                }, 2000);
+            }
+        </script>
 
-    </script>
+        <hr>
+
+        <h2>File format specifications</h2>
+        <p>All binary files must be in <strong>float32</strong> format. ImmersivePoints supports two formats:</p>
+
+        <div class="format-card">
+            <h3>XYZI Format <span class="badge badge-primary">4 values per point</span></h3>
+            <p>Position with hue-based coloring.</p>
+            <table class="format-table">
+                <thead>
+                    <tr>
+                        <th>Field</th>
+                        <th>Type</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td class="field-name">X</td><td class="field-type">float32</td><td>Position forwards</td></tr>
+                    <tr><td class="field-name">Y</td><td class="field-type">float32</td><td>Position upwards</td></tr>
+                    <tr><td class="field-name">Z</td><td class="field-type">float32</td><td>Position left</td></tr>
+                    <tr><td class="field-name">Hue</td><td class="field-type">float32</td><td>Color hue (0.0 – 1.0)</td></tr>
+                </tbody>
+            </table>
+            <small class="text-muted">The hue value follows <a href="https://threejs.org/docs/#api/en/math/Color.setHSL">the HSL color specification</a>. Saturation and lightness are fixed at 1.0.</small>
+        </div>
+
+        <div class="format-card">
+            <h3>XYZRGB Format <span class="badge badge-success">6 values per point</span></h3>
+            <p>Position with full RGB color control.</p>
+            <table class="format-table">
+                <thead>
+                    <tr>
+                        <th>Field</th>
+                        <th>Type</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td class="field-name">X</td><td class="field-type">float32</td><td>Position forwards</td></tr>
+                    <tr><td class="field-name">Y</td><td class="field-type">float32</td><td>Position upwards</td></tr>
+                    <tr><td class="field-name">Z</td><td class="field-type">float32</td><td>Position left</td></tr>
+                    <tr><td class="field-name">Red</td><td class="field-type">float32</td><td>Red channel (0.0 – 1.0)</td></tr>
+                    <tr><td class="field-name">Green</td><td class="field-type">float32</td><td>Green channel (0.0 – 1.0)</td></tr>
+                    <tr><td class="field-name">Blue</td><td class="field-type">float32</td><td>Blue channel (0.0 – 1.0)</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="format-card" style="opacity: 0.7;">
+            <h3>Bounding Boxes <span class="badge badge-secondary">Coming Soon</span></h3>
+            <p>Support for 3D bounding boxes is planned.</p>
+            <table class="format-table">
+                <thead>
+                    <tr>
+                        <th>Field</th>
+                        <th>Type</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td class="field-name">Center X</td><td class="field-type">float32</td><td>Center position forwards</td></tr>
+                    <tr><td class="field-name">Center Y</td><td class="field-type">float32</td><td>Center position upwards</td></tr>
+                    <tr><td class="field-name">Center Z</td><td class="field-type">float32</td><td>Center position left</td></tr>
+                    <tr><td class="field-name">Size X</td><td class="field-type">float32</td><td>Box width</td></tr>
+                    <tr><td class="field-name">Size Y</td><td class="field-type">float32</td><td>Box height</td></tr>
+                    <tr><td class="field-name">Size Z</td><td class="field-type">float32</td><td>Box depth</td></tr>
+                    <tr><td class="field-name">Rotation X</td><td class="field-type">float32</td><td>Rotation around X axis</td></tr>
+                    <tr><td class="field-name">Rotation Y</td><td class="field-type">float32</td><td>Rotation around Y axis</td></tr>
+                    <tr><td class="field-name">Rotation Z</td><td class="field-type">float32</td><td>Rotation around Z axis</td></tr>
+                    <tr><td class="field-name">Red</td><td class="field-type">float32</td><td>Red channel (0.0 – 1.0)</td></tr>
+                    <tr><td class="field-name">Green</td><td class="field-type">float32</td><td>Green channel (0.0 – 1.0)</td></tr>
+                    <tr><td class="field-name">Blue</td><td class="field-type">float32</td><td>Blue channel (0.0 – 1.0)</td></tr>
+                    <tr><td class="field-name">Opacity</td><td class="field-type">float32</td><td>Transparency (0.0 – 1.0)</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <hr>
+
+        <h2>Advanced: URL Parameters</h2>
+        <p>The viewer supports several URL parameters for different use cases:</p>
+
+        <div class="format-card">
+            <h3>Simple file URL <span class="badge badge-primary">Recommended</span></h3>
+            <p>Pass a URL to your hosted binary file. The file extension determines the format.</p>
+            <pre>oculus.html?name=https://example.com/mycloud.xyzi</pre>
+            <p class="mb-0"><small class="text-muted">Use <code>.xyzi</code> or <code>.xyzrgb</code> file extension to auto-detect format.</small></p>
+        </div>
+
+        <div class="format-card">
+            <h3>Inline Base64 Points <span class="badge badge-info">No hosting required</span></h3>
+            <p>Embed small pointclouds directly in the URL as base64-encoded data. Great for sharing without hosting.</p>
+            <pre>oculus.html?base64=YOUR_BASE64_ENCODED_DATA</pre>
+            <p class="mb-0"><small class="text-muted">Encode your binary float32 data as base64. Works for XYZI format.</small></p>
+        </div>
+
+        <div class="format-card">
+            <h3>JSON Configuration <span class="badge badge-warning">Advanced</span></h3>
+            <p>For complex scenes with multiple pointclouds, lines, bounding boxes, and 3D objects, use a base64-encoded JSON configuration.</p>
+            <pre>oculus.html?jsonb64=BASE64_ENCODED_JSON</pre>
+            
+            <p><strong>Example JSON structure:</strong></p>
+            <pre>{
+  "points": [
+    {
+      "source": "url",
+      "url": "https://example.com/cloud1.xyzi",
+      "type": "XYZI",
+      "pointSize": 0.04
+    },
+    {
+      "source": "base64",
+      "base64": "BASE64_DATA_HERE",
+      "type": "XYZRGB"
+    }
+  ],
+  "lines": [
+    {
+      "source": "url",
+      "url": "https://example.com/lines.bin"
+    }
+  ],
+  "bboxes": [
+    {
+      "source": "url",
+      "url": "https://example.com/boxes.bbox"
+    }
+  ],
+  "objects": [
+    {
+      "source": "url",
+      "url": "https://example.com/model.glb",
+      "position": [1.0, 2.0, 3.0],
+      "rotation": [0.0, 0.0, 0.0],
+      "scale": [1.0, 1.0, 1.0]
+    }
+  ]
+}</pre>
+        </div>
+
+        <div class="format-card">
+            <h3>Additional Options</h3>
+            <table class="format-table">
+                <thead>
+                    <tr>
+                        <th>Parameter</th>
+                        <th>Values</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td class="field-name">mode</td><td class="field-type">xyzi, xyzrgb</td><td>Specify format when using <code>name</code> parameter</td></tr>
+                    <tr><td class="field-name">showAxes</td><td class="field-type">true, false</td><td>Show XYZ axis helper in the scene</td></tr>
+                    <tr><td class="field-name">autoRotate</td><td class="field-type">true, false</td><td>Auto-rotate the camera around the scene</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <hr>
+
+        <h2>Lines Format</h2>
+        <p>Lines are defined as pairs of 3D points. Each line segment uses 6 float32 values:</p>
+        <div class="format-card">
+            <table class="format-table">
+                <thead>
+                    <tr>
+                        <th>Field</th>
+                        <th>Type</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td class="field-name">X1, Y1, Z1</td><td class="field-type">float32 × 3</td><td>Start point of the line</td></tr>
+                    <tr><td class="field-name">X2, Y2, Z2</td><td class="field-type">float32 × 3</td><td>End point of the line</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <hr>
+
+        <h2>Example export scripts</h2>
+        <p>Need help exporting your pointcloud data? Check out these example notebooks:</p>
+        <ul>
+            <li><a href="https://github.com/rmeertens/ImmersivePoints/blob/master/examples/export_subsample.ipynb">Subsample a big numpy file for display in virtual reality</a></li>
+            <li><a href="https://github.com/rmeertens/ImmersivePoints/blob/master/examples/export_csv.ipynb">Export a CSV file</a></li>
+            <li><a href="https://github.com/rmeertens/ImmersivePoints/blob/master/examples/export_ply.ipynb">Export a PLY file</a></li>
+            <li><a href="https://github.com/rmeertens/ImmersivePoints/blob/master/examples/export_AEV_data.ipynb">Export data from a self-driving car</a></li>
+        </ul>
+
+    </main>
 
 </body>
 
