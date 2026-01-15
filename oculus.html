@@ -30,16 +30,15 @@
         import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.121.1/build/three.module.js';
         import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.121.1/examples/jsm/controls/OrbitControls.js';
 		import { VRButton } from 'https://cdn.jsdelivr.net/npm/three@0.121.1/examples/jsm/webxr/VRButton.js';        
-        import {GLTFLoader} from 'https://cdn.jsdelivr.net/npm/three@0.121.1/examples/jsm/loaders/GLTFLoader.js';   
+        import { GLTFLoader } from 'https://cdn.jsdelivr.net/npm/three@0.121.1/examples/jsm/loaders/GLTFLoader.js';
+        import { XRControllerModelFactory } from 'https://cdn.jsdelivr.net/npm/three@0.121.1/examples/jsm/webxr/XRControllerModelFactory.js';   
 
 var camera, scene, renderer;
 var geometry, material, mesh;
-//var collectionBrainCoordinates = new THREE.Geometry();
 var controller1, controller2;
+var controllerGrip1, controllerGrip2;
 var controls;
-var POIs = new Array();
 
-        
 var points;     
 var movingSpeed = 0.0;
 
@@ -48,9 +47,6 @@ var cursor = new THREE.Vector3();
 var nodes = new Array();
 var bboxnodes = new Array();
 var linesList = new Array();
-    
-var handMesh1;
-var handMesh2;
         
 var realcont1;
 var realcont1connected = false;
@@ -58,7 +54,6 @@ var realcont2;
 var realcont2connected = false;
         
 var colorBuffer;
-var placePOIButtonPressed = false;
         
 var user = new THREE.Group();     
 
@@ -441,7 +436,7 @@ function getPointsFromBase64String(buffer, pointType){
     geometry.setAttribute( 'color', colorBuffer );
     geometry.computeBoundingSphere();
     
-    var material = new THREE.PointsMaterial( { size: 0.04, vertexColors: THREE.VertexColors } );
+    var material = new THREE.PointsMaterial( { size: 0.04, vertexColors: THREE.VertexColors, sizeAttenuation: true } );
     var tempPoints = new THREE.Points( geometry, material );
     
     return tempPoints;
@@ -515,7 +510,7 @@ function startLoadingData(url, pointType, pointSize=1.5)
                 geometry.setAttribute( 'color', colorBuffer );
                 geometry.computeBoundingSphere();
                 //
-                var material = new THREE.PointsMaterial( { size: pointSize, vertexColors: THREE.VertexColors, sizeAttenuation: false} );
+                var material = new THREE.PointsMaterial( { size: 0.04, vertexColors: THREE.VertexColors, sizeAttenuation: true } );
                 points = new THREE.Points( geometry, material );
                 //points.frustumCulled = false;
                 scene.add( points );
@@ -547,15 +542,6 @@ function onSelectStartRight(){
     movingSpeed = 0.0;
  }
         
-// Returns the 3D mesh object for a hand... 
-// Currently a cone. 
-function getHand(){
-    var radius = 0.08;
-    var geometry =  new THREE.ConeGeometry( radius, 4*radius, 8 );
-    var handmesh =new THREE.Mesh( geometry, new THREE.MeshLambertMaterial( { color: Math.random() * 0xffffff } ) ); 
-    return handmesh;
-}        
-    
 function init() {
     camera = new THREE.PerspectiveCamera( 27, window.innerWidth / window.innerHeight, 0.1, 1000 );
     camera.position.z = 20;
@@ -563,6 +549,7 @@ function init() {
     
     scene = new THREE.Scene();
     scene.background = new THREE.Color( 0x2d4aa8 );
+    scene.add( user );
 
     
     
@@ -572,42 +559,48 @@ function init() {
     renderer.setSize( window.innerWidth, window.innerHeight );
     renderer.xr.enabled = true;
 
+    // Controller model factory for rendering actual controller models
+    const controllerModelFactory = new XRControllerModelFactory();
+
     // Add the events to the first found controller and add it to the scene. 
     controller1 = renderer.xr.getController( 0 );
     controller1.addEventListener( 'selectstart', onSelectStart );
     controller1.addEventListener( 'selectend', onSelectEnd );
     controller1.addEventListener( 'connected', function ( event ) {
         console.log("Controller 1 connected");
-        console.log(event);
         realcont1 = event.data;
         realcont1connected = true;
-        handMesh1.visible = true;
     } );
     controller1.addEventListener( 'disconnected', function ( event ) {
         console.log("Controller 1 disconnected");
         realcont1connected = false;
-        handMesh1.visible = false;
     } );
-    scene.add( controller1 );
+    user.add( controller1 );
+
+    // Add controller grip with actual controller model
+    controllerGrip1 = renderer.xr.getControllerGrip( 0 );
+    controllerGrip1.add( controllerModelFactory.createControllerModel( controllerGrip1 ) );
+    user.add( controllerGrip1 );
 
     // Add the events to the second found controller and add it to the scene. 
     controller2 = renderer.xr.getController( 1 );
-    scene.add( controller2 );
-    
     controller2.addEventListener( 'selectstart', onSelectStartRight );
     controller2.addEventListener( 'selectend', onSelectEndRight );
     controller2.addEventListener( 'connected', function ( event ) {
         console.log("Controller 2 connected");
-        console.log(event);
         realcont2 = event.data;
         realcont2connected = true;
-        handMesh2.visible = true;
     } );
     controller2.addEventListener( 'disconnected', function ( event ) {
         console.log("Controller 2 disconnected");
         realcont2connected = false;
-        handMesh2.visible = false;
     } );
+    user.add( controller2 );
+
+    // Add controller grip with actual controller model
+    controllerGrip2 = renderer.xr.getControllerGrip( 1 );
+    controllerGrip2.add( controllerModelFactory.createControllerModel( controllerGrip2 ) );
+    user.add( controllerGrip2 );
 
     // Add the render to the website
     document.body.appendChild( renderer.domElement );
@@ -623,17 +616,12 @@ function init() {
     // Add the virtual reality button to the site. 
     document.body.appendChild( VRButton.createButton( renderer ) );
     
-    // Add a white light to the whole scene so you can see all objects
-//    var light = new THREE.AmbientLight( 0xffffff ); // soft white light
-//    scene.add( light );
-    
-    // Add both hand objects to the scene (hidden by default, shown when VR controllers connect)
-    handMesh1 = getHand();
-    handMesh1.visible = false;
-    scene.add(handMesh1);
-    handMesh2 = getHand();
-    handMesh2.visible = false;
-    scene.add(handMesh2); 
+    // Add a white light so controller models are visible
+    var light = new THREE.AmbientLight( 0xffffff, 0.5 );
+    scene.add( light );
+    var directionalLight = new THREE.DirectionalLight( 0xffffff, 0.5 );
+    directionalLight.position.set( 0, 1, 1 );
+    scene.add( directionalLight );
     
     // Possibly add an axis helper to the scene. 
     if(showAxes){
@@ -644,39 +632,6 @@ function init() {
     window.addEventListener( 'resize', onWindowResize, false );
 }
         
-
-function setLocationController( controllerMesh, controller ) {
-    controllerMesh.position.set(controller.position.x, controller.position.y, controller.position.z);
-    controllerMesh.position.add(user.position);
-    controllerMesh.rotation.set(controller.rotation.x, controller.rotation.y, controller.rotation.z);
-    controllerMesh.rotateX(-3.1415926/2);
-}
-        
-
-function placePOI(location){
-    // Place a point of interest in the given location
-    var geometry = new THREE.CylinderGeometry( 0.1, 0.1, 0.6, 6 );
-    var material = new THREE.MeshPhongMaterial({
-      color: 0x00ff00,
-      opacity: 0.5,
-      transparent: true,
-    });
-    //var material = new THREE.MeshBasicMaterial( {color: 0x00ff00} );
-    var cube = new THREE.Mesh( geometry, material );
-    
-    var geometry2 = new THREE.CylinderGeometry( 0.1, 0.1, 2.0, 6 );
-    var cube2 = new THREE.Mesh( geometry2, material );
-    
-    scene.add( cube );
-
-    cube.position.x = location.x;
-    cube.position.y = location.y;
-    cube.position.z = location.z;
-
-    POIs.push([cube, location]);
-}
-
-
 
 function onWindowResize(){
 
@@ -689,105 +644,59 @@ function onWindowResize(){
     
 function animate() {
     renderer.setAnimationLoop( function () {
-            controls.update(); // Very important otherwise you spend a few evenings debugging stuff... 
+        controls.update();
 
-        
-        // Change colors in whatever way I want...
-//        if(colorBuffer){
-//            for(var i=0; i < colorBuffer.count*3; i++){
-//                colorBuffer.array[i] = 1.0;    
-//            }
-//            colorBuffer.needsUpdate = true;
-//        }
-//        
-        
-        
-    if(realcont1connected){
-        var gamepad = realcont1.gamepad;
-        if(gamepad.buttons[4].pressed){
-//            points.scale.x = 4.0
-//            points.scale.y = 4.0
-//            points.scale.z = 4.0
-//            
-//            for(var property in POIs){
-//                property = POIs[property];
-//                property[0].position.x = property[1].x*4.0;
-//                property[0].position.y = property[1].y*4.0;
-//                property[0].position.z = property[1].z*4.0;
-//                
-//                property[0].scale.x = 4.0
-//                property[0].scale.y = 4.0
-//                property[0].scale.z = 4.0
-//            }
-        }
-        if(gamepad.buttons[5].pressed){
-//            points.scale.x = 1.0
-//            points.scale.y = 1.0
-//            points.scale.z = 1.0
-//            
-//            for(var property in POIs){
-//                property = POIs[property];
-//                property[0].position.x = property[1].x*1.0;
-//                property[0].position.y = property[1].y*1.0;
-//                property[0].position.z = property[1].z*1.0;
-//                
-//                property[0].scale.x = 1.0
-//                property[0].scale.y = 1.0
-//                property[0].scale.z = 1.0
-//            }
-        }
-        if (gamepad.buttons[1].pressed){
-            if(!placePOIButtonPressed){
-                placePOIButtonPressed = true;
-                placePOI(handMesh1.position); 
-            }
-        }
-        else{
-            placePOIButtonPressed = false;
-        }
-        for(var i=0; i < gamepad.buttons.length; i++){
-            // A = 4
-            // B = 5
-            // grip = 1
-            // center joystick = 3
-            // Select = 0
-//                if (gamepad.buttons[i].pressed){
-//                    console.log(i);
-//                }
-        }
-    }
-        
-    if(realcont2connected){
-        var gamepad = realcont2.gamepad;
-        
-        
-        if (gamepad.buttons[1].pressed){
-            // This removes everything.... 
-//             for(var property in POIs){
-//                property = POIs[property];
-//                scene.remove(property[0]);
-//            }   
-        }
-        
-    }
-
-    // Draw the controllers
-    
-
-    // If something triggered the selection-direction the user position moves in the direction of where the user is looking at. 
-    if (movingSpeed != 0.0){
-        // Get the direction the user is looking at. 
+        // Get camera direction for movement
         let xrCamera = renderer.xr.getCamera(camera);
         let e = xrCamera.matrixWorld.elements;
-        let direction = new THREE.Vector3(movingSpeed*e[8], movingSpeed*e[9], movingSpeed*e[10]).normalize();
-        direction.multiplyScalar(-0.05);
-        user.position.add(direction);// HEY! Maybe this IS working after all!
-    }
-    setLocationController( handMesh1, controller1 );
-    setLocationController( handMesh2, controller2 );
-	renderer.render( scene, camera );
+        
+        // Forward/backward direction (where camera is looking)
+        let forward = new THREE.Vector3(-e[8], -e[9], -e[10]).normalize();
+        // Right direction (perpendicular to forward)
+        let right = new THREE.Vector3(e[0], e[1], e[2]).normalize();
 
-} );
+        // Trigger movement (forward/backward based on which trigger)
+        if (movingSpeed != 0.0){
+            let direction = forward.clone().multiplyScalar(movingSpeed * 0.05);
+            user.position.add(direction);
+        }
+        
+        // Joystick movement from left controller
+        if (realcont1connected && realcont1.gamepad) {
+            let gamepad = realcont1.gamepad;
+            let axes = gamepad.axes;
+            if (axes.length >= 4) {
+                // Left stick: axes[2] = left/right, axes[3] = forward/backward
+                let moveX = axes[2];  // left/right
+                let moveZ = axes[3];  // forward/backward
+                
+                // Apply deadzone
+                if (Math.abs(moveX) > 0.1 || Math.abs(moveZ) > 0.1) {
+                    let movement = new THREE.Vector3();
+                    movement.add(right.clone().multiplyScalar(moveX * 0.03));
+                    movement.add(forward.clone().multiplyScalar(-moveZ * 0.03));
+                    user.position.add(movement);
+                }
+            }
+        }
+        
+        // Right controller joystick rotates the view
+        if (realcont2connected && realcont2.gamepad) {
+            let gamepad = realcont2.gamepad;
+            let axes = gamepad.axes;
+            if (axes.length >= 4) {
+                // Right stick: axes[2] = rotate left/right
+                let rotateY = axes[2];
+                
+                // Apply deadzone
+                if (Math.abs(rotateY) > 0.1) {
+                    user.rotation.y -= rotateY * 0.03;
+                }
+            }
+        }
+        
+        renderer.render( scene, camera );
+    } );
 }
 
 
