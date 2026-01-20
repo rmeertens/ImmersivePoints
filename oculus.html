@@ -646,51 +646,56 @@ function animate() {
     renderer.setAnimationLoop( function () {
         controls.update();
 
-        // Get camera direction for movement
-        let xrCamera = renderer.xr.getCamera(camera);
-        let e = xrCamera.matrixWorld.elements;
-        
-        // Forward/backward direction (where camera is looking)
-        let forward = new THREE.Vector3(-e[8], -e[9], -e[10]).normalize();
-        // Right direction (perpendicular to forward)
-        let right = new THREE.Vector3(e[0], e[1], e[2]).normalize();
+        // Only process VR controller input when in an active XR session
+        if (renderer.xr.isPresenting) {
+            // Get camera direction for movement
+            let xrCamera = renderer.xr.getCamera(camera);
+            if (xrCamera) {
+                let e = xrCamera.matrixWorld.elements;
+                
+                // Forward/backward direction (where camera is looking)
+                let forward = new THREE.Vector3(-e[8], -e[9], -e[10]).normalize();
+                // Right direction (perpendicular to forward)
+                let right = new THREE.Vector3(e[0], e[1], e[2]).normalize();
 
-        // Trigger movement (forward/backward based on which trigger)
-        if (movingSpeed != 0.0){
-            let direction = forward.clone().multiplyScalar(movingSpeed * 0.05);
-            user.position.add(direction);
-        }
-        
-        // Joystick movement from left controller
-        if (realcont1connected && realcont1.gamepad) {
-            let gamepad = realcont1.gamepad;
-            let axes = gamepad.axes;
-            if (axes.length >= 4) {
-                // Left stick: axes[2] = left/right, axes[3] = forward/backward
-                let moveX = axes[2];  // left/right
-                let moveZ = axes[3];  // forward/backward
-                
-                // Apply deadzone
-                if (Math.abs(moveX) > 0.1 || Math.abs(moveZ) > 0.1) {
-                    let movement = new THREE.Vector3();
-                    movement.add(right.clone().multiplyScalar(moveX * 0.03));
-                    movement.add(forward.clone().multiplyScalar(-moveZ * 0.03));
-                    user.position.add(movement);
+                // Trigger movement (forward/backward based on which trigger)
+                if (movingSpeed != 0.0){
+                    let direction = forward.clone().multiplyScalar(movingSpeed * 0.05);
+                    user.position.add(direction);
                 }
-            }
-        }
-        
-        // Right controller joystick rotates the view
-        if (realcont2connected && realcont2.gamepad) {
-            let gamepad = realcont2.gamepad;
-            let axes = gamepad.axes;
-            if (axes.length >= 4) {
-                // Right stick: axes[2] = rotate left/right
-                let rotateY = axes[2];
                 
-                // Apply deadzone
-                if (Math.abs(rotateY) > 0.1) {
-                    user.rotation.y -= rotateY * 0.03;
+                // Joystick movement from left controller
+                if (realcont1connected && realcont1.gamepad) {
+                    let gamepad = realcont1.gamepad;
+                    let axes = gamepad.axes;
+                    if (axes.length >= 4) {
+                        // Left stick: axes[2] = left/right, axes[3] = forward/backward
+                        let moveX = axes[2];  // left/right
+                        let moveZ = axes[3];  // forward/backward
+                        
+                        // Apply deadzone
+                        if (Math.abs(moveX) > 0.1 || Math.abs(moveZ) > 0.1) {
+                            let movement = new THREE.Vector3();
+                            movement.add(right.clone().multiplyScalar(moveX * 0.03));
+                            movement.add(forward.clone().multiplyScalar(-moveZ * 0.03));
+                            user.position.add(movement);
+                        }
+                    }
+                }
+                
+                // Right controller joystick rotates the view
+                if (realcont2connected && realcont2.gamepad) {
+                    let gamepad = realcont2.gamepad;
+                    let axes = gamepad.axes;
+                    if (axes.length >= 4) {
+                        // Right stick: axes[2] = rotate left/right
+                        let rotateY = axes[2];
+                        
+                        // Apply deadzone
+                        if (Math.abs(rotateY) > 0.1) {
+                            user.rotation.y -= rotateY * 0.03;
+                        }
+                    }
                 }
             }
         }
