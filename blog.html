@@ -1,0 +1,406 @@
+<!doctype html>
+<html>
+
+<head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-50W6WV16DJ"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'G-50W6WV16DJ');
+    </script>
+
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+    <style>
+        body {
+            padding-bottom: 2rem;
+        }
+
+        .blog-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 4rem 0 3rem 0;
+            margin-bottom: 3rem;
+        }
+
+        .blog-post {
+            margin-bottom: 3rem;
+            padding-bottom: 2rem;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .blog-post:last-child {
+            border-bottom: none;
+        }
+
+        .blog-post h2 {
+            color: #667eea;
+            margin-bottom: 1rem;
+        }
+
+        .blog-post .meta {
+            color: #6c757d;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            margin-right: 0.5rem;
+            margin-bottom: 0.5rem;
+            background-color: #e9ecef;
+            border-radius: 1rem;
+            font-size: 0.85rem;
+            color: #495057;
+        }
+
+        .use-case-card {
+            border-left: 4px solid #667eea;
+            padding-left: 1rem;
+            margin: 1.5rem 0;
+            background-color: #f8f9fa;
+            padding: 1rem 1rem 1rem 1.5rem;
+            border-radius: 0.25rem;
+        }
+
+        .code-snippet {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 0.25rem;
+            padding: 1rem;
+            margin: 1rem 0;
+            overflow-x: auto;
+        }
+    </style>
+    <title>ImmersivePoints Blog - Creative Ideas & Use Cases</title>
+</head>
+
+<body>
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+            <a class="navbar-brand" href="#">
+                <img src="images/immersive_points_logo/logo_cutout.png" height="40" class="d-inline-block align-top" alt="">
+            </a>
+
+            <div class="navbar-nav">
+                <a class="nav-item nav-link" href="/index.html">Home</a>
+                <a class="nav-item nav-link" href="/upload.html">Your files</a>
+                <a class="nav-item nav-link" href="/examples.html">Examples</a>
+                <a class="nav-item nav-link active" href="/blog.html">Ideas <span class="sr-only">(current)</span></a>
+            </div>
+        </nav>
+    </header>
+
+    <div class="blog-header">
+        <div class="container">
+            <h1 class="display-4">Creative Ideas for ImmersivePoints</h1>
+            <p class="lead">Explore innovative ways to visualize and interact with 3D data in virtual reality</p>
+        </div>
+    </div>
+
+    <main role="main" class="container">
+
+        <!-- Research & Science -->
+        <article class="blog-post">
+            <h2>🧬 Exploring Molecular Structures in VR</h2>
+            <div class="meta">Category: Science & Research</div>
+            <div class="tags">
+                <span class="tag">Chemistry</span>
+                <span class="tag">Biology</span>
+                <span class="tag">Education</span>
+            </div>
+            <p>
+                Transform molecular dynamics simulations into immersive VR experiences. Walk through protein structures,
+                visualize electron density clouds, or explore DNA helixes at human scale.
+            </p>
+            <div class="use-case-card">
+                <strong>Example:</strong> Color atoms by element type (carbon=gray, oxygen=red, nitrogen=blue) using the
+                hue channel. Students can physically walk around complex molecules to understand spatial relationships.
+            </div>
+            <p>
+                <strong>Why VR?</strong> Understanding 3D molecular structures from 2D screens is challenging. In VR,
+                researchers can naturally perceive depth and spatial relationships, making it easier to identify binding
+                sites, understand folding patterns, and communicate structural findings.
+            </p>
+        </article>
+
+        <!-- Astronomy -->
+        <article class="blog-post">
+            <h2>🌌 Navigate Through Star Clusters and Galaxies</h2>
+            <div class="meta">Category: Astronomy & Space</div>
+            <div class="tags">
+                <span class="tag">Astrophysics</span>
+                <span class="tag">Data Visualization</span>
+                <span class="tag">Education</span>
+            </div>
+            <p>
+                Convert astronomical survey data (like Gaia, SDSS, or Hubble catalogs) into explorable VR environments.
+                Each star becomes a point colored by temperature, distance, or spectral type.
+            </p>
+            <div class="use-case-card">
+                <strong>Creative idea:</strong> Map star temperature to hue (blue=hot, red=cool) and luminosity to point
+                size. Add our solar system as a reference point. Suddenly, the vastness of space becomes tangible.
+            </div>
+            <p>
+                Experience the true 3D structure of nebulae, star-forming regions, or galactic clusters. Perfect for
+                planetariums, science museums, or astronomy education.
+            </p>
+        </article>
+
+        <!-- Urban Planning -->
+        <article class="blog-post">
+            <h2>🏙️ Urban Planning and LiDAR City Scans</h2>
+            <div class="meta">Category: Urban & Architecture</div>
+            <div class="tags">
+                <span class="tag">Urban Planning</span>
+                <span class="tag">Architecture</span>
+                <span class="tag">Smart Cities</span>
+            </div>
+            <p>
+                Turn LiDAR scans of cities into walkable VR environments. Color-code buildings by height, age,
+                energy efficiency, or property value.
+            </p>
+            <div class="use-case-card">
+                <strong>Use case:</strong> City planners reviewing a proposed building can stand in VR exactly where
+                citizens would experience it. Analyze shadow patterns, sight lines, and spatial impact before construction.
+            </div>
+            <p>
+                Applications include traffic flow analysis (color by speed/congestion), infrastructure planning,
+                historical preservation, and disaster preparedness simulations.
+            </p>
+        </article>
+
+        <!-- Medical Imaging -->
+        <article class="blog-post">
+            <h2>🧠 Medical Imaging: Walk Through Brain Scans</h2>
+            <div class="meta">Category: Healthcare & Medicine</div>
+            <div class="tags">
+                <span class="tag">Medical</span>
+                <span class="tag">Neuroscience</span>
+                <span class="tag">Diagnostics</span>
+            </div>
+            <p>
+                Convert MRI, CT, or PET scan voxel data into point clouds. Doctors can literally walk through a patient's
+                anatomy at human scale, viewing tumors, blood vessels, or neural pathways from any angle.
+            </p>
+            <div class="use-case-card">
+                <strong>Example:</strong> Color neural tissue by activation level from fMRI data, or blood vessels by
+                flow rate. Surgeons can plan complex procedures by examining anatomy in true 3D before surgery.
+            </div>
+            <p>
+                Particularly valuable for teaching medical students, explaining procedures to patients, and collaborative
+                surgical planning across remote locations.
+            </p>
+        </article>
+
+        <!-- Machine Learning -->
+        <article class="blog-post">
+            <h2>🤖 Visualizing High-Dimensional ML Embeddings</h2>
+            <div class="meta">Category: Machine Learning & AI</div>
+            <div class="tags">
+                <span class="tag">Machine Learning</span>
+                <span class="tag">Data Science</span>
+                <span class="tag">Embeddings</span>
+            </div>
+            <p>
+                Use dimensionality reduction (t-SNE, UMAP, PCA) to project high-dimensional ML embeddings into 3D space.
+                Each point represents a data sample, colored by class, cluster, or prediction confidence.
+            </p>
+            <div class="use-case-card">
+                <strong>Debugging idea:</strong> Color points by whether your model classified them correctly (green) or
+                incorrectly (red). Walk through your model's decision space to discover patterns in failures.
+            </div>
+            <p>
+                Explore word embeddings (each word is a point), image feature spaces, or customer segmentation results.
+                Discover clusters, outliers, and decision boundaries that are invisible in 2D plots.
+            </p>
+        </article>
+
+        <!-- Archaeology -->
+        <article class="blog-post">
+            <h2>🏺 Archaeological Site Reconstruction</h2>
+            <div class="meta">Category: History & Archaeology</div>
+            <div class="tags">
+                <span class="tag">Archaeology</span>
+                <span class="tag">Cultural Heritage</span>
+                <span class="tag">Museums</span>
+            </div>
+            <p>
+                Transform photogrammetry or LiDAR scans of archaeological sites into explorable VR experiences. Color
+                artifacts by age, material, or excavation layer.
+            </p>
+            <div class="use-case-card">
+                <strong>Museum application:</strong> Visitors can explore Pompeii, Angkor Wat, or Egyptian tombs in VR,
+                with points colored by historical period or architectural element. Access restricted areas safely.
+            </div>
+            <p>
+                Document sites threatened by climate change or conflict. Share discoveries with researchers worldwide
+                before physical artifacts deteriorate.
+            </p>
+        </article>
+
+        <!-- Finance -->
+        <article class="blog-post">
+            <h2>📈 Financial Data Landscapes</h2>
+            <div class="meta">Category: Finance & Business</div>
+            <div class="tags">
+                <span class="tag">Finance</span>
+                <span class="tag">Trading</span>
+                <span class="tag">Analytics</span>
+            </div>
+            <p>
+                Create 3D landscapes where X/Y represent different securities or market sectors, Z represents performance,
+                and color represents volatility or trading volume.
+            </p>
+            <div class="use-case-card">
+                <strong>Trading floor application:</strong> View your entire portfolio as a 3D landscape. Peaks are
+                winners, valleys are losers, color intensity shows risk level. Spot correlations and anomalies instantly.
+            </div>
+            <p>
+                Visualize correlation matrices, risk profiles, or time-series data in ways that reveal hidden patterns.
+                Perfect for algorithmic trading analysis or portfolio risk assessment.
+            </p>
+        </article>
+
+        <!-- Environmental Science -->
+        <article class="blog-post">
+            <h2>🌊 Ocean and Atmospheric Data Visualization</h2>
+            <div class="meta">Category: Environmental Science</div>
+            <div class="tags">
+                <span class="tag">Climate</span>
+                <span class="tag">Oceanography</span>
+                <span class="tag">Weather</span>
+            </div>
+            <p>
+                Visualize 3D oceanographic or atmospheric data. Each point could represent a measurement location,
+                colored by temperature, salinity, pressure, or pollution levels.
+            </p>
+            <div class="use-case-card">
+                <strong>Climate research:</strong> Explore ocean currents in 3D, seeing how temperature layers move.
+                Visualize hurricane structure from the inside, or track microplastic distribution in the ocean depths.
+            </div>
+            <p>
+                Perfect for climate modeling, weather pattern analysis, and communicating environmental data to
+                policymakers and the public in intuitive ways.
+            </p>
+        </article>
+
+        <!-- Art & Creative -->
+        <article class="blog-post">
+            <h2>🎨 Generative Art and Audio Visualization</h2>
+            <div class="meta">Category: Art & Entertainment</div>
+            <div class="tags">
+                <span class="tag">Art</span>
+                <span class="tag">Music</span>
+                <span class="tag">Generative</span>
+            </div>
+            <p>
+                Create point cloud sculptures that respond to audio, mathematical functions, or generative algorithms.
+                Transform music into 3D visual experiences where people can walk through sound.
+            </p>
+            <div class="use-case-card">
+                <strong>Music visualization:</strong> Map frequency to X, time to Y, amplitude to Z, and timbre to color.
+                Create explorable sculptures of songs. Perfect for music therapy, live performances, or art installations.
+            </div>
+            <p>
+                Generate fractals, L-systems, or particle simulations as point clouds. Create VR art galleries where each
+                piece is an explorable 3D data sculpture.
+            </p>
+        </article>
+
+        <!-- Social Network -->
+        <article class="blog-post">
+            <h2>🔗 Social Network and Graph Visualization</h2>
+            <div class="meta">Category: Network Analysis</div>
+            <div class="tags">
+                <span class="tag">Networks</span>
+                <span class="tag">Social Media</span>
+                <span class="tag">Graph Theory</span>
+            </div>
+            <p>
+                Use force-directed graph layout algorithms to position social network nodes in 3D space. Each person is
+                a point, colored by community, influence, or activity level.
+            </p>
+            <div class="use-case-card">
+                <strong>Business intelligence:</strong> Visualize customer networks, organizational structures, or supply
+                chains. Walk through your network to discover hidden influencers, bottlenecks, or communities.
+            </div>
+            <p>
+                Applications include social media analysis, fraud detection networks, citation graphs in research, or
+                analyzing communication patterns in large organizations.
+            </p>
+        </article>
+
+        <!-- Sports Analytics -->
+        <article class="blog-post">
+            <h2>⚽ Sports Analytics and Player Tracking</h2>
+            <div class="meta">Category: Sports & Gaming</div>
+            <div class="tags">
+                <span class="tag">Sports</span>
+                <span class="tag">Analytics</span>
+                <span class="tag">Gaming</span>
+            </div>
+            <p>
+                Convert player tracking data into 3D visualizations. X/Y represent field position, Z could be time or
+                game importance, colored by team, player, or action type.
+            </p>
+            <div class="use-case-card">
+                <strong>Coaching application:</strong> Review an entire game's player movements in VR. See patterns in
+                offensive plays, identify defensive gaps, or analyze player fatigue over time. Perfect for team strategy
+                sessions.
+            </div>
+            <p>
+                Works for any sport with tracking data: soccer, basketball, football, hockey. Also applicable to esports
+                analytics and game replay analysis.
+            </p>
+        </article>
+
+        <!-- Getting Started -->
+        <article class="blog-post">
+            <h2>🚀 Ready to Build Your Own?</h2>
+            <p>
+                All you need is Python, a numpy array, and a VR headset. Check out our
+                <a href="https://github.com/rmeertens/ImmersivePoints/blob/master/examples/">example notebooks</a>
+                to get started, or <a href="/upload.html">upload your own data</a> right now.
+            </p>
+            <div class="code-snippet">
+                <code>
+import numpy as np<br>
+import immersivePoints as ip<br>
+<br>
+# Your data here (Nx4 or Nx6 array)<br>
+points = load_your_data()<br>
+<br>
+# Render in Jupyter notebook<br>
+ip.renderPoints(points)<br>
+<br>
+# Or generate VR link<br>
+ip.showVR(points)
+                </code>
+            </div>
+            <p class="text-center mt-4">
+                <a class="btn btn-primary btn-lg" href="https://github.com/rmeertens/ImmersivePoints" role="button">
+                    View on GitHub
+                </a>
+                <a class="btn btn-outline-primary btn-lg" href="/upload.html" role="button">
+                    Upload Your Data
+                </a>
+            </p>
+        </article>
+
+    </main>
+
+    <footer class="container mt-5 pt-4 border-top text-center text-muted">
+        <p>&copy; ImmersivePoints - Explore your data in virtual reality</p>
+    </footer>
+
+</body>
+
+</html>
