@@ -151,8 +151,9 @@
 
     <div class="blog-header">
         <div class="container">
-            <h1 class="display-4">Creative Ideas for ImmersivePoints</h1>
-            <p class="lead">Explore innovative ways to visualize and interact with 3D data in virtual reality</p>
+            <h1 class="display-4">Practical VR Visualization Projects</h1>
+            <p class="lead">Step-by-step tutorials with real datasets and working code</p>
+            <p><a href="https://github.com/rmeertens/ImmersivePoints/tree/master/examples" class="btn btn-light btn-lg">📂 Browse All Projects on GitHub</a></p>
         </div>
     </div>
 
@@ -160,76 +161,107 @@
 
         <!-- Research & Science -->
         <article class="blog-post">
-            <h2>🧬 Exploring Molecular Structures in VR</h2>
-            <div class="meta">Category: Science & Research</div>
+            <h2>🧬 Project 1: Molecular Structures in VR</h2>
+            <div class="meta">Category: Science & Research |
+                <a href="https://github.com/rmeertens/ImmersivePoints/tree/master/examples/01_molecular_structures">📂 View Project</a>
+            </div>
             <div class="tags">
                 <span class="tag">Chemistry</span>
                 <span class="tag">Biology</span>
                 <span class="tag">Education</span>
             </div>
             <p>
-                Transform molecular dynamics simulations into immersive VR experiences. Walk through protein structures,
-                visualize electron density clouds, or explore DNA helixes at human scale.
+                <strong>Download real protein structures from the RCSB Protein Data Bank and visualize them in VR.</strong>
+                Walk through hemoglobin, insulin, the COVID spike protein, and thousands of other molecules at atomic scale.
             </p>
             <div class="use-case-card">
-                <strong>Example:</strong> Color atoms by element type (carbon=gray, oxygen=red, nitrogen=blue) using the
-                hue channel. Students can physically walk around complex molecules to understand spatial relationships.
+                <strong>What's Included:</strong><br>
+                • Jupyter notebook with complete working code<br>
+                • Automatic download from Protein Data Bank<br>
+                • Atom coloring by element type<br>
+                • Examples: Hemoglobin (1A3N), Insulin (1MSO), SARS-CoV-2 Spike (6VXX)<br>
+                <br>
+                <strong>Real Dataset:</strong> RCSB Protein Data Bank (rcsb.org) - 200,000+ protein structures
             </div>
             <p>
-                <strong>Why VR?</strong> Understanding 3D molecular structures from 2D screens is challenging. In VR,
-                researchers can naturally perceive depth and spatial relationships, making it easier to identify binding
-                sites, understand folding patterns, and communicate structural findings.
+                <strong>Get Started:</strong>
+                <a href="https://github.com/rmeertens/ImmersivePoints/blob/master/examples/01_molecular_structures/molecular_visualization.ipynb">
+                    Open the Jupyter Notebook →
+                </a>
             </p>
         </article>
 
         <!-- Astronomy -->
         <article class="blog-post">
-            <h2>🌌 Navigate Through Star Clusters and Galaxies</h2>
-            <div class="meta">Category: Astronomy & Space</div>
+            <h2>🌌 Project 2: Astronomy & Star Catalogs</h2>
+            <div class="meta">Category: Astronomy & Space |
+                <a href="https://github.com/rmeertens/ImmersivePoints/tree/master/examples/02_astronomy_data">📂 View Project</a>
+            </div>
             <div class="tags">
                 <span class="tag">Astrophysics</span>
                 <span class="tag">Data Visualization</span>
                 <span class="tag">Education</span>
             </div>
             <p>
-                Convert astronomical survey data (like Gaia, SDSS, or Hubble catalogs) into explorable VR environments.
-                Each star becomes a point colored by temperature, distance, or spectral type.
+                <strong>Explore real star catalogs from ESA's Gaia mission and walk through the local stellar neighborhood.</strong>
+                See stars colored by temperature, create clusters like the Pleiades, and understand why constellations are just 2D projections.
             </p>
             <div class="use-case-card">
-                <strong>Creative idea:</strong> Map star temperature to hue (blue=hot, red=cool) and luminosity to point
-                size. Add our solar system as a reference point. Suddenly, the vastness of space becomes tangible.
+                <strong>What's Included:</strong><br>
+                • Generate realistic 3D star fields (100 light-years)<br>
+                • Optional: Query real Gaia DR3 data (10,000+ nearest stars)<br>
+                • Famous stars: Alpha Centauri, Sirius, Vega, Betelgeuse<br>
+                • Create Pleiades-like star clusters<br>
+                <br>
+                <strong>Real Dataset:</strong> ESA Gaia DR3 (1 billion stars mapped)
             </div>
             <p>
-                Experience the true 3D structure of nebulae, star-forming regions, or galactic clusters. Perfect for
-                planetariums, science museums, or astronomy education.
+                <strong>Get Started:</strong>
+                <a href="https://github.com/rmeertens/ImmersivePoints/blob/master/examples/02_astronomy_data/astronomy_visualization.ipynb">
+                    Open the Jupyter Notebook →
+                </a>
             </p>
         </article>
 
         <!-- Urban Planning -->
         <article class="blog-post">
-            <h2>🏙️ Urban Planning and LiDAR City Scans</h2>
-            <div class="meta">Category: Urban & Architecture</div>
+            <h2>🏙️ Project 3: LiDAR Urban Planning</h2>
+            <div class="meta">Category: Urban & Architecture |
+                <a href="https://github.com/rmeertens/ImmersivePoints/tree/master/examples/03_lidar_urban_planning">📂 View Project</a>
+            </div>
             <div class="tags">
                 <span class="tag">Urban Planning</span>
                 <span class="tag">Architecture</span>
                 <span class="tag">Smart Cities</span>
             </div>
             <p>
-                Turn LiDAR scans of cities into walkable VR environments. Color-code buildings by height, age,
-                energy efficiency, or property value.
+                <strong>Process city-scale LiDAR scans and explore urban environments in VR.</strong>
+                Load LAS/LAZ files, color by elevation or building classification, and walk through cities at 1:1 scale.
             </p>
             <div class="use-case-card">
-                <strong>Use case:</strong> City planners reviewing a proposed building can stand in VR exactly where
-                citizens would experience it. Analyze shadow patterns, sight lines, and spatial impact before construction.
+                <strong>What's Included:</strong><br>
+                • Load and parse LAS/LAZ LiDAR files<br>
+                • Intelligent subsampling for VR performance<br>
+                • Color coding: height, classification, intensity<br>
+                • Links to free datasets (USGS 3DEP, OpenTopography, Amsterdam 3D)<br>
+                <br>
+                <strong>Real Datasets:</strong> USGS 3DEP (US cities), Amsterdam 3D, UK Environment Agency
             </div>
             <p>
-                Applications include traffic flow analysis (color by speed/congestion), infrastructure planning,
-                historical preservation, and disaster preparedness simulations.
+                <strong>Get Started:</strong>
+                <a href="https://github.com/rmeertens/ImmersivePoints/blob/master/examples/03_lidar_urban_planning/lidar_visualization.ipynb">
+                    Open the Jupyter Notebook →
+                </a>
             </p>
         </article>
 
-        <!-- Medical Imaging -->
+        <!-- More Ideas Coming Soon -->
         <article class="blog-post">
+            <h2>💡 More Projects Coming Soon</h2>
+            <p>We're working on practical examples for these use cases. Stay tuned!</p>
+        </article>
+
+        <article class="blog-post" style="opacity: 0.7;">
             <h2>🧠 Medical Imaging: Walk Through Brain Scans</h2>
             <div class="meta">Category: Healthcare & Medicine</div>
             <div class="tags">
@@ -253,24 +285,33 @@
 
         <!-- Machine Learning -->
         <article class="blog-post">
-            <h2>🤖 Visualizing High-Dimensional ML Embeddings</h2>
-            <div class="meta">Category: Machine Learning & AI</div>
+            <h2>🤖 Project 4: ML Embeddings Visualization</h2>
+            <div class="meta">Category: Machine Learning & AI |
+                <a href="https://github.com/rmeertens/ImmersivePoints/tree/master/examples/04_ml_embeddings">📂 View Project</a>
+            </div>
             <div class="tags">
                 <span class="tag">Machine Learning</span>
                 <span class="tag">Data Science</span>
                 <span class="tag">Embeddings</span>
             </div>
             <p>
-                Use dimensionality reduction (t-SNE, UMAP, PCA) to project high-dimensional ML embeddings into 3D space.
-                Each point represents a data sample, colored by class, cluster, or prediction confidence.
+                <strong>Reduce high-dimensional data to 3D using t-SNE, UMAP, or PCA and debug your ML models in VR.</strong>
+                Visualize MNIST digits, find misclassifications, and understand your model's decision boundaries.
             </p>
             <div class="use-case-card">
-                <strong>Debugging idea:</strong> Color points by whether your model classified them correctly (green) or
-                incorrectly (red). Walk through your model's decision space to discover patterns in failures.
+                <strong>What's Included:</strong><br>
+                • t-SNE, UMAP, and PCA dimensionality reduction<br>
+                • Color by: class labels, prediction correctness, confidence<br>
+                • Works with MNIST, Fashion-MNIST, or your own embeddings<br>
+                • Train a classifier and visualize where it fails<br>
+                <br>
+                <strong>Real Dataset:</strong> Scikit-learn digits (included), MNIST (70K samples)
             </div>
             <p>
-                Explore word embeddings (each word is a point), image feature spaces, or customer segmentation results.
-                Discover clusters, outliers, and decision boundaries that are invisible in 2D plots.
+                <strong>Get Started:</strong>
+                <a href="https://github.com/rmeertens/ImmersivePoints/blob/master/examples/04_ml_embeddings/ml_embeddings_visualization.ipynb">
+                    Open the Jupyter Notebook →
+                </a>
             </p>
         </article>
 
@@ -391,57 +432,68 @@
 
         <!-- Sports Analytics -->
         <article class="blog-post">
-            <h2>⚽ Sports Analytics and Player Tracking</h2>
-            <div class="meta">Category: Sports & Gaming</div>
+            <h2>⚽ Project 5: Sports Analytics & Player Tracking</h2>
+            <div class="meta">Category: Sports & Gaming |
+                <a href="https://github.com/rmeertens/ImmersivePoints/tree/master/examples/05_sports_analytics">📂 View Project</a>
+            </div>
             <div class="tags">
                 <span class="tag">Sports</span>
                 <span class="tag">Analytics</span>
                 <span class="tag">Gaming</span>
             </div>
             <p>
-                Convert player tracking data into 3D visualizations. X/Y represent field position, Z could be time or
-                game importance, colored by team, player, or action type.
+                <strong>Visualize player movement and game events in 3D space with time as the vertical axis.</strong>
+                Create tactical heatmaps, analyze player trajectories, and explore game strategy in VR.
             </p>
             <div class="use-case-card">
-                <strong>Coaching application:</strong> Review an entire game's player movements in VR. See patterns in
-                offensive plays, identify defensive gaps, or analyze player fatigue over time. Perfect for team strategy
-                sessions.
+                <strong>What's Included:</strong><br>
+                • Load StatsBomb Open Data (World Cups, Champions League)<br>
+                • Generate synthetic player tracking data<br>
+                • 3D trajectory view (time as Z-axis)<br>
+                • 2D heatmap view (position density)<br>
+                <br>
+                <strong>Real Datasets:</strong> StatsBomb Open Data (free soccer event data), Metrica Sports samples
             </div>
             <p>
-                Works for any sport with tracking data: soccer, basketball, football, hockey. Also applicable to esports
-                analytics and game replay analysis.
+                <strong>Get Started:</strong>
+                <a href="https://github.com/rmeertens/ImmersivePoints/blob/master/examples/05_sports_analytics/sports_tracking_visualization.ipynb">
+                    Open the Jupyter Notebook →
+                </a>
             </p>
         </article>
 
         <!-- Getting Started -->
         <article class="blog-post">
-            <h2>🚀 Ready to Build Your Own?</h2>
+            <h2>🚀 Ready to Try These Projects?</h2>
             <p>
-                All you need is Python, a numpy array, and a VR headset. Check out our
-                <a href="https://github.com/rmeertens/ImmersivePoints/blob/master/examples/">example notebooks</a>
-                to get started, or <a href="/upload.html">upload your own data</a> right now.
+                <strong>All projects include:</strong>
             </p>
+            <ul>
+                <li>✅ Complete Jupyter notebooks with working code</li>
+                <li>✅ Links to real, publicly available datasets</li>
+                <li>✅ Step-by-step instructions</li>
+                <li>✅ Inline visualization + VR links</li>
+            </ul>
             <div class="code-snippet">
                 <code>
-import numpy as np<br>
-import immersivePoints as ip<br>
+# Install ImmersivePoints<br>
+pip install immersivepoints<br>
 <br>
-# Your data here (Nx4 or Nx6 array)<br>
-points = load_your_data()<br>
+# Clone the repository<br>
+git clone https://github.com/rmeertens/ImmersivePoints.git<br>
+cd ImmersivePoints/examples<br>
 <br>
-# Render in Jupyter notebook<br>
-ip.renderPoints(points)<br>
-<br>
-# Or generate VR link<br>
-ip.showVR(points)
+# Pick a project and start Jupyter<br>
+cd 01_molecular_structures<br>
+jupyter notebook molecular_visualization.ipynb
                 </code>
             </div>
             <p class="text-center mt-4">
-                <a class="btn btn-primary btn-lg" href="https://github.com/rmeertens/ImmersivePoints" role="button">
-                    View on GitHub
+                <a class="btn btn-primary btn-lg" href="https://github.com/rmeertens/ImmersivePoints/tree/master/examples" role="button">
+                    📂 Browse All Projects
                 </a>
                 <a class="btn btn-outline-primary btn-lg" href="/upload.html" role="button">
-                    Upload Your Data
+                    📤 Upload Your Own Data
                 </a>
             </p>
         </article>
