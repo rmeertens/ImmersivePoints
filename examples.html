@@ -38,7 +38,7 @@
 
     <style>
         .jumbotron {
-            background-image: url("immersivepoints.png");
+            background-image: url("images/immersivepoints_jumbotron.png");
             background-size: cover;
             min-height: 550px;
         }
@@ -57,17 +57,15 @@
 <body>
     <header>
         <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-            <a class="navbar-brand" href="/index.html">😎ImmersivePoints.com</a>
-            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
-                <div class="navbar-nav">
-                    <a class="nav-item nav-link" href="/index.html">Home</a>
-                    <a class="nav-item nav-link" href="/upload.html">Your files</a>
-                    <a class="nav-item nav-link active" href="/examples.html">Examples <span class="sr-only">(current)</span></a>
-                    <a class="nav-item nav-link" href="/blog.html">Ideas</a>
-                </div>
+            <a class="navbar-brand" href="#">
+                <img src="images/immersive_points_logo/logo_cutout.png" height="40" class="d-inline-block align-top" alt="">
+            </a>
+
+            <div class="navbar-nav">
+                <a class="nav-item nav-link" href="/index.html">Home</a>
+                <a class="nav-item nav-link" href="/upload.html">Your files</a>
+                <a class="nav-item nav-link active" href="/examples.html">Examples <span class="sr-only">(current)</span></a>
+                <a class="nav-item nav-link" href="/blog.html">Ideas</a>
             </div>
         </nav>
     </header>
@@ -87,10 +85,145 @@
         <div id="main_content_wrap" class="container-fluid">
             <section id="main_content" class="container-fluid">
 
-                <h1>Examples</h1>
-                <h3>Visualise pointcloud with Python</h3>
-                Display a 3D pointcloud using Python.
-                Want you want to visualise a 3D pointcloud in Python, or want to visualise a large point cloud at all, try to look here: <a href="https://github.com/rmeertens/ImmersivePoints/blob/master/examples/export_subsample.ipynb">link</a>.
+                <h1>Interactive Jupyter Notebook Examples</h1>
+                <p class="lead">Explore these ready-to-run examples to visualize different types of data in VR. Each example includes inline visualization and VR link generation.</p>
+
+                <div class="row mt-4">
+                    <!-- Molecular Structures -->
+                    <div class="col-md-6 mb-4">
+                        <div class="card h-100">
+                            <img src="examples/01_molecular_structures/thumbnail.gif" class="card-img-top" alt="Molecular structure visualization" onerror="this.style.display='none'">
+                            <div class="card-body">
+                                <h5 class="card-title">🧬 Molecular Structures</h5>
+                                <p class="card-text">Download real protein structures from the Protein Data Bank and explore them in VR. Visualize hemoglobin, insulin, DNA, and SARS-CoV-2 spike protein with atoms colored by element type.</p>
+                                <ul class="small">
+                                    <li>RCSB Protein Data Bank integration</li>
+                                    <li>Biopython PDB parser</li>
+                                    <li>Element-based coloring</li>
+                                    <li>Inline rendering preview</li>
+                                </ul>
+                                <a href="https://github.com/rmeertens/ImmersivePoints/blob/master/examples/01_molecular_structures/molecular_visualization.ipynb" class="btn btn-primary">View Notebook</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Astronomy Data -->
+                    <div class="col-md-6 mb-4">
+                        <div class="card h-100">
+                            <img src="examples/02_astronomy_data/thumbnail.gif" class="card-img-top" alt="Star catalog visualization" onerror="this.style.display='none'">
+                            <div class="card-body">
+                                <h5 class="card-title">✨ Astronomy & Star Catalogs</h5>
+                                <p class="card-text">Generate synthetic star fields or query real astronomical data from the Gaia mission. Walk from our Sun to nearby stars and see constellations from different perspectives.</p>
+                                <ul class="small">
+                                    <li>ESA Gaia DR3 data integration</li>
+                                    <li>Synthetic star field generation</li>
+                                    <li>Famous nearby stars marked</li>
+                                    <li>Star cluster creation</li>
+                                </ul>
+                                <a href="https://github.com/rmeertens/ImmersivePoints/blob/master/examples/02_astronomy_data/astronomy_visualization.ipynb" class="btn btn-primary">View Notebook</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- LiDAR Urban Planning -->
+                    <div class="col-md-6 mb-4">
+                        <div class="card h-100">
+                            <img src="examples/03_lidar_urban_planning/thumbnail.gif" class="card-img-top" alt="LiDAR urban scan" onerror="this.style.display='none'">
+                            <div class="card-body">
+                                <h5 class="card-title">🏙️ LiDAR Urban Planning</h5>
+                                <p class="card-text">Process and visualize city-scale LiDAR data. Color by elevation, classification (buildings, vegetation, ground), or intensity. Includes USGS 3DEP data integration.</p>
+                                <ul class="small">
+                                    <li>LAS/LAZ file format support</li>
+                                    <li>Intelligent subsampling for VR</li>
+                                    <li>Multiple color coding options</li>
+                                    <li>Classification-based filtering</li>
+                                </ul>
+                                <a href="https://github.com/rmeertens/ImmersivePoints/blob/master/examples/03_lidar_urban_planning/lidar_visualization.ipynb" class="btn btn-primary">View Notebook</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ML Embeddings -->
+                    <div class="col-md-6 mb-4">
+                        <div class="card h-100">
+                            <img src="examples/images/tsne.png" class="card-img-top" alt="ML embeddings visualization" onerror="this.src='examples/04_ml_embeddings/thumbnail.gif'">
+                            <div class="card-body">
+                                <h5 class="card-title">🤖 Machine Learning Embeddings</h5>
+                                <p class="card-text">Visualize high-dimensional ML embeddings in 3D using t-SNE, UMAP, or PCA. Debug misclassifications and explore cluster structure in virtual reality.</p>
+                                <ul class="small">
+                                    <li>t-SNE, UMAP, and PCA support</li>
+                                    <li>MNIST digit dataset included</li>
+                                    <li>Color by labels or predictions</li>
+                                    <li>Misclassification visualization</li>
+                                </ul>
+                                <a href="https://github.com/rmeertens/ImmersivePoints/blob/master/examples/04_ml_embeddings/ml_embeddings_visualization.ipynb" class="btn btn-primary">View Notebook</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sports Analytics -->
+                    <div class="col-md-6 mb-4">
+                        <div class="card h-100">
+                            <img src="examples/05_sports_analytics/thumbnail.gif" class="card-img-top" alt="Sports tracking visualization" onerror="this.style.display='none'">
+                            <div class="card-body">
+                                <h5 class="card-title">⚽ Sports Analytics</h5>
+                                <p class="card-text">Analyze player movement and game events in 3D space. Use StatsBomb open data or generate synthetic tracking data. Create both 3D trajectories and 2D heatmaps.</p>
+                                <ul class="small">
+                                    <li>StatsBomb open data integration</li>
+                                    <li>Synthetic tracking data generation</li>
+                                    <li>3D trajectory visualization</li>
+                                    <li>2D heatmap view</li>
+                                </ul>
+                                <a href="https://github.com/rmeertens/ImmersivePoints/blob/master/examples/05_sports_analytics/sports_tracking_visualization.ipynb" class="btn btn-primary">View Notebook</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Inline Visualization Example -->
+                    <div class="col-md-6 mb-4">
+                        <div class="card h-100">
+                            <img src="images/aev3.gif" class="card-img-top" alt="Inline rendering example" onerror="this.style.display='none'">
+                            <div class="card-body">
+                                <h5 class="card-title">🎨 Inline Jupyter Rendering</h5>
+                                <p class="card-text">Learn how to render point clouds directly in your Jupyter notebook before sending to VR. Preview your data with rotation and zoom controls.</p>
+                                <ul class="small">
+                                    <li>Interactive inline rendering</li>
+                                    <li>Customizable point size and colors</li>
+                                    <li>Background color options</li>
+                                    <li>Simple API</li>
+                                </ul>
+                                <a href="https://github.com/rmeertens/ImmersivePoints/blob/master/examples/inline_visualization.ipynb" class="btn btn-primary">View Notebook</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <hr class="my-5">
+
+                <h2>Getting Started</h2>
+                <p>All examples include automatic package installation and inline visualization. Simply open the notebook and run the cells!</p>
+
+                <h5>Quick Start:</h5>
+                <pre class="bg-light p-3"><code>pip install immersivepoints
+import immersivepoints as ip
+
+# Create point cloud (N x 4: x, y, z, hue)
+points = ...
+
+# Render inline
+ip.renderPoints(points, point_size=0.1)
+
+# Generate VR link
+ip.showVR(points)</code></pre>
+
+                <p class="mt-4">
+                    <a href="https://github.com/rmeertens/ImmersivePoints" class="btn btn-lg btn-success">
+                        📦 View on GitHub
+                    </a>
+                    <a href="/upload.html" class="btn btn-lg btn-primary">
+                        🚀 Upload Your Own Data
+                    </a>
+                </p>
             </section>
         </div>
     </main>

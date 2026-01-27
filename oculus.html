@@ -37,10 +37,157 @@
         body {
             margin: 0;
         }
+
+        /* Loading overlay */
+        #loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(45, 74, 168, 0.95);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            color: white;
+            transition: opacity 0.5s ease-out;
+        }
+
+        #loading-overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .loading-content {
+            text-align: center;
+            max-width: 500px;
+            padding: 20px;
+        }
+
+        .loading-title {
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .loading-subtitle {
+            font-size: 16px;
+            opacity: 0.9;
+            margin-bottom: 30px;
+        }
+
+        .progress-container {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 15px;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #4CAF50, #8BC34A);
+            width: 0%;
+            transition: width 0.3s ease;
+            border-radius: 4px;
+        }
+
+        .progress-text {
+            font-size: 14px;
+            opacity: 0.8;
+            margin-top: 10px;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(255, 255, 255, 0.2);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Error state */
+        #loading-overlay.error {
+            background: rgba(211, 47, 47, 0.95);
+        }
+
+        #loading-overlay.error .progress-bar {
+            background: linear-gradient(90deg, #ff5252, #ff1744);
+        }
+
+        #loading-overlay.error .loading-spinner {
+            border-top-color: #ffcdd2;
+        }
+
+        .error-details {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: 'Courier New', monospace;
+            text-align: left;
+            max-width: 100%;
+            overflow-x: auto;
+        }
+
+        .error-actions {
+            margin-top: 20px;
+        }
+
+        .error-button {
+            background: white;
+            color: #d32f2f;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin: 0 10px;
+            transition: all 0.2s;
+        }
+
+        .error-button:hover {
+            background: #f5f5f5;
+            transform: translateY(-2px);
+        }
+
+        .error-button.secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        .error-button.secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
     </style>
 </head>
 
 <body>
+    <!-- Loading overlay -->
+    <div id="loading-overlay">
+        <div class="loading-content">
+            <div class="loading-title">Loading Point Cloud</div>
+            <div class="loading-subtitle">Preparing your data for VR...</div>
+            <div class="progress-container">
+                <div class="progress-bar" id="progress-bar"></div>
+            </div>
+            <div class="progress-text" id="progress-text">0%</div>
+            <div class="loading-spinner"></div>
+        </div>
+    </div>
+
     <script type="module">
         import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.121.1/build/three.module.js';
         import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.121.1/examples/jsm/controls/OrbitControls.js';
@@ -432,29 +579,91 @@ function fillNodes(nodes, ints, pointsPerRow){
 }
         
 function getPointsFromBase64String(buffer, pointType){
-    buffer = _base64ToArrayBuffer(buffer);
-    var dataview = new DataView(buffer);
-    
-    // Note: divide by 4 because of float32 has 4 bytes
-    var ints = dataViewToFloat32Array(dataview, buffer.byteLength / 4)
+    try {
+        updateLoadingProgress(50, 'Decoding base64 data...');
 
-    var tempNodes = new Array();
-    var points_per_row = get_points_per_row(pointType);
-    fillNodes(tempNodes, ints, points_per_row);
-    console.log("Loaded num points " + tempNodes.length)
-    var temp = getPositionsAndColors(tempNodes, pointType);
+        // Validate input
+        if (!buffer || buffer.length === 0) {
+            throw new Error('Empty base64 data provided');
+        }
 
-    var geometry = new THREE.BufferGeometry();
-    geometry.setAttribute( 'position', new THREE.Float32BufferAttribute( temp.positions, 3 ) );
-    colorBuffer = new THREE.Float32BufferAttribute( temp.colors, 3 );
+        buffer = _base64ToArrayBuffer(buffer);
 
-    geometry.setAttribute( 'color', colorBuffer );
-    geometry.computeBoundingSphere();
-    
-    var material = new THREE.PointsMaterial( { size: 0.04, vertexColors: THREE.VertexColors, sizeAttenuation: true } );
-    var tempPoints = new THREE.Points( geometry, material );
-    
-    return tempPoints;
+        // Validate decoded buffer
+        if (!buffer || buffer.byteLength === 0) {
+            throw new Error('Invalid base64 encoding - decoded to 0 bytes');
+        }
+
+        updateLoadingProgress(70, 'Processing point cloud...');
+
+        var dataview = new DataView(buffer);
+
+        // Validate point type
+        const points_per_row = get_points_per_row(pointType);
+        if (!points_per_row) {
+            throw new Error(`Unknown point type: ${pointType}. Expected XYZ, XYZI, or XYZRGB`);
+        }
+
+        // Check if data size is valid
+        const expectedBytesPerPoint = points_per_row * 4; // 4 bytes per float32
+        if (buffer.byteLength < expectedBytesPerPoint) {
+            throw new Error(`Data too small: ${buffer.byteLength} bytes (need at least ${expectedBytesPerPoint} bytes for one ${pointType} point)`);
+        }
+
+        if ((buffer.byteLength / 4) % points_per_row !== 0) {
+            throw new Error(`Invalid data format: ${buffer.byteLength} bytes cannot be evenly divided into ${pointType} points (${points_per_row} floats per point)`);
+        }
+
+        // Note: divide by 4 because of float32 has 4 bytes
+        var ints = dataViewToFloat32Array(dataview, buffer.byteLength / 4)
+
+        if (!ints || ints.length === 0) {
+            throw new Error('Failed to parse float32 data from buffer');
+        }
+
+        var tempNodes = new Array();
+        fillNodes(tempNodes, ints, points_per_row);
+
+        if (tempNodes.length === 0) {
+            throw new Error('No valid points extracted from data');
+        }
+
+        console.log("Loaded num points " + tempNodes.length)
+
+        updateLoadingProgress(85, 'Building 3D geometry...');
+
+        var temp = getPositionsAndColors(tempNodes, pointType);
+
+        if (!temp.positions || temp.positions.length === 0) {
+            throw new Error('Failed to extract point positions');
+        }
+
+        if (!temp.colors || temp.colors.length === 0) {
+            throw new Error('Failed to extract point colors');
+        }
+
+        var geometry = new THREE.BufferGeometry();
+        geometry.setAttribute( 'position', new THREE.Float32BufferAttribute( temp.positions, 3 ) );
+        colorBuffer = new THREE.Float32BufferAttribute( temp.colors, 3 );
+
+        geometry.setAttribute( 'color', colorBuffer );
+        geometry.computeBoundingSphere();
+
+        var material = new THREE.PointsMaterial( { size: 0.04, vertexColors: THREE.VertexColors, sizeAttenuation: true } );
+        var tempPoints = new THREE.Points( geometry, material );
+
+        updateLoadingProgress(100, 'Ready!');
+
+        return tempPoints;
+
+    } catch (error) {
+        showError(
+            'Base64 Data Error',
+            'Failed to decode or parse embedded point cloud data.',
+            `Error: ${error.message}\n\nPoint Type: ${pointType}\nThis usually means the base64 data in the URL is corrupted or in the wrong format.`
+        );
+        throw error; // Re-throw to prevent further execution
+    }
 }        
 
 function get_points_per_row(pointType){
@@ -466,6 +675,10 @@ function get_points_per_row(pointType){
     }
     else if(pointType == "XYZRGB"){
         return 6;
+    }
+    else {
+        console.error('Unknown point type:', pointType);
+        return null; // Return null for unknown types
     }
 }
 
@@ -495,48 +708,234 @@ function getPositionsAndColors(nodes, pointType){
     };
 }        
 
+function updateLoadingProgress(percent, message) {
+    const progressBar = document.getElementById('progress-bar');
+    const progressText = document.getElementById('progress-text');
+    const subtitle = document.querySelector('.loading-subtitle');
+
+    if (progressBar) {
+        progressBar.style.width = percent + '%';
+    }
+    if (progressText) {
+        progressText.textContent = Math.round(percent) + '%';
+    }
+    if (subtitle && message) {
+        subtitle.textContent = message;
+    }
+}
+
+function showError(title, message, details) {
+    const overlay = document.getElementById('loading-overlay');
+    const loadingTitle = overlay.querySelector('.loading-title');
+    const subtitle = overlay.querySelector('.loading-subtitle');
+    const progressContainer = overlay.querySelector('.progress-container');
+    const progressText = overlay.querySelector('.progress-text');
+    const spinner = overlay.querySelector('.loading-spinner');
+
+    // Change to error state
+    overlay.classList.add('error');
+
+    // Update content
+    if (loadingTitle) loadingTitle.textContent = title || 'Error Loading Point Cloud';
+    if (subtitle) subtitle.textContent = message || 'Failed to load or parse the data.';
+
+    // Hide progress elements
+    if (progressContainer) progressContainer.style.display = 'none';
+    if (progressText) progressText.style.display = 'none';
+    if (spinner) spinner.style.display = 'none';
+
+    // Show error details if provided
+    if (details) {
+        const errorDetailsDiv = document.createElement('div');
+        errorDetailsDiv.className = 'error-details';
+        errorDetailsDiv.textContent = details;
+
+        const loadingContent = overlay.querySelector('.loading-content');
+        if (loadingContent && !loadingContent.querySelector('.error-details')) {
+            loadingContent.appendChild(errorDetailsDiv);
+        }
+    }
+
+    // Add action buttons
+    const existingActions = overlay.querySelector('.error-actions');
+    if (!existingActions) {
+        const actionsDiv = document.createElement('div');
+        actionsDiv.className = 'error-actions';
+        actionsDiv.innerHTML = `
+            <button class="error-button" onclick="location.reload()">Retry</button>
+            <button class="error-button secondary" onclick="window.location.href='/index.html'">Go Home</button>
+        `;
+
+        const loadingContent = overlay.querySelector('.loading-content');
+        if (loadingContent) {
+            loadingContent.appendChild(actionsDiv);
+        }
+    }
+
+    console.error('Point cloud loading error:', title, message, details);
+}
+
+function hideLoadingOverlay() {
+    const overlay = document.getElementById('loading-overlay');
+    if (overlay) {
+        overlay.classList.add('hidden');
+        setTimeout(() => {
+            overlay.style.display = 'none';
+        }, 500);
+    }
+}
+
 function startLoadingData(url, pointType, pointSize=1.5)
 {
     var httpRequest = new XMLHttpRequest();
+
+    // Track download progress
+    httpRequest.addEventListener('progress', function(e) {
+        if (e.lengthComputable) {
+            const percentComplete = (e.loaded / e.total) * 100;
+            updateLoadingProgress(percentComplete, 'Downloading point cloud data...');
+        }
+    });
+
+    // Track when download starts
+    httpRequest.addEventListener('loadstart', function() {
+        updateLoadingProgress(0, 'Starting download...');
+    });
+
+    // Handle network errors
+    httpRequest.addEventListener('error', function() {
+        showError(
+            'Network Error',
+            'Failed to download point cloud data.',
+            'Error: Could not connect to the server. Please check your internet connection and try again.'
+        );
+    });
+
+    // Handle timeout
+    httpRequest.addEventListener('timeout', function() {
+        showError(
+            'Request Timeout',
+            'The download took too long.',
+            'Error: Request timed out after 30 seconds. The file may be too large or your connection too slow.'
+        );
+    });
+
     httpRequest.onreadystatechange = function() {
         if (httpRequest.readyState === 4){
             // everything is good, the response is received
             if ((httpRequest.status == 200) || (httpRequest.status == 0)){
-                var buffer = httpRequest.response;
-                var dataview = new DataView(buffer);
+                try {
+                    updateLoadingProgress(100, 'Processing point cloud...');
+
+                    var buffer = httpRequest.response;
+
+                    // Validate buffer
+                    if (!buffer || buffer.byteLength === 0) {
+                        throw new Error('Empty or invalid data received (0 bytes)');
+                    }
+
+                    // Check minimum size (at least one point)
+                    const minSize = get_points_per_row(pointType) * 4; // 4 bytes per float32
+                    if (buffer.byteLength < minSize) {
+                        throw new Error(`Data too small: ${buffer.byteLength} bytes (expected at least ${minSize} bytes for one ${pointType} point)`);
+                    }
+
+                    // Check if data size is valid for point type
+                    const points_per_row = get_points_per_row(pointType);
+                    if ((buffer.byteLength / 4) % points_per_row !== 0) {
+                        throw new Error(`Invalid data format: ${buffer.byteLength} bytes cannot be evenly divided into ${pointType} points (${points_per_row} floats per point)`);
+                    }
+
+                    var dataview = new DataView(buffer);
+
+                    // Note: divide by 4 because of float32 has 4 bytes
+                    var ints = dataViewToFloat32Array(dataview, buffer.byteLength / 4)
+
+                    // Validate parsed data
+                    if (!ints || ints.length === 0) {
+                        throw new Error('Failed to parse point cloud data');
+                    }
+
+                    fillNodes(nodes, ints, points_per_row);
+
+                    if (nodes.length === 0) {
+                        throw new Error('No valid points found in data');
+                    }
+
+                    console.log("Loaded num points " + nodes.length + " of point type " + pointType + " with ppr: " + points_per_row)
+
+                    updateLoadingProgress(100, 'Building 3D geometry...');
+
+                    var particles = nodes.length;
+                    var geometry = new THREE.BufferGeometry();
+
+                    var temp = getPositionsAndColors(nodes, pointType);
+
+                    // Validate positions and colors
+                    if (!temp.positions || temp.positions.length === 0) {
+                        throw new Error('Failed to extract point positions');
+                    }
+
+                    if (!temp.colors || temp.colors.length === 0) {
+                        throw new Error('Failed to extract point colors');
+                    }
+
+                    geometry.setAttribute( 'position', new THREE.Float32BufferAttribute( temp.positions, 3 ) );
+                    colorBuffer = new THREE.Float32BufferAttribute( temp.colors, 3 );
+
+                    geometry.setAttribute( 'color', colorBuffer );
+                    geometry.computeBoundingSphere();
+
+                    var material = new THREE.PointsMaterial( { size: 0.04, vertexColors: THREE.VertexColors, sizeAttenuation: true } );
+                    points = new THREE.Points( geometry, material );
+                    scene.add( points );
+
+                    // Hide loading overlay after a short delay
+                    setTimeout(() => {
+                        hideLoadingOverlay();
+                    }, 500);
+
+                } catch (error) {
+                    // Handle parsing errors
+                    showError(
+                        'Data Parsing Error',
+                        'Failed to parse the point cloud data.',
+                        `Error: ${error.message}\n\nURL: ${url}\nPoint Type: ${pointType}\nData Size: ${buffer ? buffer.byteLength : 0} bytes`
+                    );
+                }
+
+        } else if (httpRequest.status == 404) {
+            showError(
+                'File Not Found',
+                'The requested point cloud file does not exist.',
+                `Error 404: Could not find file at:\n${url}\n\nThe file may have been moved or deleted.`
+            );
+        } else if (httpRequest.status == 403) {
+            showError(
+                'Access Denied',
+                'You do not have permission to access this file.',
+                `Error 403: Access forbidden to:\n${url}\n\nThe file may be private or require authentication.`
+            );
+        } else if (httpRequest.status >= 500) {
+            showError(
+                'Server Error',
+                'The server encountered an error.',
+                `Error ${httpRequest.status}: Server error when requesting:\n${url}\n\nPlease try again later.`
+            );
+        } else if (httpRequest.status > 0) {
+            showError(
+                'HTTP Error',
+                `Request failed with status ${httpRequest.status}`,
+                `Error ${httpRequest.status}: ${httpRequest.statusText}\n\nURL: ${url}`
+            );
+        }
+    }}
 
 
-                // Note: divide by 4 because of float32 has 4 bytes
-                var ints = dataViewToFloat32Array(dataview, buffer.byteLength / 4)
-
-                var points_per_row = get_points_per_row(pointType);
-                fillNodes(nodes, ints, points_per_row);
-
-                console.log("Loaded num points " + nodes.length + " of point type " + pointType + " with ppr: " + points_per_row)
-
-                var particles = nodes.length;
-                var geometry = new THREE.BufferGeometry();
-                
-                var temp = getPositionsAndColors(nodes, pointType);
-                
-                geometry.setAttribute( 'position', new THREE.Float32BufferAttribute( temp.positions, 3 ) );
-                colorBuffer = new THREE.Float32BufferAttribute( temp.colors, 3 );
-
-                geometry.setAttribute( 'color', colorBuffer );
-                geometry.computeBoundingSphere();
-                //
-                var material = new THREE.PointsMaterial( { size: 0.04, vertexColors: THREE.VertexColors, sizeAttenuation: true } );
-                points = new THREE.Points( geometry, material );
-                //points.frustumCulled = false;
-                scene.add( points );
-            
-
-        }}}
-
-    
     // Send the request
     httpRequest.open("GET", url, true);
     httpRequest.responseType = "arraybuffer";
+    httpRequest.timeout = 30000; // 30 second timeout
 
     httpRequest.send();
 }

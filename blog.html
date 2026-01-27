@@ -255,6 +255,141 @@
             </p>
         </article>
 
+        <!-- RealityMixer Tutorial -->
+        <article class="blog-post">
+            <h2>🎥 Tutorial: Capture Mixed Reality Videos with RealityMixer</h2>
+            <div class="meta">Category: VR Capture & Recording |
+                <a href="https://github.com/fabio914/RealityMixer">🔗 RealityMixer on GitHub</a>
+            </div>
+            <div class="tags">
+                <span class="tag">Meta Quest</span>
+                <span class="tag">iPhone/iPad</span>
+                <span class="tag">Video Capture</span>
+                <span class="tag">Tutorial</span>
+            </div>
+            <p>
+                <strong>Create professional mixed reality videos of yourself exploring point cloud data in VR.</strong>
+                RealityMixer lets you capture your VR sessions without a green screen, perfect for demos, presentations, and sharing your visualizations.
+            </p>
+
+            <div class="use-case-card">
+                <strong>What You'll Need:</strong><br>
+                • Meta Quest (Quest 1, 2, or Pro)<br>
+                • iPhone or iPad (A12 chip or newer, iOS 14+)<br>
+                • RealityMixer app (<a href="https://apps.apple.com/app/reality-mixer/id1539307552">Download on App Store</a>)<br>
+                • Same WiFi network for both devices
+            </div>
+
+            <h3 style="margin-top: 2rem;">Step-by-Step Setup</h3>
+
+            <p><strong>1. Enable Developer Mode on Quest</strong></p>
+            <div class="code-snippet">
+                • Open Meta Quest app on your phone<br>
+                • Go to Menu → Devices → Developer Mode<br>
+                • Enable Developer Mode<br>
+                • Put on your Quest headset and accept the prompt
+            </div>
+
+            <p><strong>2. Install RealityMixer on iOS</strong></p>
+            <p>Download from the <a href="https://apps.apple.com/app/reality-mixer/id1539307552">App Store</a> or build from <a href="https://github.com/fabio914/RealityMixer">source on GitHub</a>.</p>
+
+            <p><strong>3. Connect Your Devices</strong></p>
+            <div class="code-snippet">
+                • Make sure Quest and iPhone are on the same WiFi<br>
+                • Open RealityMixer on iPhone<br>
+                • Put on your Quest headset<br>
+                • Open any ImmersivePoints visualization on Quest<br>
+                • RealityMixer should auto-detect your Quest
+            </div>
+
+            <p><strong>4. Calibrate Your Camera</strong></p>
+            <p>
+                RealityMixer uses ARKit to track your position and blend you into the VR scene. Follow the on-screen calibration instructions:
+            </p>
+            <div class="code-snippet">
+                • Point your iPhone at yourself wearing the Quest<br>
+                • Tap the calibration button<br>
+                • Hold still for a few seconds<br>
+                • Once calibrated, you'll see yourself in the VR environment!
+            </div>
+
+            <p><strong>5. Record Your Session</strong></p>
+            <p>
+                Use iPhone's screen recording to capture your mixed reality exploration:
+            </p>
+            <div class="code-snippet">
+                • Swipe down to Control Center<br>
+                • Tap the Record button (circle icon)<br>
+                • Explore your point cloud in VR<br>
+                • Stop recording when done<br>
+                • Video saves to Photos app
+            </div>
+
+            <h3 style="margin-top: 2rem;">Pro Tips for Great Captures</h3>
+
+            <div class="use-case-card">
+                <strong>Lighting:</strong> Use good lighting on yourself for better person segmentation<br>
+                <br>
+                <strong>Movement:</strong> Move slowly and deliberately - ARKit tracking works best with smooth movements<br>
+                <br>
+                <strong>Framing:</strong> Position your iPhone 3-6 feet away for the best perspective<br>
+                <br>
+                <strong>Performance:</strong> Close other apps on your iPhone for smoother capture<br>
+                <br>
+                <strong>Quest Browser:</strong> Use the Quest browser in VR mode (not desktop mode) for ImmersivePoints
+            </div>
+
+            <h3 style="margin-top: 2rem;">Use Cases for Mixed Reality Capture</h3>
+
+            <p><strong>Research Presentations:</strong> Show your team exploring LiDAR scans or molecular structures</p>
+            <p><strong>Educational Content:</strong> Create tutorials demonstrating how to navigate 3D data</p>
+            <p><strong>Conference Demos:</strong> Record demonstrations for remote presentations</p>
+            <p><strong>Social Sharing:</strong> Share your VR explorations on YouTube, Twitter, LinkedIn</p>
+            <p><strong>Documentation:</strong> Document analysis workflows for papers or reports</p>
+
+            <h3 style="margin-top: 2rem;">Troubleshooting</h3>
+
+            <div class="code-snippet">
+                <strong>Can't find Quest device?</strong><br>
+                • Ensure both devices are on same WiFi<br>
+                • Restart RealityMixer app<br>
+                • Restart Quest headset<br>
+                • Check that Developer Mode is enabled<br>
+                <br>
+                <strong>Laggy or choppy video?</strong><br>
+                • Use 5GHz WiFi for better bandwidth<br>
+                • Reduce point cloud size (subsample to fewer points)<br>
+                • Close background apps on iPhone<br>
+                <br>
+                <strong>Person segmentation not working?</strong><br>
+                • Improve lighting conditions<br>
+                • Move to a less cluttered background<br>
+                • Ensure iPhone has A12 chip or newer<br>
+                <br>
+                <strong>Calibration issues?</strong><br>
+                • Hold still during calibration<br>
+                • Ensure Quest headset is clearly visible<br>
+                • Try recalibrating from different angle
+            </div>
+
+            <h3 style="margin-top: 2rem;">Alternative: SideQuest Workaround</h3>
+
+            <p>
+                Due to Android 12 compatibility issues on newer Quest firmware, you may need to use <a href="https://sidequestvr.com/">SideQuest</a>
+                with the <a href="https://github.com/Meorx/mixcast-quest-bridge">Mixcast Quest Bridge</a> as an intermediate step.
+                See the <a href="https://github.com/fabio914/RealityMixer#readme">RealityMixer README</a> for detailed instructions.
+            </p>
+
+            <p class="text-center mt-4">
+                <a class="btn btn-primary" href="https://github.com/fabio914/RealityMixer" target="_blank">
+                    View RealityMixer on GitHub →
+                </a>
+                <a class="btn btn-outline-primary" href="https://apps.apple.com/app/reality-mixer/id1539307552" target="_blank">
+                    Download on App Store →
+                </a>
+            </p>
+        </article>
+
         <!-- More Ideas Coming Soon -->
         <article class="blog-post">
             <h2>💡 More Projects Coming Soon</h2>
