@@ -40,7 +40,7 @@ ImmersivePoints is a Python package and web application that lets you visualize 
   </tr>
 </table>
 
-[**→ View more examples on immersivepoints.com**](https://immersivepoints.com/)
+[**→ View more examples on immersivepoints.meertens.dev**](https://immersivepoints.meertens.dev/)
 
 ## Examples
 
@@ -77,18 +77,18 @@ All coordinates should be `float32` numpy arrays.
 
 Explore pre-loaded datasets:
 
-- [Astyx LiDAR + Radar Fusion](https://immersivepoints.com/oculus.html?jsonb64=eyJwb2ludHMiOiBbeyJzb3VyY2UiOiAidXJsIiwgInVybCI6ICJodHRwczovL3BvaW50Y2xvdWR2aXN1YWxpemF0aW9uLnMzLmV1LWNlbnRyYWwtMS5hbWF6b25hd3MuY29tL2FzdHl4L2FzdHl4MDAwMDAwLnR4dC54eXpyZ2IiLCAidHlwZSI6ICJYWVpSR0IifV0sICJiYm94ZXMiOiBbeyJzb3VyY2UiOiAidXJsIiwgInVybCI6ICJodHRwczovL3BvaW50Y2xvdWR2aXN1YWxpemF0aW9uLnMzLmV1LWNlbnRyYWwtMS5hbWF6b25hd3MuY29tL2FzdHl4L2FzdHl4YmJveDAwMDAwMC50eHQuYmJveCJ9XX0=)
-- [PandaSet RGB Point Cloud](https://immersivepoints.com/oculus.html?jsonb64=eyJwb2ludHMiOiBbeyJzb3VyY2UiOiAidXJsIiwgInVybCI6ICJodHRwczovL3BvaW50Y2xvdWR2aXN1YWxpemF0aW9uLnMzLmV1LWNlbnRyYWwtMS5hbWF6b25hd3MuY29tL3BhbmRhLWV4cG9ydC8wMjRfeHl6cmdiLm5weSIsICJ0eXBlIjogIlhZWlJHQiJ9XX0=)
-- [PandaSet Semantic Segmentation](https://immersivepoints.com/oculus.html?jsonb64=eyJwb2ludHMiOiBbeyJzb3VyY2UiOiAidXJsIiwgInVybCI6ICJodHRwczovL3BvaW50Y2xvdWR2aXN1YWxpemF0aW9uLnMzLmV1LWNlbnRyYWwtMS5hbWF6b25hd3MuY29tL3BhbmRhLWV4cG9ydC8wMjRfeHl6aS5ucHkiLCAidHlwZSI6ICJYWVpJIn1dLCAiYmJveGVzIjogW3sic291cmNlIjogInVybCIsICJ1cmwiOiAiaHR0cHM6Ly9wb2ludGNsb3VkdmlzdWFsaXphdGlvbi5zMy5ldS1jZW50cmFsLTEuYW1hem9uYXdzLmNvbS9wYW5kYS1leHBvcnQvMDI0X2Jib3gubnB5In1dfQ==)
-- [AEV Autonomous Driving](https://immersivepoints.com/oculus.html?name=e2652aab-4ace-4a09-86f4-374b23cb677b.xyzi)
-- [Notre Dame 3D Scan](https://immersivepoints.com/oculus.html?name=d6263c4a-7121-432f-8712-b0de530a78ff.xyzrgb)
-- [Brain Clustering Visualization](https://immersivepoints.com/oculus.html?name=77b04781-5d7c-445f-9e6a-65956758d644.xyzi)
+- [Astyx LiDAR + Radar Fusion](https://immersivepoints.meertens.dev/oculus.html?jsonb64=eyJwb2ludHMiOiBbeyJzb3VyY2UiOiAidXJsIiwgInVybCI6ICJodHRwczovL3BvaW50Y2xvdWR2aXN1YWxpemF0aW9uLnMzLmV1LWNlbnRyYWwtMS5hbWF6b25hd3MuY29tL2FzdHl4L2FzdHl4MDAwMDAwLnR4dC54eXpyZ2IiLCAidHlwZSI6ICJYWVpSR0IifV0sICJiYm94ZXMiOiBbeyJzb3VyY2UiOiAidXJsIiwgInVybCI6ICJodHRwczovL3BvaW50Y2xvdWR2aXN1YWxpemF0aW9uLnMzLmV1LWNlbnRyYWwtMS5hbWF6b25hd3MuY29tL2FzdHl4L2FzdHl4YmJveDAwMDAwMC50eHQuYmJveCJ9XX0=)
+- [PandaSet RGB Point Cloud](https://immersivepoints.meertens.dev/oculus.html?jsonb64=eyJwb2ludHMiOiBbeyJzb3VyY2UiOiAidXJsIiwgInVybCI6ICJodHRwczovL3BvaW50Y2xvdWR2aXN1YWxpemF0aW9uLnMzLmV1LWNlbnRyYWwtMS5hbWF6b25hd3MuY29tL3BhbmRhLWV4cG9ydC8wMjRfeHl6cmdiLm5weSIsICJ0eXBlIjogIlhZWlJHQiJ9XX0=)
+- [PandaSet Semantic Segmentation](https://immersivepoints.meertens.dev/oculus.html?jsonb64=eyJwb2ludHMiOiBbeyJzb3VyY2UiOiAidXJsIiwgInVybCI6ICJodHRwczovL3BvaW50Y2xvdWR2aXN1YWxpemF0aW9uLnMzLmV1LWNlbnRyYWwtMS5hbWF6b25hd3MuY29tL3BhbmRhLWV4cG9ydC8wMjRfeHl6aS5ucHkiLCAidHlwZSI6ICJYWVpJIn1dLCAiYmJveGVzIjogW3sic291cmNlIjogInVybCIsICJ1cmwiOiAiaHR0cHM6Ly9wb2ludGNsb3VkdmlzdWFsaXphdGlvbi5zMy5ldS1jZW50cmFsLTEuYW1hem9uYXdzLmNvbS9wYW5kYS1leHBvcnQvMDI0X2Jib3gubnB5In1dfQ==)
+- [AEV Autonomous Driving](https://immersivepoints.meertens.dev/oculus.html?name=e2652aab-4ace-4a09-86f4-374b23cb677b.xyzi)
+- [Notre Dame 3D Scan](https://immersivepoints.meertens.dev/oculus.html?name=d6263c4a-7121-432f-8712-b0de530a78ff.xyzrgb)
+- [Brain Clustering Visualization](https://immersivepoints.meertens.dev/oculus.html?name=77b04781-5d7c-445f-9e6a-65956758d644.xyzi)
 
 ---
 
 ## Documentation
 
-For detailed documentation, see: (https://immersivepoints.com/)** - Live demos and upload tool
+For detailed documentation, see: (https://immersivepoints.meertens.dev/)** - Live demos and upload tool
 
 ---
 

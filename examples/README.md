@@ -120,7 +120,7 @@ Project-specific requirements are listed in each folder's README.
 
 - 📖 Main documentation: [README.md](../README.md)
 - 🐛 Issues: [GitHub Issues](https://github.com/rmeertens/ImmersivePoints/issues)
-- 💡 Ideas: Check out our [blog](https://immersivepoints.com/blog.html) for more use cases
+- 💡 Ideas: Check out our [blog](https://immersivepoints.meertens.dev/blog.html) for more use cases
 
 ## Contributing
 

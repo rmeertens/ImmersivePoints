@@ -45,5 +45,5 @@ Atoms are colored by element:
 
 After running the notebook, you'll get:
 - A binary `.xyzi` file ready for VR
-- A direct link to view in immersivepoints.com
+- A direct link to view in immersivepoints.meertens.dev
 - ~10,000-50,000 points depending on protein size

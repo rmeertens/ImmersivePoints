@@ -1,31 +1,31 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 <url>
-  <loc>https://immersivepoints.com/</loc>
+  <loc>https://immersivepoints.meertens.dev/</loc>
   <lastmod>2026-01-26</lastmod>
   <changefreq>weekly</changefreq>
   <priority>1.00</priority>
 </url>
 <url>
-  <loc>https://immersivepoints.com/index.html</loc>
+  <loc>https://immersivepoints.meertens.dev/index.html</loc>
   <lastmod>2026-01-26</lastmod>
   <changefreq>weekly</changefreq>
   <priority>1.00</priority>
 </url>
 <url>
-  <loc>https://immersivepoints.com/blog.html</loc>
+  <loc>https://immersivepoints.meertens.dev/blog.html</loc>
   <lastmod>2026-01-26</lastmod>
   <changefreq>monthly</changefreq>
   <priority>0.90</priority>
 </url>
 <url>
-  <loc>https://immersivepoints.com/upload.html</loc>
+  <loc>https://immersivepoints.meertens.dev/upload.html</loc>
   <lastmod>2026-01-26</lastmod>
   <changefreq>monthly</changefreq>
   <priority>0.80</priority>
 </url>
 <url>
-  <loc>https://immersivepoints.com/examples.html</loc>
+  <loc>https://immersivepoints.meertens.dev/examples.html</loc>
   <lastmod>2026-01-26</lastmod>
   <changefreq>monthly</changefreq>
   <priority>0.80</priority>
