@@ -88,7 +88,7 @@ Explore pre-loaded datasets:
 
 ## Documentation
 
-For detailed documentation, see: (https://immersivepoints.meertens.dev/)** - Live demos and upload tool
+For detailed documentation, see: (https://immersivepoints.meertens.dev/)** - Live demos and viewer link generator
 
 ---
 

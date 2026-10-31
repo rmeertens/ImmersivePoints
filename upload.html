@@ -13,25 +13,25 @@
         gtag('config', 'G-50W6WV16DJ');
     </script>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="Upload and host your own 3D point clouds for VR visualization. Supports XYZI and XYZRGB formats. Free hosting for scientific research, LiDAR data, and 3D scans.">
+    <meta name="description" content="View your own self-hosted 3D point clouds in VR. Supports XYZI and XYZRGB formats for scientific research, LiDAR data, and 3D scans.">
 
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://immersivepoints.meertens.dev/upload.html">
-    <meta property="og:title" content="Upload 3D Point Clouds for VR Visualization | ImmersivePoints">
-    <meta property="og:description" content="Upload and host your own 3D point clouds for VR. Supports XYZI and XYZRGB formats. Free hosting.">
+    <meta property="og:title" content="View Your Own 3D Point Clouds in VR | ImmersivePoints">
+    <meta property="og:description" content="View your own self-hosted 3D point clouds in VR. Supports XYZI and XYZRGB formats.">
     <meta property="og:image" content="https://immersivepoints.meertens.dev/images/immersivepoints_jumbotron.png">
 
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image">
     <meta property="twitter:url" content="https://immersivepoints.meertens.dev/upload.html">
-    <meta property="twitter:title" content="Upload 3D Point Clouds for VR Visualization | ImmersivePoints">
-    <meta property="twitter:description" content="Upload and host your own 3D point clouds for VR. Supports XYZI and XYZRGB formats. Free hosting.">
+    <meta property="twitter:title" content="View Your Own 3D Point Clouds in VR | ImmersivePoints">
+    <meta property="twitter:description" content="View your own self-hosted 3D point clouds in VR. Supports XYZI and XYZRGB formats.">
     <meta property="twitter:image" content="https://immersivepoints.meertens.dev/images/immersivepoints_jumbotron.png">
 
     <link rel="canonical" href="https://immersivepoints.meertens.dev/upload.html">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
-    <title>Upload 3D Point Clouds for VR Visualization | Free Hosting | ImmersivePoints</title>
+    <title>View Your Own 3D Point Clouds in VR | ImmersivePoints</title>
 
     <style>
         body {
@@ -176,11 +176,11 @@
 
         <div class="step-card">
             <h4><span class="step-number">2</span> Host your file</h4>
-            <p>Upload your binary file to any web hosting service that supports CORS. Some options include:</p>
+            <p>ImmersivePoints does not host files: it is not possible to upload your data to the ImmersivePoints server or its storage bucket. Put your binary file on any web hosting service you control that supports CORS. Some options include:</p>
             <ul>
                 <li><strong>GitHub Pages</strong> - Free hosting for static files. Simply add your file to a repository and enable GitHub Pages.</li>
-                <li><strong>Amazon S3</strong> - Create a public bucket or configure CORS for your bucket.</li>
-                <li><strong>Google Cloud Storage</strong> - Upload to a bucket with public access or CORS configured.</li>
+                <li><strong>Amazon S3</strong> - Create a public bucket in your own AWS account and configure CORS for it.</li>
+                <li><strong>Google Cloud Storage</strong> - Use a bucket in your own account with public access or CORS configured.</li>
                 <li><strong>Your own web server</strong> - Ensure CORS headers are set to allow requests from immersivepoints.meertens.dev</li>
             </ul>
             <p><small><strong>Important:</strong> The hosting server must allow cross-origin requests (CORS) from immersivepoints.meertens.dev for the viewer to load your file.</small></p>
@@ -230,9 +230,9 @@
                 const openBtn = document.getElementById('openViewerBtn');
                 
                 if (fileUrl) {
-                    const encodedUrl = encodeURIComponent(fileUrl);
+                    const config = {points: [{source: 'url', url: fileUrl, type: format.toUpperCase()}]};
                     const baseUrl = window.location.origin;
-                    const viewerLink = `${baseUrl}/oculus.html?name=${encodedUrl}&mode=${format}`;
+                    const viewerLink = `${baseUrl}/oculus.html?jsonb64=${encodeURIComponent(btoa(JSON.stringify(config)))}`;
                     viewerLinkInput.value = viewerLink;
                     openBtn.href = viewerLink;
                     container.style.display = 'block';
