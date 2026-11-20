@@ -14,6 +14,7 @@ ImmersivePoints is a Python package and web application that lets you visualize 
 - **🎮 VR Visualization**: View point clouds in virtual reality (Oculus Quest, PC VR headsets)
 - **📊 Jupyter Integration**: Render point clouds inline in notebooks with a single function call
 - **🎨 Flexible Formats**: Support for XYZ, XYZI (with hue coloring), and XYZRGB point clouds
+- **🗜️ Cloudini Compression**: Load [Cloudini](https://github.com/facontidavide/cloudini) compressed `.cldn` files directly, and convert to and from Cloudini in the browser
 - **⚡ Fast**: Efficient binary format and Three.js renderer for smooth performance
 
 ---
@@ -71,6 +72,16 @@ ImmersivePoints supports three point cloud formats:
 | **XYZRGB** | 6 | `[x, y, z, r, g, b]` - Positions + RGB (0.0-1.0) |
 
 All coordinates should be `float32` numpy arrays.
+
+### Cloudini (compressed)
+
+The viewer also reads [Cloudini](https://github.com/facontidavide/cloudini) compressed point clouds (`.cldn`). Cloudini is the compression format used for ROS `point_cloud_interfaces/CompressedPointCloud2` messages, and it typically makes files several times smaller (a 115k-point lidar scan at 1 mm precision goes from 1.8 MB to 0.4 MB).
+
+- **View**: use `"type": "CLOUDINI"` in a `jsonb64` config, or just point at a `.cldn` URL. Cloudini data is detected automatically from its `CLOUDINI_V` header.
+- **Convert**: the [Your files](https://immersivepoints.meertens.dev/upload.html#cloudini) page compresses `.xyz`/`.xyzi`/`.xyzrgb` files to `.cldn` and decompresses `.cldn` files back, entirely in your browser.
+- **Fields**: `x`, `y`, `z` are required. Colors come from `hue`, packed `rgb`/`rgba`, separate `r`/`g`/`b`, or `intensity` (in that order), otherwise from height.
+
+Encoding and decoding use the official Cloudini WebAssembly build (release 1.5.0, Apache-2.0), vendored in [`js/vendor/cloudini/`](js/vendor/cloudini/). The wrapper is [`js/cloudini.js`](js/cloudini.js).
 
 
 ## Live Examples

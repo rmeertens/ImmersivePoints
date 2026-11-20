@@ -13,20 +13,20 @@
         gtag('config', 'G-50W6WV16DJ');
     </script>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="View your own self-hosted 3D point clouds in VR. Supports XYZI and XYZRGB formats for scientific research, LiDAR data, and 3D scans.">
+    <meta name="description" content="View your own self-hosted 3D point clouds in VR. Supports XYZI, XYZRGB and Cloudini formats for scientific research, LiDAR data, and 3D scans.">
 
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://immersivepoints.meertens.dev/upload.html">
     <meta property="og:title" content="View Your Own 3D Point Clouds in VR | ImmersivePoints">
-    <meta property="og:description" content="View your own self-hosted 3D point clouds in VR. Supports XYZI and XYZRGB formats.">
+    <meta property="og:description" content="View your own self-hosted 3D point clouds in VR. Supports XYZI, XYZRGB and Cloudini formats.">
     <meta property="og:image" content="https://immersivepoints.meertens.dev/images/immersivepoints_jumbotron.png">
 
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image">
     <meta property="twitter:url" content="https://immersivepoints.meertens.dev/upload.html">
     <meta property="twitter:title" content="View Your Own 3D Point Clouds in VR | ImmersivePoints">
-    <meta property="twitter:description" content="View your own self-hosted 3D point clouds in VR. Supports XYZI and XYZRGB formats.">
+    <meta property="twitter:description" content="View your own self-hosted 3D point clouds in VR. Supports XYZI, XYZRGB and Cloudini formats.">
     <meta property="twitter:image" content="https://immersivepoints.meertens.dev/images/immersivepoints_jumbotron.png">
 
     <link rel="canonical" href="https://immersivepoints.meertens.dev/upload.html">
@@ -172,6 +172,7 @@
         <div class="step-card">
             <h4><span class="step-number">1</span> Prepare your pointcloud file</h4>
             <p>Export your pointcloud as a binary file in one of the supported formats (see file format specifications below).</p>
+            <p class="mb-0">Large file? <a href="#cloudini">Compress it with Cloudini</a> to make it several times smaller, so it downloads faster in the headset.</p>
         </div>
 
         <div class="step-card">
@@ -204,6 +205,10 @@
                 <div class="form-check form-check-inline">
                     <input class="form-check-input" type="radio" name="fileFormat" id="formatXyzrgb" value="xyzrgb" onchange="generateViewerLink()">
                     <label class="form-check-label" for="formatXyzrgb">XYZRGB (position + color)</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="fileFormat" id="formatCloudini" value="cloudini" onchange="generateViewerLink()">
+                    <label class="form-check-label" for="formatCloudini">Cloudini (.cldn, compressed)</label>
                 </div>
             </div>
 
@@ -257,8 +262,148 @@
 
         <hr>
 
+        <h2 id="cloudini">Compress or decompress with Cloudini</h2>
+        <p><a href="https://github.com/facontidavide/cloudini">Cloudini</a> is an open-source point cloud compression format, also used for ROS bags and MCAP files. The viewer reads Cloudini files (<code>.cldn</code>) directly. Use the tools below to convert between ImmersivePoints files and Cloudini. Everything runs in your browser; your files are not uploaded anywhere.</p>
+
+        <div class="format-card">
+            <h3>Compress to Cloudini</h3>
+            <p>Convert an ImmersivePoints file (<code>.xyz</code>, <code>.xyzi</code> or <code>.xyzrgb</code>, big-endian float32) to a <code>.cldn</code> file.</p>
+            <div class="form-row">
+                <div class="form-group col-md-6">
+                    <label for="encodeFile"><strong>Point cloud file</strong></label>
+                    <input type="file" class="form-control-file" id="encodeFile">
+                </div>
+                <div class="form-group col-md-6">
+                    <label for="encodeType"><strong>Format</strong></label>
+                    <select class="form-control" id="encodeType">
+                        <option value="auto">Detect from file extension</option>
+                        <option value="XYZ">XYZ (position only)</option>
+                        <option value="XYZI">XYZI (position + hue)</option>
+                        <option value="XYZRGB">XYZRGB (position + color)</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group col-md-6">
+                    <label for="encodeResolution"><strong>Position precision</strong></label>
+                    <select class="form-control" id="encodeResolution">
+                        <option value="0.01">0.01 (coarse, smallest file)</option>
+                        <option value="0.001" selected>0.001 (recommended)</option>
+                        <option value="0.0001">0.0001 (fine)</option>
+                        <option value="lossless">Lossless (exact, larger file)</option>
+                    </select>
+                    <small class="form-text text-muted">Quantisation step in your data's units: positions are decoded within half of this value. With metres, 0.001 is 1&nbsp;mm.</small>
+                </div>
+                <div class="form-group col-md-6">
+                    <label for="encodeCompression"><strong>Compression</strong></label>
+                    <select class="form-control" id="encodeCompression">
+                        <option value="ZSTD" selected>ZSTD (smallest)</option>
+                        <option value="LZ4">LZ4 (fastest to decode)</option>
+                        <option value="NONE">None</option>
+                    </select>
+                </div>
+            </div>
+            <button type="button" class="btn btn-primary" id="encodeBtn">Compress</button>
+            <div id="encodeResult" class="mt-3" role="status" aria-live="polite"></div>
+        </div>
+
+        <div class="format-card">
+            <h3>Decompress from Cloudini</h3>
+            <p>Convert a <code>.cldn</code> file to an ImmersivePoints file. Files made with the compressor above come back in their original format. Other Cloudini clouds, such as ones from a ROS bag, are converted to XYZRGB with the same colours the viewer shows.</p>
+            <div class="form-group">
+                <label for="decodeFile"><strong>Cloudini file</strong></label>
+                <input type="file" class="form-control-file" id="decodeFile" accept=".cldn">
+            </div>
+            <button type="button" class="btn btn-primary" id="decodeBtn">Decompress</button>
+            <div id="decodeResult" class="mt-3" role="status" aria-live="polite"></div>
+        </div>
+
+        <script type="module">
+            import { encodeCloudini, cloudiniToImmersive, readImmersiveFloats, isCloudini, POINT_TYPES } from './js/cloudini.js';
+
+            const formatBytes = (n) => n < 1024 ? n + ' B' : n < 1048576 ? (n / 1024).toFixed(1) + ' KB' : (n / 1048576).toFixed(2) + ' MB';
+            const baseName = (name) => name.replace(/\.[^.]+$/, '');
+
+            function escapeHtml(s) {
+                return String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+            }
+
+            function showResult(el, kind, html) {
+                el.innerHTML = '<div class="alert alert-' + kind + ' mb-0"></div>';
+                el.firstChild.innerHTML = html;
+            }
+
+            function downloadLink(bytes, filename) {
+                const url = URL.createObjectURL(new Blob([bytes], { type: 'application/octet-stream' }));
+                return '<a class="btn btn-success mt-2" href="' + url + '" download="' + escapeHtml(filename) + '">Download ' + escapeHtml(filename) + '</a>';
+            }
+
+            async function runBusy(button, fn) {
+                const label = button.textContent;
+                button.disabled = true;
+                button.textContent = 'Working...';
+                try { await fn(); } finally { button.disabled = false; button.textContent = label; }
+            }
+
+            document.getElementById('encodeBtn').addEventListener('click', (ev) => runBusy(ev.currentTarget, async () => {
+                const out = document.getElementById('encodeResult');
+                const file = document.getElementById('encodeFile').files[0];
+                if (!file) { showResult(out, 'warning', 'Choose a file first.'); return; }
+                try {
+                    const buffer = await file.arrayBuffer();
+                    if (isCloudini(buffer)) throw new Error('This file is already Cloudini-compressed.');
+                    let type = document.getElementById('encodeType').value;
+                    if (type === 'auto') {
+                        const ext = (file.name.match(/\.([^.]+)$/) || [])[1];
+                        type = ext ? ext.toUpperCase() : '';
+                        if (!POINT_TYPES[type]) throw new Error('Cannot detect the format from "' + file.name + '". Pick XYZ, XYZI or XYZRGB above.');
+                    }
+                    const res = document.getElementById('encodeResolution').value;
+                    const floats = readImmersiveFloats(buffer);
+                    const encoded = await encodeCloudini(floats, type, {
+                        resolution: res === 'lossless' ? null : parseFloat(res),
+                        compression: document.getElementById('encodeCompression').value,
+                    });
+                    const points = floats.length / POINT_TYPES[type];
+                    showResult(out, 'success',
+                        '<strong>' + points.toLocaleString() + '</strong> ' + type + ' points: ' + formatBytes(buffer.byteLength) +
+                        ' &rarr; <strong>' + formatBytes(encoded.length) + '</strong> (' + (buffer.byteLength / encoded.length).toFixed(1) + '&times; smaller).<br>' +
+                        downloadLink(encoded, baseName(file.name) + '.cldn'));
+                } catch (err) {
+                    showResult(out, 'danger', '<strong>Could not compress:</strong> ' + escapeHtml(err.message));
+                }
+            }));
+
+            document.getElementById('decodeBtn').addEventListener('click', (ev) => runBusy(ev.currentTarget, async () => {
+                const out = document.getElementById('decodeResult');
+                const file = document.getElementById('decodeFile').files[0];
+                if (!file) { showResult(out, 'warning', 'Choose a file first.'); return; }
+                try {
+                    const buffer = await file.arrayBuffer();
+                    const result = await cloudiniToImmersive(buffer);
+                    const info = result.info;
+                    const fields = info.fields.map((f) => escapeHtml(f.name) + ' <small class="text-muted">(' + escapeHtml(f.type) + ')</small>').join(', ');
+                    const ext = '.' + result.pointType.toLowerCase();
+                    const dropped = info.width * info.height - result.pointCount;
+                    const derivedColor = result.pointType === 'XYZRGB' && result.colorSource !== 'rgb' && result.colorSource !== 'r,g,b';
+                    showResult(out, 'success',
+                        'Cloudini v' + escapeHtml(info.version) + ', ' + escapeHtml(info.encoding_opt) + ' + ' + escapeHtml(info.compression_opt) +
+                        '. Fields: ' + fields + '.<br>' +
+                        '<strong>' + result.pointCount.toLocaleString() + '</strong> points' +
+                        (dropped ? ' (' + dropped.toLocaleString() + ' points without a valid position skipped)' : '') +
+                        ' &rarr; ' + result.pointType + ', ' + formatBytes(result.bytes.length) +
+                        (derivedColor ? ', coloured by ' + escapeHtml(result.colorSource) : '') + '.<br>' +
+                        downloadLink(result.bytes, baseName(file.name) + ext));
+                } catch (err) {
+                    showResult(out, 'danger', '<strong>Could not decompress:</strong> ' + escapeHtml(err.message));
+                }
+            }));
+        </script>
+
+        <hr>
+
         <h2>File format specifications</h2>
-        <p>All binary files must be in <strong>float32</strong> format. ImmersivePoints supports two formats:</p>
+        <p>All binary files must be in <strong>float32</strong> format. ImmersivePoints supports two raw formats, plus <a href="#cloudini-format">compressed Cloudini files</a>:</p>
 
         <div class="format-card">
             <h3>XYZI Format <span class="badge badge-primary">4 values per point</span></h3>
@@ -303,6 +448,28 @@
             </table>
         </div>
 
+        <div class="format-card">
+            <h3 id="cloudini-format">Cloudini <span class="badge badge-info">Compressed</span></h3>
+            <p>A <a href="https://github.com/facontidavide/cloudini">Cloudini</a> file (<code>.cldn</code>) holds one compressed point cloud and is typically several times smaller than the raw file. Make one with the <a href="#cloudini">compressor above</a>, with the Cloudini tools (for example <code>pcd_to_cloudini_converter</code> or the Cloudini Python encoder), or take the <code>compressed_data</code> of a ROS <code>point_cloud_interfaces/CompressedPointCloud2</code> message. The viewer recognises Cloudini data automatically from its <code>CLOUDINI_V</code> header and reads every version up to 6.</p>
+            <table class="format-table">
+                <thead>
+                    <tr>
+                        <th>Field</th>
+                        <th>Type</th>
+                        <th>Used for</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td class="field-name">x, y, z</td><td class="field-type">any numeric type</td><td>Position (required). Points with a NaN or infinite coordinate are skipped.</td></tr>
+                    <tr><td class="field-name">hue</td><td class="field-type">float32</td><td>Color hue (0.0 &ndash; 1.0), as in XYZI</td></tr>
+                    <tr><td class="field-name">rgb / rgba</td><td class="field-type">uint32 or float32</td><td>Packed <code>0x00RRGGBB</code> color (ROS/PCL convention)</td></tr>
+                    <tr><td class="field-name">r, g, b</td><td class="field-type">uint8, uint16 or float</td><td>Separate color channels</td></tr>
+                    <tr><td class="field-name">intensity</td><td class="field-type">any numeric type</td><td>Colored from blue (low) to red (high)</td></tr>
+                </tbody>
+            </table>
+            <small class="text-muted">Colors use the first match in this order. With none of these fields, points are colored by height (Y). Other fields are ignored. Coordinates are shown as stored, with Y up; clouds from ROS usually have Z up.</small>
+        </div>
+
         <div class="format-card" style="opacity: 0.7;">
             <h3>Bounding Boxes <span class="badge badge-secondary">Coming Soon</span></h3>
             <p>Support for 3D bounding boxes is planned.</p>
@@ -341,7 +508,7 @@
             <h3>Simple file URL <span class="badge badge-primary">Recommended</span></h3>
             <p>Pass a URL to your hosted binary file. The file extension determines the format.</p>
             <pre>oculus.html?name=https://example.com/mycloud.xyzi</pre>
-            <p class="mb-0"><small class="text-muted">Use <code>.xyzi</code> or <code>.xyzrgb</code> file extension to auto-detect format.</small></p>
+            <p class="mb-0"><small class="text-muted">Use <code>.xyzi</code>, <code>.xyzrgb</code> or <code>.cldn</code> file extension to auto-detect format, or add <code>&amp;mode=xyzi</code>, <code>xyzrgb</code> or <code>cloudini</code> for other file names. If the URL itself has a query string (<code>&amp;</code> or <code>=</code>), encode it with <code>encodeURIComponent</code> first.</small></p>
         </div>
 
         <div class="format-card">
@@ -406,7 +573,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr><td class="field-name">mode</td><td class="field-type">xyzi, xyzrgb</td><td>Specify format when using <code>name</code> parameter</td></tr>
+                    <tr><td class="field-name">mode</td><td class="field-type">xyzi, xyzrgb, cloudini</td><td>Specify format when using <code>name</code> parameter (overrides the file extension)</td></tr>
                     <tr><td class="field-name">showAxes</td><td class="field-type">true, false</td><td>Show XYZ axis helper in the scene</td></tr>
                     <tr><td class="field-name">autoRotate</td><td class="field-type">true, false</td><td>Auto-rotate the camera around the scene</td></tr>
                 </tbody>

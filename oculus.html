@@ -193,7 +193,8 @@
         import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.121.1/examples/jsm/controls/OrbitControls.js';
 		import { VRButton } from 'https://cdn.jsdelivr.net/npm/three@0.121.1/examples/jsm/webxr/VRButton.js';        
         import { GLTFLoader } from 'https://cdn.jsdelivr.net/npm/three@0.121.1/examples/jsm/loaders/GLTFLoader.js';
-        import { XRControllerModelFactory } from 'https://cdn.jsdelivr.net/npm/three@0.121.1/examples/jsm/webxr/XRControllerModelFactory.js';   
+        import { XRControllerModelFactory } from 'https://cdn.jsdelivr.net/npm/three@0.121.1/examples/jsm/webxr/XRControllerModelFactory.js';
+        import { isCloudini, decodeCloudini, cloudToPoints } from './js/cloudini.js';
 
 var camera, scene, renderer;
 var geometry, material, mesh;
@@ -237,18 +238,21 @@ var json_base64 = getQueryVariable('jsonb64', null);
 var base64_str = getQueryVariable('base64', null);
         
 if(filename){
-    var url = "https://pointcloudvisualization.s3.eu-central-1.amazonaws.com/"+filename;
+    // A full URL is loaded as-is; a bare file name refers to the ImmersivePoints example bucket.
+    var url = /^https?:\/\//i.test(filename)
+        ? filename
+        : "https://pointcloudvisualization.s3.eu-central-1.amazonaws.com/"+filename;
 
-    if(url.endsWith("xyzi")){
-        startLoadingData(url, "XYZI");
-    }
-    else{
-        startLoadingData(url, "XYZRGB");
-    }
+    startLoadingData(url, pointTypeForUrl(url, getQueryVariable('mode', null)));
 }
 else if(base64_str){
-    var tempPoints = getPointsFromBase64String(base64_str, "XYZI");
-    scene.add(tempPoints);
+    if(base64IsCloudini(base64_str)){
+        addCloudiniPoints(_base64ToArrayBuffer(base64_str), 'base64 URL parameter');
+    }
+    else{
+        var tempPoints = getPointsFromBase64String(base64_str, "XYZI");
+        scene.add(tempPoints);
+    }
 }
 else if(json_base64){
     var decodedData = JSON.parse(atob(json_base64));            
@@ -268,8 +272,13 @@ else if(json_base64){
                 startLoadingData(pointToLoad['url'], pointToLoad["type"], pointSize);
             }
             else if(pointToLoad['source'] == 'base64'){
-                var tempPoints = getPointsFromBase64String(pointToLoad["base64"], pointToLoad["type"]);
-                scene.add(tempPoints);
+                if(isCloudiniType(pointToLoad["type"]) || base64IsCloudini(pointToLoad["base64"])){
+                    addCloudiniPoints(_base64ToArrayBuffer(pointToLoad["base64"]), 'base64 entry in jsonb64');
+                }
+                else{
+                    var tempPoints = getPointsFromBase64String(pointToLoad["base64"], pointToLoad["type"]);
+                    scene.add(tempPoints);
+                }
             }
         }
     }
@@ -343,11 +352,15 @@ Example JSON:
 }
 */        
 
-/* 
-For the points you can have either XYZI points, or XYZRGB points. 
-This means you either have input as a float32 array with 4 columns, or 6 columns (encoding the RGB colours). 
+/*
+For the points you can have either XYZI points, or XYZRGB points.
+This means you either have input as a float32 array with 4 columns, or 6 columns (encoding the RGB colours).
 For the XYZI points the intensity part is encoded as Hue (between 0 and 1) as a float32
-*/ 
+
+Points can also be a Cloudini compressed point cloud (https://github.com/facontidavide/cloudini),
+using type "CLOUDINI" or a ".cldn" file. Cloudini data is detected automatically from its
+"CLOUDINI_V" magic bytes, whatever type is given. See js/cloudini.js for the supported fields.
+*/
    
 /* 
 For the lines you give an array with X1, Y1, Z1, X2, Y2, Z2. It draws lines between the start end the end point. 
@@ -666,6 +679,62 @@ function getPointsFromBase64String(buffer, pointType){
     }
 }        
 
+// Point type for the `name` parameter: an explicit `mode` (xyzi, xyzrgb, cloudini) wins,
+// otherwise the file extension decides (ignoring any ?query or #hash), defaulting to XYZRGB.
+function pointTypeForUrl(url, mode){
+    var modes = { xyzi: "XYZI", xyzrgb: "XYZRGB", cloudini: "CLOUDINI", cldn: "CLOUDINI" };
+    if (mode && modes[mode.toLowerCase()]) {
+        return modes[mode.toLowerCase()];
+    }
+    var path = url.split(/[?#]/)[0].toLowerCase();
+    if (path.endsWith("xyzi")) return "XYZI";
+    if (path.endsWith(".cldn")) return "CLOUDINI";
+    return "XYZRGB";
+}
+
+function isCloudiniType(pointType){
+    return typeof pointType === 'string' && pointType.toUpperCase() === 'CLOUDINI';
+}
+
+// "CLOUDINI_V" base64-encodes to "Q0xPVURJTklfV" at the start of the string.
+function base64IsCloudini(base64){
+    return typeof base64 === 'string' && base64.startsWith('Q0xPVURJTklfV');
+}
+
+// Decompresses a Cloudini buffer with the Cloudini WASM library and adds the points to the scene.
+function addCloudiniPoints(buffer, sourceLabel){
+    updateLoadingProgress(100, 'Decompressing Cloudini point cloud...');
+    return decodeCloudini(buffer).then(function(decoded){
+        updateLoadingProgress(100, 'Building 3D geometry...');
+        var cloud = cloudToPoints(decoded.info, decoded.data);
+        if (cloud.count === 0) {
+            throw new Error('The Cloudini point cloud contains no valid points');
+        }
+        console.log("Loaded num points " + cloud.count + " from Cloudini v" + decoded.info.version +
+            " (" + decoded.info.compression_opt + "), colored by " + cloud.colorSource);
+
+        var geometry = new THREE.BufferGeometry();
+        geometry.setAttribute( 'position', new THREE.Float32BufferAttribute( cloud.positions, 3 ) );
+        colorBuffer = new THREE.Float32BufferAttribute( cloud.colors, 3 );
+        geometry.setAttribute( 'color', colorBuffer );
+        geometry.computeBoundingSphere();
+
+        var material = new THREE.PointsMaterial( { size: 0.04, vertexColors: THREE.VertexColors, sizeAttenuation: true } );
+        points = new THREE.Points( geometry, material );
+        scene.add( points );
+
+        setTimeout(() => {
+            hideLoadingOverlay();
+        }, 500);
+    }).catch(function(error){
+        showError(
+            'Cloudini Decoding Error',
+            'Failed to decode the Cloudini (.cldn) point cloud.',
+            `Error: ${error.message}\n\nSource: ${sourceLabel}`
+        );
+    });
+}
+
 function get_points_per_row(pointType){
     if(pointType == "XYZ"){
         return 3;
@@ -832,6 +901,12 @@ function startLoadingData(url, pointType, pointSize=1.5)
                     // Validate buffer
                     if (!buffer || buffer.byteLength === 0) {
                         throw new Error('Empty or invalid data received (0 bytes)');
+                    }
+
+                    // Cloudini compressed point clouds are recognised by type or by their magic bytes
+                    if (isCloudiniType(pointType) || isCloudini(buffer)) {
+                        addCloudiniPoints(buffer, url);
+                        return;
                     }
 
                     // Check minimum size (at least one point)
