@@ -238,17 +238,12 @@ var json_base64 = getQueryVariable('jsonb64', null);
 var base64_str = getQueryVariable('base64', null);
         
 if(filename){
-    var url = "https://pointcloudvisualization.s3.eu-central-1.amazonaws.com/"+filename;
+    // A full URL is loaded as-is; a bare file name refers to the ImmersivePoints example bucket.
+    var url = /^https?:\/\//i.test(filename)
+        ? filename
+        : "https://pointcloudvisualization.s3.eu-central-1.amazonaws.com/"+filename;
 
-    if(url.endsWith("xyzi")){
-        startLoadingData(url, "XYZI");
-    }
-    else if(url.endsWith(".cldn")){
-        startLoadingData(url, "CLOUDINI");
-    }
-    else{
-        startLoadingData(url, "XYZRGB");
-    }
+    startLoadingData(url, pointTypeForUrl(url, getQueryVariable('mode', null)));
 }
 else if(base64_str){
     if(base64IsCloudini(base64_str)){
@@ -683,6 +678,19 @@ function getPointsFromBase64String(buffer, pointType){
         throw error; // Re-throw to prevent further execution
     }
 }        
+
+// Point type for the `name` parameter: an explicit `mode` (xyzi, xyzrgb, cloudini) wins,
+// otherwise the file extension decides (ignoring any ?query or #hash), defaulting to XYZRGB.
+function pointTypeForUrl(url, mode){
+    var modes = { xyzi: "XYZI", xyzrgb: "XYZRGB", cloudini: "CLOUDINI", cldn: "CLOUDINI" };
+    if (mode && modes[mode.toLowerCase()]) {
+        return modes[mode.toLowerCase()];
+    }
+    var path = url.split(/[?#]/)[0].toLowerCase();
+    if (path.endsWith("xyzi")) return "XYZI";
+    if (path.endsWith(".cldn")) return "CLOUDINI";
+    return "XYZRGB";
+}
 
 function isCloudiniType(pointType){
     return typeof pointType === 'string' && pointType.toUpperCase() === 'CLOUDINI';

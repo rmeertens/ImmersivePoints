@@ -508,7 +508,7 @@
             <h3>Simple file URL <span class="badge badge-primary">Recommended</span></h3>
             <p>Pass a URL to your hosted binary file. The file extension determines the format.</p>
             <pre>oculus.html?name=https://example.com/mycloud.xyzi</pre>
-            <p class="mb-0"><small class="text-muted">Use <code>.xyzi</code>, <code>.xyzrgb</code> or <code>.cldn</code> file extension to auto-detect format.</small></p>
+            <p class="mb-0"><small class="text-muted">Use <code>.xyzi</code>, <code>.xyzrgb</code> or <code>.cldn</code> file extension to auto-detect format, or add <code>&amp;mode=xyzi</code>, <code>xyzrgb</code> or <code>cloudini</code> for other file names. If the URL itself has a query string (<code>&amp;</code> or <code>=</code>), encode it with <code>encodeURIComponent</code> first.</small></p>
         </div>
 
         <div class="format-card">
@@ -573,7 +573,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr><td class="field-name">mode</td><td class="field-type">xyzi, xyzrgb</td><td>Specify format when using <code>name</code> parameter</td></tr>
+                    <tr><td class="field-name">mode</td><td class="field-type">xyzi, xyzrgb, cloudini</td><td>Specify format when using <code>name</code> parameter (overrides the file extension)</td></tr>
                     <tr><td class="field-name">showAxes</td><td class="field-type">true, false</td><td>Show XYZ axis helper in the scene</td></tr>
                     <tr><td class="field-name">autoRotate</td><td class="field-type">true, false</td><td>Auto-rotate the camera around the scene</td></tr>
                 </tbody>
