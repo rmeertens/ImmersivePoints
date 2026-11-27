@@ -462,6 +462,11 @@ print(link)</code></pre>
                         <code>{"points": [{"source": "url", "url": "https://.../scan.xyzrgb", "type": "XYZRGB"}]}</code>.
                         Compressed <a href="/upload.html#cloudini">Cloudini</a> files (<code>.cldn</code>) work too, with <code>"type": "CLOUDINI"</code>.
                     </p>
+                    <p>
+                        For a single file with no other options there is a shorter form:
+                        <code>https://immersivepoints.meertens.dev/oculus.html?url=https://.../scan.xyzrgb</code>
+                        (add <code>&amp;mode=xyzi</code>, <code>xyzrgb</code> or <code>cloudini</code> if the extension does not show the format).
+                    </p>
                 </section>
 
                 <section id="look-good">
@@ -667,7 +672,7 @@ print(link)</code></pre>
                             <thead><tr><th>Parameter</th><th>Value</th></tr></thead>
                             <tbody>
                                 <tr><td><code>jsonb64</code></td><td>Base64 of the JSON config below, URL-encoded. Standard and URL-safe base64 both work.</td></tr>
-                                <tr><td><code>name</code></td><td>Shortcut for a single hosted file: a full URL. Add <code>mode=xyzi</code>, <code>xyzrgb</code> or <code>cloudini</code> if the file extension does not say.</td></tr>
+                                <tr><td><code>url</code></td><td>Shortcut for a single hosted file: <code>oculus.html?url=https://example.com/scan.xyzrgb</code>. Add <code>mode=xyzi</code>, <code>xyzrgb</code> or <code>cloudini</code> if the file extension does not say. Use it after <code>?</code>, not <code>#</code>. URLs with their own query string, such as presigned links, can be pasted unencoded if <code>url=</code> comes last. <code>name</code> is an older alias.</td></tr>
                                 <tr><td><code>base64</code></td><td>Shortcut for inline XYZI data without a config.</td></tr>
                                 <tr><td><code>autoRotate</code></td><td><code>true</code> rotates the scene on desktop. Leave the parameter out to turn it off.</td></tr>
                                 <tr><td><code>showAxes</code></td><td><code>true</code> draws X (red), Y (green) and Z (blue) axes 5 units long. Leave the parameter out to turn it off.</td></tr>

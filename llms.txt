@@ -24,6 +24,7 @@ Full guide for agents: https://immersivepoints.meertens.dev/for-ai-agents.html
 4. Link: https://immersivepoints.meertens.dev/oculus.html#jsonb64=<URL-encoded base64 of the config JSON>
    Use "#" so the data never reaches a server (no server URL length limit). "?jsonb64=" also works for short links.
 
+Single hosted file shortcut: https://immersivepoints.meertens.dev/oculus.html?url=<file URL>&mode=xyzi|xyzrgb|cloudini (mode only if the extension does not say).
 Extra URL parameters: autoRotate=true (desktop rotation), showAxes=true (X red, Y green, Z blue). Leave them out to turn them off.
 Optional config keys: "bboxes" and "lines" (first entry, url source only), "objects" (glTF/GLB with position, rotation, scale).
 Box files: 13 big-endian float32 per box (center xyz, size xyz, rotation xyz in radians, r, g, b, opacity). Line files: 6 per segment (start xyz, end xyz).
