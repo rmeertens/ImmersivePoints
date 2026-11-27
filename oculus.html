@@ -172,6 +172,46 @@
             background: rgba(255, 255, 255, 0.2);
         }
 
+        /* Point size control */
+        #point-size-controls {
+            position: fixed;
+            top: 12px;
+            right: 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 10px;
+            background: rgba(20, 30, 70, 0.85);
+            border-radius: 10px;
+            color: white;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            font-size: 13px;
+            z-index: 1000;
+            user-select: none;
+        }
+
+        #point-size-controls button {
+            background: rgba(255, 255, 255, 0.12);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            width: 28px;
+            height: 26px;
+            font-size: 16px;
+            line-height: 1;
+            cursor: pointer;
+        }
+
+        #point-size-controls button:hover {
+            background: rgba(255, 255, 255, 0.25);
+        }
+
+        #point-size-value {
+            min-width: 42px;
+            text-align: center;
+            font-variant-numeric: tabular-nums;
+        }
+
         /* Sequence playback controls */
         #sequence-controls {
             position: fixed;
@@ -340,10 +380,122 @@ function setAxes(name){
 }
 setAxes(getQueryVariable('axes', 'flu'));
 
+// Point size. A point's size is its diameter in scene units (meters for most data), drawn at
+// its true perspective size, so the same value looks the same on desktop, phones and in VR.
+// Set it with ?pointSize=, with "pointSize" in a config (top level for every cloud, or per
+// points entry), and scale every cloud while viewing: -/+ on screen, the - + and 0 keys, or
+// the grip buttons in VR.
+var DEFAULT_POINT_SIZE = 0.02;
+var defaultPointSize = DEFAULT_POINT_SIZE;
+var pointSizeFactor = 1;
+var pointMaterials = {};
+var pointViewportScale = { value: 1 };
+var controllerLabel = null;
+var controllerMessage = { text: null, until: 0 };
+
+function positiveNumber(value){
+    var n = parseFloat(value);
+    return (n > 0 && isFinite(n)) ? n : null;
+}
+
+(function(){
+    var param = getQueryVariable('pointSize', null);
+    if(param !== null){
+        if(positiveNumber(param)){
+            defaultPointSize = positiveNumber(param);
+        }
+        else{
+            console.warn('Ignoring pointSize=' + param + ': it must be a positive number, such as 0.02');
+        }
+    }
+})();
+
+// three.js sizes points by half the page height in CSS pixels, which ignores the camera's field
+// of view and, in VR, the headset's resolution. This patch uses the real viewport height and the
+// projection matrix instead, which draws a point of size s exactly as large as an object of
+// diameter s at the same distance.
+function patchPointShader(shader){
+    shader.uniforms.pointViewportScale = pointViewportScale;
+    shader.vertexShader = 'uniform float pointViewportScale;\n' + shader.vertexShader.replace(
+        'gl_PointSize *= ( scale / - mvPosition.z );',
+        'gl_PointSize *= ( pointViewportScale * projectionMatrix[ 1 ][ 1 ] / - mvPosition.z );'
+    );
+}
+
+// One shared material per configured size; the viewer's size factor scales them all.
+function pointsMaterial(size){
+    var base = positiveNumber(size) || defaultPointSize;
+    if(!pointMaterials[base]){
+        var material = new THREE.PointsMaterial( { size: base * pointSizeFactor, vertexColors: THREE.VertexColors, sizeAttenuation: true } );
+        material.userData.baseSize = base;
+        material.onBeforeCompile = patchPointShader;
+        pointMaterials[base] = material;
+    }
+    return pointMaterials[base];
+}
+
+function setPointSizeFactor(factor){
+    pointSizeFactor = Math.min(20, Math.max(0.05, factor));
+    Object.keys(pointMaterials).forEach(function(key){
+        pointMaterials[key].size = pointMaterials[key].userData.baseSize * pointSizeFactor;
+    });
+    var value = document.getElementById('point-size-value');
+    if(value){
+        value.textContent = Math.round(pointSizeFactor * 100) + '%';
+    }
+    showControllerMessage('Point size ' + Math.round(pointSizeFactor * 100) + '%');
+}
+
+// Called every frame: half the height of the viewport being drawn, in the units three.js
+// multiplies the point size by (it already applies the pixel ratio to the size).
+var drawingBufferSize = new THREE.Vector2();
+function updatePointViewport(){
+    var height = 0;
+    if(renderer.xr.isPresenting){
+        var session = renderer.xr.getSession();
+        var layer = session && session.renderState && session.renderState.baseLayer;
+        if(layer){
+            height = layer.framebufferHeight;
+        }
+    }
+    if(!height){
+        height = renderer.getDrawingBufferSize(drawingBufferSize).y;
+    }
+    pointViewportScale.value = height / (2 * renderer.getPixelRatio());
+}
+
+function createPointSizeControls(){
+    var panel = document.createElement('div');
+    panel.id = 'point-size-controls';
+    panel.innerHTML =
+        '<span>Point size</span>' +
+        '<button type="button" id="point-size-down" title="Smaller points (-)" aria-label="Smaller points">&minus;</button>' +
+        '<span id="point-size-value">100%</span>' +
+        '<button type="button" id="point-size-up" title="Bigger points (+)" aria-label="Bigger points">+</button>';
+    document.body.appendChild(panel);
+    document.getElementById('point-size-down').addEventListener('click', function(){ setPointSizeFactor(pointSizeFactor / 1.25); });
+    document.getElementById('point-size-up').addEventListener('click', function(){ setPointSizeFactor(pointSizeFactor * 1.25); });
+    document.getElementById('point-size-value').addEventListener('dblclick', function(){ setPointSizeFactor(1); });
+
+    window.addEventListener('keydown', function(event){
+        if(event.target && event.target.tagName === 'INPUT'){
+            return;
+        }
+        if(event.key === '+' || event.key === '='){
+            setPointSizeFactor(pointSizeFactor * 1.25);
+        }
+        else if(event.key === '-' || event.key === '_'){
+            setPointSizeFactor(pointSizeFactor / 1.25);
+        }
+        else if(event.key === '0'){
+            setPointSizeFactor(1);
+        }
+    });
+}
+
 // Sequence playback (see js/sequence.js)
 var sequencePlayer = null;
 var sequenceRoot = null;
-var sequenceLabel = null;
 var clock = new THREE.Clock();
 
 var showAxes = getQueryVariable('showAxes', false);
@@ -441,26 +593,30 @@ function loadSceneConfig(decodedData){
     if(decodedData.axes && getQueryVariable('axes', null) === null){
         setAxes(decodedData.axes);
     }
+    if(decodedData.pointSize !== undefined && getQueryVariable('pointSize', null) === null){
+        if(positiveNumber(decodedData.pointSize)){
+            defaultPointSize = positiveNumber(decodedData.pointSize);
+        }
+        else{
+            console.warn('Ignoring "pointSize": ' + JSON.stringify(decodedData.pointSize) + ': it must be a positive number');
+        }
+    }
     if("points" in decodedData){
         // Currently multiple point clouds are not fully supported, but I'll give it a try: 
         for (var i = 0; i < decodedData["points"].length; i++) {
             var pointToLoad = decodedData["points"][i];
 
-            var pointSize = 0.04
-            if('pointSize' in pointToLoad){
-                pointSize = pointToLoad['pointSize'];
-                console.log('adjusting size');
-            }
+            var pointSize = pointToLoad['pointSize'];  // undefined: the default size
             if(pointToLoad['source'] == 'url'){
                 
                 startLoadingData(pointToLoad['url'], pointToLoad["type"], pointSize);
             }
             else if(pointToLoad['source'] == 'base64'){
                 if(isCloudiniType(pointToLoad["type"]) || base64IsCloudini(pointToLoad["base64"])){
-                    addCloudiniPoints(_base64ToArrayBuffer(pointToLoad["base64"]), 'base64 entry in jsonb64');
+                    addCloudiniPoints(_base64ToArrayBuffer(pointToLoad["base64"]), 'base64 entry in jsonb64', pointSize);
                 }
                 else{
-                    var tempPoints = getPointsFromBase64String(pointToLoad["base64"], pointToLoad["type"]);
+                    var tempPoints = getPointsFromBase64String(pointToLoad["base64"], pointToLoad["type"], pointSize);
                     world.add(tempPoints);
                 }
             }
@@ -734,7 +890,7 @@ function getSourceUrlParam() {
         return getQueryVariable(match[1], null);
     }
     // Viewer parameters that can follow an unencoded url= or name= value.
-    var viewerParams = ['url', 'name', 'mode', 'frames', 'fps', 'axes', 'showAxes', 'autoRotate', 'jsonb64', 'base64', 'config'];
+    var viewerParams = ['url', 'name', 'mode', 'frames', 'fps', 'axes', 'pointSize', 'showAxes', 'autoRotate', 'jsonb64', 'base64', 'config'];
     var parts = raw.split('&');
     while (parts.length > 1 && viewerParams.indexOf(parts[parts.length - 1].split('=')[0]) !== -1) {
         parts.pop();
@@ -773,7 +929,7 @@ function fillNodes(nodes, ints, pointsPerRow){
     }
 }
         
-function getPointsFromBase64String(buffer, pointType){
+function getPointsFromBase64String(buffer, pointType, pointSize){
     try {
         updateLoadingProgress(50, 'Decoding base64 data...');
 
@@ -844,8 +1000,7 @@ function getPointsFromBase64String(buffer, pointType){
         geometry.setAttribute( 'color', colorBuffer );
         geometry.computeBoundingSphere();
 
-        var material = new THREE.PointsMaterial( { size: 0.04, vertexColors: THREE.VertexColors, sizeAttenuation: true } );
-        var tempPoints = new THREE.Points( geometry, material );
+        var tempPoints = new THREE.Points( geometry, pointsMaterial(pointSize) );
 
         updateLoadingProgress(100, 'Ready!');
 
@@ -884,7 +1039,7 @@ function base64IsCloudini(base64){
 }
 
 // Decompresses a Cloudini buffer with the Cloudini WASM library and adds the points to the scene.
-function addCloudiniPoints(buffer, sourceLabel){
+function addCloudiniPoints(buffer, sourceLabel, pointSize){
     updateLoadingProgress(100, 'Decompressing Cloudini point cloud...');
     return decodeCloudini(buffer).then(function(decoded){
         updateLoadingProgress(100, 'Building 3D geometry...');
@@ -901,8 +1056,7 @@ function addCloudiniPoints(buffer, sourceLabel){
         geometry.setAttribute( 'color', colorBuffer );
         geometry.computeBoundingSphere();
 
-        var material = new THREE.PointsMaterial( { size: 0.04, vertexColors: THREE.VertexColors, sizeAttenuation: true } );
-        points = new THREE.Points( geometry, material );
+        points = new THREE.Points( geometry, pointsMaterial(pointSize) );
         world.add( points );
 
         setTimeout(() => {
@@ -1036,7 +1190,7 @@ function hideLoadingOverlay() {
     }
 }
 
-function startLoadingData(url, pointType, pointSize=1.5)
+function startLoadingData(url, pointType, pointSize)
 {
     var httpRequest = new XMLHttpRequest();
 
@@ -1087,7 +1241,7 @@ function startLoadingData(url, pointType, pointSize=1.5)
 
                     // Cloudini compressed point clouds are recognised by type or by their magic bytes
                     if (isCloudiniType(pointType) || isCloudini(buffer)) {
-                        addCloudiniPoints(buffer, url);
+                        addCloudiniPoints(buffer, url, pointSize);
                         return;
                     }
 
@@ -1143,8 +1297,7 @@ function startLoadingData(url, pointType, pointSize=1.5)
                     geometry.setAttribute( 'color', colorBuffer );
                     geometry.computeBoundingSphere();
 
-                    var material = new THREE.PointsMaterial( { size: 0.04, vertexColors: THREE.VertexColors, sizeAttenuation: true } );
-                    points = new THREE.Points( geometry, material );
+                    points = new THREE.Points( geometry, pointsMaterial(pointSize) );
                     world.add( points );
 
                     // Hide loading overlay after a short delay
@@ -1222,14 +1375,6 @@ function entryBuffer(entry){
     return fetchArrayBuffer(entry.url);
 }
 
-var sequencePointMaterials = {};
-function sequencePointMaterial(size){
-    if(!sequencePointMaterials[size]){
-        sequencePointMaterials[size] = new THREE.PointsMaterial( { size: size, vertexColors: THREE.VertexColors, sizeAttenuation: true } );
-    }
-    return sequencePointMaterials[size];
-}
-
 function loadPointsEntry(entry){
     return entryBuffer(entry).then(function(buffer){
         var type = entry.type ? String(entry.type).toUpperCase() : pointTypeForUrl(entry.url || '', null);
@@ -1244,7 +1389,7 @@ function loadPointsEntry(entry){
         geometry.setAttribute( 'position', new THREE.Float32BufferAttribute( cloud.positions, 3 ) );
         geometry.setAttribute( 'color', new THREE.Float32BufferAttribute( cloud.colors, 3 ) );
         geometry.computeBoundingSphere();
-        return new THREE.Points( geometry, sequencePointMaterial(entry.pointSize || 0.04) );
+        return new THREE.Points( geometry, pointsMaterial(entry.pointSize) );
     });
 }
 
@@ -1370,7 +1515,6 @@ function sequenceStatusText(player){
 }
 
 function updateSequenceUI(player){
-    updateSequenceLabel(player);
     var bar = document.getElementById('sequence-controls');
     if(!bar){
         return;
@@ -1392,28 +1536,45 @@ function updateSequenceUI(player){
     document.getElementById('seq-frame').textContent = frameText;
 }
 
-// A small panel on the first controller shows the frame number inside the headset.
-function updateSequenceLabel(player){
-    if(!sequenceLabel){
+// A small panel on the first controller, visible only in VR. It briefly shows changes such as
+// the point size, and otherwise the sequence status when a sequence is playing.
+function showControllerMessage(text){
+    controllerMessage = { text: text, until: performance.now() + 1500 };
+}
+
+function updateControllerLabel(){
+    var text = null;
+    if(controllerMessage.text && performance.now() < controllerMessage.until){
+        text = controllerMessage.text;
+    }
+    else if(sequencePlayer){
+        text = (sequencePlayer.playing ? '\u25B6 ' : '\u23F8 ') + sequenceStatusText(sequencePlayer);
+    }
+    if(!renderer.xr.isPresenting || !text){
+        if(controllerLabel){
+            controllerLabel.visible = false;
+        }
+        return;
+    }
+    if(!controllerLabel){
         var canvas = document.createElement('canvas');
         canvas.width = 512;
         canvas.height = 96;
         var texture = new THREE.CanvasTexture(canvas);
         var material = new THREE.MeshBasicMaterial({ map: texture, transparent: true, depthTest: false });
-        sequenceLabel = new THREE.Mesh(new THREE.PlaneGeometry(0.16, 0.03), material);
-        sequenceLabel.position.set(0, 0.05, -0.05);
-        sequenceLabel.rotation.x = -Math.PI / 4;
-        sequenceLabel.renderOrder = 999;
-        sequenceLabel.visible = false;
-        sequenceLabel.userData = { canvas: canvas, texture: texture, text: null };
-        controller1.add(sequenceLabel);
+        controllerLabel = new THREE.Mesh(new THREE.PlaneGeometry(0.16, 0.03), material);
+        controllerLabel.position.set(0, 0.05, -0.05);
+        controllerLabel.rotation.x = -Math.PI / 4;
+        controllerLabel.renderOrder = 999;
+        controllerLabel.userData = { canvas: canvas, texture: texture, text: null };
+        controller1.add(controllerLabel);
     }
-    var text = (player.playing ? '▶ ' : '⏸ ') + sequenceStatusText(player);
-    if(text === sequenceLabel.userData.text){
+    controllerLabel.visible = true;
+    if(text === controllerLabel.userData.text){
         return;
     }
-    sequenceLabel.userData.text = text;
-    var ctx = sequenceLabel.userData.canvas.getContext('2d');
+    controllerLabel.userData.text = text;
+    var ctx = controllerLabel.userData.canvas.getContext('2d');
     ctx.clearRect(0, 0, 512, 96);
     ctx.fillStyle = 'rgba(20, 30, 70, 0.85)';
     ctx.fillRect(0, 0, 512, 96);
@@ -1421,16 +1582,24 @@ function updateSequenceLabel(player){
     ctx.font = '36px -apple-system, "Segoe UI", Arial, sans-serif';
     ctx.textBaseline = 'middle';
     ctx.fillText(text, 16, 48, 480);
-    sequenceLabel.userData.texture.needsUpdate = true;
+    controllerLabel.userData.texture.needsUpdate = true;
 }
 
-// In VR: A or X plays and pauses, B steps forward, Y steps back.
+// In VR: holding the right grip makes points bigger, the left grip smaller. With a sequence,
+// A or X plays and pauses, B steps forward and Y steps back.
 var sequenceButtonState = {};
-function handleSequenceButtons(inputSource, key){
+function handleControllerButtons(inputSource, key, dt){
     if(!inputSource || !inputSource.gamepad){
         return;
     }
     var buttons = inputSource.gamepad.buttons;
+    if(buttons.length > 1 && buttons[1].pressed){
+        var grow = inputSource.handedness === 'left' ? -1 : 1;
+        setPointSizeFactor(pointSizeFactor * Math.exp(grow * 1.2 * dt));
+    }
+    if(!sequencePlayer){
+        return;
+    }
     var playPressed = buttons.length > 4 && buttons[4].pressed;
     var stepPressed = buttons.length > 5 && buttons[5].pressed;
     var previous = sequenceButtonState[key] || {};
@@ -1533,6 +1702,7 @@ function init() {
 
     // Add the virtual reality button to the site. 
     document.body.appendChild( VRButton.createButton( renderer ) );
+    createPointSizeControls();
     
     // Add a white light so controller models are visible
     var light = new THREE.AmbientLight( 0xffffff, 0.5 );
@@ -1565,16 +1735,15 @@ function animate() {
         controls.update();
 
         var dt = clock.getDelta();
-        if (sequencePlayer) {
-            if (renderer.xr.isPresenting) {
-                if (realcont1connected) handleSequenceButtons(realcont1, 'controller1');
-                if (realcont2connected) handleSequenceButtons(realcont2, 'controller2');
-            }
-            sequencePlayer.update(dt);
-            if (sequenceLabel) {
-                sequenceLabel.visible = renderer.xr.isPresenting;
-            }
+        if (renderer.xr.isPresenting) {
+            if (realcont1connected) handleControllerButtons(realcont1, 'controller1', dt);
+            if (realcont2connected) handleControllerButtons(realcont2, 'controller2', dt);
         }
+        if (sequencePlayer) {
+            sequencePlayer.update(dt);
+        }
+        updateControllerLabel();
+        updatePointViewport();
 
         // Only process VR controller input when in an active XR session
         if (renderer.xr.isPresenting) {

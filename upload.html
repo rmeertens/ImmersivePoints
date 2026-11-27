@@ -222,6 +222,10 @@
                     <input type="number" class="form-control" id="framesFps" placeholder="10" min="1" max="120" oninput="generateViewerLink()">
                 </div>
             </div>
+            <div class="form-group">
+                <label for="pointSizeInput"><strong>Point size</strong> <small class="text-muted">(optional: diameter in your data's units, usually meters; default 0.02)</small></label>
+                <input type="number" class="form-control" id="pointSizeInput" placeholder="0.02" min="0" step="0.005" oninput="generateViewerLink()">
+            </div>
             <p id="sequenceHint" class="text-muted" style="display: none;"><small>Put <code>{i}</code> (or zero-padded <code>{i:04}</code>) in the file URL where the frame number goes, e.g. <code>https://example.com/scan_{i:04}.xyzi</code>.</small></p>
 
             <div id="viewerLinkContainer" style="display: none;">
@@ -259,6 +263,10 @@
                         if (fps) {
                             viewerLink += `&fps=${encodeURIComponent(fps)}`;
                         }
+                    }
+                    const pointSize = parseFloat(document.getElementById('pointSizeInput').value);
+                    if (pointSize > 0) {
+                        viewerLink += `&pointSize=${pointSize}`;
                     }
                     viewerLinkInput.value = viewerLink;
                     openBtn.href = viewerLink;
@@ -442,6 +450,16 @@
             <p class="mb-0"><small class="text-muted">Do not swap columns to make Y point up: swapping two axes mirrors the scene. Files made for the viewer's older convention (three.js axes: X right, Y up, Z toward the viewer) can still be shown as stored with <code>&amp;axes=threejs</code>, or <code>"axes": "threejs"</code> in a JSON config.</small></p>
         </div>
 
+        <div class="format-card" id="point-size">
+            <h3>Point size</h3>
+            <p>A point's size is its <strong>diameter in your data's units</strong>, usually meters. Points are drawn at their real perspective size, so a size of 0.1 looks as big as a 10 cm ball at the same spot, on desktop, on a phone and in VR alike. The default is <code>0.02</code> (2 cm). For data at a different scale, such as molecules in ångström or star maps in light years, pick a size that matches its spacing.</p>
+            <ul>
+                <li><strong>For a link:</strong> add <code>&amp;pointSize=0.05</code>.</li>
+                <li><strong>In a JSON config:</strong> <code>"pointSize": 0.05</code> at the top level sets the size for every cloud, and <code>"pointSize"</code> on a points entry (or on <code>sequence.points</code>) sets it for that cloud only. A <code>pointSize</code> URL parameter replaces the top-level value, but not per-cloud ones.</li>
+                <li><strong>While viewing:</strong> the Point size buttons in the top right, or the <kbd>+</kbd>, <kbd>-</kbd> and <kbd>0</kbd> (reset) keys, scale every cloud. In VR, hold the right grip button to make points bigger and the left grip to make them smaller.</li>
+            </ul>
+        </div>
+
         <div class="format-card">
             <h3>XYZI Format <span class="badge badge-primary">4 values per point</span></h3>
             <p>Position with hue-based coloring.</p>
@@ -599,7 +617,7 @@
       "source": "url",
       "url": "https://example.com/cloud1.xyzi",
       "type": "XYZI",
-      "pointSize": 0.04
+      "pointSize": 0.05
     },
     {
       "source": "base64",
@@ -645,6 +663,7 @@
                 <tbody>
                     <tr><td class="field-name">mode</td><td class="field-type">xyzi, xyzrgb, cloudini</td><td>Specify format when using <code>name</code> parameter (overrides the file extension)</td></tr>
                     <tr><td class="field-name">axes</td><td class="field-type">flu, threejs</td><td><code>flu</code> (default): X forward, Y left, Z up. <code>threejs</code>: show the data as stored, for files made for the older convention. See <a href="#coordinates">Coordinate system</a>.</td></tr>
+                    <tr><td class="field-name">pointSize</td><td class="field-type">number &gt; 0</td><td>Point diameter in your data's units (usually meters). Default <code>0.02</code>. See <a href="#point-size">Point size</a>.</td></tr>
                     <tr><td class="field-name">showAxes</td><td class="field-type">true, false</td><td>Show the axes: X red, Y green, Z blue</td></tr>
                     <tr><td class="field-name">autoRotate</td><td class="field-type">true, false</td><td>Auto-rotate the camera around the scene</td></tr>
                 </tbody>

@@ -79,6 +79,10 @@ Positions use a right-handed frame with **X forward, Y left and Z up**, the ROS 
 
 Don't swap columns to make Y point up: that mirrors the scene. Files made for the older convention (three.js axes: X right, Y up, Z toward the viewer) can be shown as stored with `&axes=threejs`. The live examples below use it.
 
+### Point size
+
+`pointSize` is a point's diameter in your data's units (usually meters), drawn at its real perspective size on desktop and in VR. The default is `0.02`. Set it with `&pointSize=0.05` in a link, or `"pointSize"` in a JSON config: at the top level for every cloud, or on a points entry for that cloud. While viewing, use the Point size buttons, the `+`/`-`/`0` keys, or hold the right (bigger) or left (smaller) grip in VR.
+
 ### Cloudini (compressed)
 
 The viewer also reads [Cloudini](https://github.com/facontidavide/cloudini) compressed point clouds (`.cldn`). Cloudini is the compression format used for ROS `point_cloud_interfaces/CompressedPointCloud2` messages, and it typically makes files several times smaller (a 115k-point lidar scan at 1 mm precision goes from 1.8 MB to 0.4 MB).
