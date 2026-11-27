@@ -212,6 +212,18 @@
                 </div>
             </div>
 
+            <div class="form-row">
+                <div class="form-group col-md-6">
+                    <label for="framesRange"><strong>Frames</strong> <small class="text-muted">(optional, for a <a href="#sequences">sequence</a>)</small></label>
+                    <input type="text" class="form-control" id="framesRange" placeholder="0-199" oninput="generateViewerLink()">
+                </div>
+                <div class="form-group col-md-6">
+                    <label for="framesFps"><strong>Frames per second</strong></label>
+                    <input type="number" class="form-control" id="framesFps" placeholder="10" min="1" max="120" oninput="generateViewerLink()">
+                </div>
+            </div>
+            <p id="sequenceHint" class="text-muted" style="display: none;"><small>Put <code>{i}</code> (or zero-padded <code>{i:04}</code>) in the file URL where the frame number goes, e.g. <code>https://example.com/scan_{i:04}.xyzi</code>.</small></p>
+
             <div id="viewerLinkContainer" style="display: none;">
                 <label><strong>Your viewer link:</strong></label>
                 <div class="input-group">
@@ -234,9 +246,20 @@
                 const viewerLinkInput = document.getElementById('viewerLink');
                 const openBtn = document.getElementById('openViewerBtn');
                 
+                const frames = document.getElementById('framesRange').value.trim();
+                const fps = document.getElementById('framesFps').value.trim();
+                const isTemplate = /\{i(:\d+d?)?\}/.test(fileUrl);
+                document.getElementById('sequenceHint').style.display = (frames && !isTemplate) ? 'block' : 'none';
+
                 if (fileUrl) {
                     const baseUrl = window.location.origin;
-                    const viewerLink = `${baseUrl}/oculus.html?url=${encodeURIComponent(fileUrl)}&mode=${format}`;
+                    let viewerLink = `${baseUrl}/oculus.html?url=${encodeURIComponent(fileUrl)}&mode=${format}`;
+                    if (isTemplate && frames) {
+                        viewerLink += `&frames=${encodeURIComponent(frames)}`;
+                        if (fps) {
+                            viewerLink += `&fps=${encodeURIComponent(fps)}`;
+                        }
+                    }
                     viewerLinkInput.value = viewerLink;
                     openBtn.href = viewerLink;
                     container.style.display = 'block';
@@ -508,6 +531,38 @@
             <p>Pass a URL to your hosted binary file. The file extension determines the format.</p>
             <pre>oculus.html?url=https://example.com/mycloud.xyzi</pre>
             <p class="mb-0"><small class="text-muted">Use <code>.xyzi</code>, <code>.xyzrgb</code> or <code>.cldn</code> file extension to auto-detect format, or add <code>&amp;mode=xyzi</code>, <code>xyzrgb</code> or <code>cloudini</code> for other file names. URLs with their own query string, such as presigned links, can be pasted as they are: put <code>url=</code> last, or after it only the viewer options <code>mode</code>, <code>showAxes</code> and <code>autoRotate</code>. Encoding the URL with <code>encodeURIComponent</code> also works. The older <code>name=</code> parameter works the same way.</small></p>
+        </div>
+
+        <div class="format-card" id="sequences">
+            <h3>Sequences <span class="badge badge-success">Animated</span></h3>
+            <p>Play a series of point clouds over time, such as one lidar sweep per frame. Export one file per frame with the frame number in its name, then put <code>{i}</code> where the number goes. Use <code>{i:04}</code> for zero-padded numbers like <code>0007</code>.</p>
+            <pre>oculus.html?url=https://example.com/scan_{i:04}.xyzi&amp;frames=0-199&amp;fps=10</pre>
+            <p><code>frames</code> is an inclusive range (<code>0-199</code>) or a count starting at 0 (<code>200</code>). <code>fps</code> defaults to 10.</p>
+            <p>To add boxes and lines per frame, or a static map that stays visible, use a JSON config with a <code>sequence</code> entry. Pass it as <code>jsonb64</code>, or host the JSON file next to your frames and pass its URL with <code>config=</code>, which keeps long sequences out of the link:</p>
+            <pre>oculus.html?config=https://example.com/drive.json</pre>
+            <pre>{
+  "points": [ { "source": "url", "url": "https://example.com/map.xyzrgb", "type": "XYZRGB" } ],
+  "sequence": {
+    "points": { "url": "https://example.com/scan_{i:04}.xyzi", "type": "XYZI" },
+    "bboxes": { "url": "https://example.com/boxes_{i:04}.bbox" },
+    "start": 0,
+    "count": 200
+  },
+  "fps": 10,
+  "loop": true
+}</pre>
+            <p>If your files aren't numbered, list them instead. Every frame uses the same fields as a static scene, and an optional <code>label</code> (such as a timestamp) is shown next to the frame number:</p>
+            <pre>{
+  "frames": [
+    { "label": "12:00:00.0", "points": [ { "source": "url", "url": "https://example.com/a.xyzi", "type": "XYZI" } ] },
+    { "label": "12:00:00.1", "points": [ { "source": "url", "url": "https://example.com/b.xyzi", "type": "XYZI" } ] }
+  ],
+  "fps": 10
+}</pre>
+            <p><strong>Exporting frames from Python:</strong></p>
+            <pre>for i, scan in enumerate(scans):   # each scan: float32 array with 4 columns (x, y, z, hue)
+    scan.astype('&gt;f4').tofile(f'scan_{i:04d}.xyzi')</pre>
+            <p class="mb-0"><small class="text-muted"><strong>Controls:</strong> on desktop, use the playback bar, Space (play/pause) and the Left/Right arrow keys (step). In VR, A or X plays and pauses, B steps forward and Y steps back. Frames load in the background, starting with the first one. Every loaded frame stays in memory, so keep the total number of points across all frames within what your headset can handle.</small></p>
         </div>
 
         <div class="format-card">

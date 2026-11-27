@@ -185,7 +185,7 @@ function findField(info, ...names) {
 }
 
 // HSL -> RGB with saturation 1 and lightness 0.5 (matches THREE.Color.setHSL(h, 1, 0.5)).
-function hueToRGB(h, out, i) {
+export function hueToRGB(h, out, i) {
     h = ((h % 1) + 1) % 1;
     const k = (n) => (n + h * 12) % 12;
     const f = (n) => 0.5 - 0.5 * Math.max(-1, Math.min(k(n) - 3, 9 - k(n), 1));
@@ -195,7 +195,7 @@ function hueToRGB(h, out, i) {
 }
 
 // Robust range (1st..99th percentile) of a scalar, sampled for speed.
-function robustRange(values, count) {
+export function robustRange(values, count) {
     const step = Math.max(1, Math.floor(count / 20000));
     const sample = [];
     for (let i = 0; i < count; i += step) {

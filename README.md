@@ -101,6 +101,14 @@ Explore pre-loaded datasets:
 
 Host the file anywhere that serves it over HTTPS with CORS allowed, then open `https://immersivepoints.meertens.dev/oculus.html?url=<your file URL>`. Presigned or other URLs with their own query string can be pasted unencoded, as long as `url=` comes last (or is followed only by `mode`, `showAxes` or `autoRotate`). Add `&mode=xyzi`, `xyzrgb` or `cloudini` when the file extension doesn't give the format.
 
+### Sequences
+
+Play a series of point clouds over time, such as a lidar recording. Export one file per frame and put `{i}` (or zero-padded `{i:04}`) where the frame number goes:
+
+`https://immersivepoints.meertens.dev/oculus.html?url=https://example.com/scan_{i:04}.xyzi&frames=0-199&fps=10`
+
+For per-frame boxes and lines, a static map, or files that aren't numbered, use a JSON config with a `sequence` or `frames` entry, passed as `jsonb64=` or hosted and passed with `config=<url>`. See [Sequences](https://immersivepoints.meertens.dev/upload.html#sequences) for the format. Space and the arrow keys control playback on desktop; in VR, A/X plays and pauses and B/Y steps.
+
 ## Documentation
 
 For detailed documentation, see: (https://immersivepoints.meertens.dev/)** - Live demos and viewer link generator

@@ -171,6 +171,95 @@
         .error-button.secondary:hover {
             background: rgba(255, 255, 255, 0.2);
         }
+
+        /* Sequence playback controls */
+        #sequence-controls {
+            position: fixed;
+            left: 50%;
+            bottom: 72px;
+            transform: translateX(-50%);
+            width: min(760px, calc(100% - 32px));
+            box-sizing: border-box;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            background: rgba(20, 30, 70, 0.85);
+            border-radius: 10px;
+            color: white;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            font-size: 13px;
+            z-index: 1000;
+        }
+
+        #sequence-controls button {
+            background: rgba(255, 255, 255, 0.12);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            width: 34px;
+            height: 30px;
+            font-size: 14px;
+            cursor: pointer;
+            flex: none;
+        }
+
+        #sequence-controls button:hover {
+            background: rgba(255, 255, 255, 0.25);
+        }
+
+        .seq-track {
+            position: relative;
+            flex: 1;
+            min-width: 60px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+        }
+
+        .seq-buffered {
+            position: absolute;
+            left: 0;
+            height: 4px;
+            background: rgba(139, 195, 74, 0.6);
+            border-radius: 2px;
+            width: 0%;
+            pointer-events: none;
+        }
+
+        .seq-track input[type=range] {
+            position: relative;
+            width: 100%;
+            margin: 0;
+            background: transparent;
+        }
+
+        .seq-frame {
+            flex: none;
+            white-space: nowrap;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .seq-fps {
+            flex: none;
+            white-space: nowrap;
+            opacity: 0.85;
+        }
+
+        .seq-fps input {
+            width: 44px;
+            margin-left: 4px;
+            background: rgba(255, 255, 255, 0.12);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 4px;
+            padding: 2px 4px;
+        }
+
+        @media (max-width: 600px) {
+            .seq-fps { display: none; }
+            .seq-frame { font-size: 12px; }
+        }
     </style>
 </head>
 
@@ -194,7 +283,8 @@
 		import { VRButton } from 'https://cdn.jsdelivr.net/npm/three@0.121.1/examples/jsm/webxr/VRButton.js';        
         import { GLTFLoader } from 'https://cdn.jsdelivr.net/npm/three@0.121.1/examples/jsm/loaders/GLTFLoader.js';
         import { XRControllerModelFactory } from 'https://cdn.jsdelivr.net/npm/three@0.121.1/examples/jsm/webxr/XRControllerModelFactory.js';
-        import { isCloudini, decodeCloudini, cloudToPoints } from './js/cloudini.js';
+        import { isCloudini, decodeCloudini, cloudToPoints, readImmersiveFloats } from './js/cloudini.js';
+        import { SequencePlayer, expandFrames, isFrameTemplate, parseFrameRange, floatsToPointArrays } from './js/sequence.js';
 
 var camera, scene, renderer;
 var geometry, material, mesh;
@@ -208,8 +298,6 @@ var movingSpeed = 0.0;
 var cursor = new THREE.Vector3();
 
 var nodes = new Array();
-var bboxnodes = new Array();
-var linesList = new Array();
         
 var realcont1;
 var realcont1connected = false;
@@ -219,6 +307,12 @@ var realcont2connected = false;
 var colorBuffer;
         
 var user = new THREE.Group();     
+
+// Sequence playback (see js/sequence.js)
+var sequencePlayer = null;
+var sequenceRoot = null;
+var sequenceLabel = null;
+var clock = new THREE.Clock();
 
 var showAxes = getQueryVariable('showAxes', false);
 var autoRotate = getQueryVariable('autoRotate', false);
@@ -234,6 +328,9 @@ var filename = getSourceUrlParam();
 // Option 2: get a base64 encoded json from the header...
 var json_base64 = getQueryVariable('jsonb64', null);
 
+// Option 2b: the same JSON scene config, hosted as a file (handy for long sequences)
+var config_url = getQueryVariable('config', null);
+
 // Option 3: get a base64 encoded pointcloud
 var base64_str = getQueryVariable('base64', null);
         
@@ -242,8 +339,49 @@ if(filename){
     var url = /^https?:\/\//i.test(filename)
         ? filename
         : "https://pointcloudvisualization.s3.eu-central-1.amazonaws.com/"+filename;
+    var pointType = pointTypeForUrl(url, getQueryVariable('mode', null));
 
-    startLoadingData(url, pointTypeForUrl(url, getQueryVariable('mode', null)));
+    if(isFrameTemplate(url)){
+        // A {i} placeholder in the URL makes it a sequence: url=https://host/scan_{i:04}.xyzi&frames=0-199
+        var frameRange = getQueryVariable('frames', null);
+        if(!frameRange){
+            showError(
+                'Sequence Error',
+                'The URL has a frame placeholder but no frames= parameter.',
+                'Add the frame numbers to load, e.g. &frames=0-199 (a range) or &frames=200 (frames 0 to 199).\n\nURL: ' + url
+            );
+        }
+        else{
+            try{
+                var sequence = Object.assign({ points: { url: url, type: pointType } }, parseFrameRange(frameRange));
+                loadSceneConfig({ sequence: sequence });
+            }
+            catch(error){
+                showError('Sequence Error', 'Could not read the frames= parameter.', error.message);
+            }
+        }
+    }
+    else{
+        startLoadingData(url, pointType);
+    }
+}
+else if(config_url){
+    updateLoadingProgress(0, 'Loading scene configuration...');
+    fetch(config_url)
+        .then(function(response){
+            if(!response.ok){
+                throw new Error('HTTP ' + response.status + ' when requesting ' + config_url);
+            }
+            return response.json();
+        })
+        .then(loadSceneConfig)
+        .catch(function(error){
+            showError(
+                'Configuration Error',
+                'Failed to load the scene configuration (config=).',
+                'Error: ' + error.message + '\n\nURL: ' + config_url + '\n\nThe file must be JSON, reachable over HTTPS, and served with CORS allowed.'
+            );
+        });
 }
 else if(base64_str){
     if(base64IsCloudini(base64_str)){
@@ -255,8 +393,17 @@ else if(base64_str){
     }
 }
 else if(json_base64){
-    var decodedData = JSON.parse(atob(json_base64));            
-    // Parse the JSON 
+    loadSceneConfig(JSON.parse(atob(json_base64)));
+}
+else{
+    // For now: always load something just because it's cool... 
+    var url = "https://pointcloudvisualization.s3.eu-central-1.amazonaws.com/cars3.npy";
+    startLoadingData(url, "XYZI");
+}        
+
+// Loads a JSON scene config: static points, bboxes, lines and objects, plus an optional
+// sequence of frames that plays over time (see js/sequence.js for the format).
+function loadSceneConfig(decodedData){
     if("points" in decodedData){
         // Currently multiple point clouds are not fully supported, but I'll give it a try: 
         for (var i = 0; i < decodedData["points"].length; i++) {
@@ -300,12 +447,10 @@ else if(json_base64){
         var objectsToLoad = decodedData['objects']; 
         startLoadingObjects(objectsToLoad); 
     }
+    if("frames" in decodedData || "sequence" in decodedData){
+        startSequencePlayback(decodedData);
+    }
 }
-else{
-    // For now: always load something just because it's cool... 
-    var url = "https://pointcloudvisualization.s3.eu-central-1.amazonaws.com/cars3.npy";
-    startLoadingData(url, "XYZI");
-}        
 
 
   
@@ -394,7 +539,7 @@ function get_bbox_vehicle(posx, posy, posz, sizex, sizey, sizez, rotationx, rota
     });
 
     // parent
-    parent = new THREE.Object3D();
+    var parent = new THREE.Object3D();
     parent.rotation.x = rotationx;
     parent.rotation.y = rotationy;
     parent.rotation.z = rotationz;
@@ -447,39 +592,39 @@ function startLoadingObjects(objectsToLoad){
     }
 }
         
+// Builds one group of boxes from float32 rows of 13 values (see the bbox format above).
+function buildBoxes(floats){
+    var points_per_row = 13;
+    var group = new THREE.Group();
+    for(var row=0; row + points_per_row <= floats.length; row=row+points_per_row) {
+        var b = floats.subarray(row, row + points_per_row);
+        group.add(get_bbox_vehicle(b[0], b[1], b[2], b[3], b[4], b[5], b[6], b[7], b[8], b[9], b[10], b[11], b[12]));
+    }
+    return group;
+}
+
+// Builds line segments from float32 rows of X1, Y1, Z1, X2, Y2, Z2.
+function buildLines(floats){
+    var vertices = [];
+    for(var row=0; row + 6 <= floats.length; row=row+6) {
+        vertices.push(new THREE.Vector3(floats[row], floats[row+1], floats[row+2]));
+        vertices.push(new THREE.Vector3(floats[row+3], floats[row+4], floats[row+5]));
+    }
+    var geometry = new THREE.BufferGeometry().setFromPoints(vertices);
+    var material = new THREE.LineBasicMaterial( { color: 0xffffff } );
+    return new THREE.LineSegments( geometry, material );
+}
+
 function startLoadingBoxes(url){
     var httpRequest = new XMLHttpRequest();
     httpRequest.onreadystatechange = function() {
         if (httpRequest.readyState === 4){
             // everything is good, the response is received
             if ((httpRequest.status == 200) || (httpRequest.status == 0)){
-                var buffer = httpRequest.response;
-                 var dataview = new DataView(buffer);
-                var points_per_row = 13;  
-                
-                // Note: divide by 4 because of float32 has 4 bytes
-                var ints = dataViewToFloat32Array(dataview, buffer.byteLength / 4)
-                
-                for(var row=0; row < ints.length; row=row+points_per_row) {
-                    
-                    bboxnodes[row/points_per_row] = new Array();
-                    for(var p=0; p < points_per_row; p++){ //xyz...
-                        bboxnodes[row/points_per_row][p] = ints[row+p] 
-                    }
-                }
-                
-            console.log("Loaded num bboxes " + bboxnodes.length)
-
-            var particles = bboxnodes.length;
-            var geometry = new THREE.BufferGeometry();
-            var positions = [];
-            var colors = [];
-            var color = new THREE.Color();
-
-            for ( var i = 0; i < particles; i ++ ) {
-                var temp = get_bbox_vehicle(bboxnodes[i][0], bboxnodes[i][1], bboxnodes[i][2], bboxnodes[i][3], bboxnodes[i][4], bboxnodes[i][5], bboxnodes[i][6], bboxnodes[i][7], bboxnodes[i][8], bboxnodes[i][9], bboxnodes[i][10], bboxnodes[i][11], bboxnodes[i][12]);
-                scene.add(temp);
-        }}}}
+                var boxes = buildBoxes(readImmersiveFloats(httpRequest.response));
+                console.log("Loaded num bboxes " + boxes.children.length)
+                scene.add(boxes);
+        }}}
 
     
     // Send the request
@@ -499,40 +644,8 @@ function startLoadingLines(url)
         if (httpRequest.readyState === 4){
             // everything is good, the response is received
             if ((httpRequest.status == 200) || (httpRequest.status == 0)){
-                var buffer = httpRequest.response;
-                var dataview = new DataView(buffer);
-
-                console.log('got them lines')
-
-                // Note: divide by 4 because of float32 has 4 bytes
-                var ints = dataViewToFloat32Array(dataview, buffer.byteLength / 4)
-
-                /*
-                This is actually a bit counter intuitive. 
-                We are assuming the input is X1, Y1, Z1, X2, Y2, Z2. 
-                However, we load each point separately, which gives us a points per row of 3. 
-                */                
-                var points_per_row = 3 ;                 
-                
-                for(var row=0; row < ints.length; row=row+points_per_row) {
-                    linesList[row/points_per_row] = new THREE.Vector3(ints[row+0], ints[row+1] , ints[row+2] );
-                }
-
-                var idx = new Array(); 
-                for(var i=0; i < linesList.length; i=i+2){
-                    idx.push(i);
-                    idx.push(i+1);
-                }
-                console.log("Loaded num lines " + linesList.length + " with ppr: " + points_per_row)    
-              
-                const bg = new THREE.BufferGeometry().setFromPoints(linesList);
-                bg.setIndex(idx);
-
-
-                var geometry = bg;
- 	            var material = new THREE.LineBasicMaterial( { color: 0xffffff } );
-                var line = new THREE.LineSegments( geometry, material );
-
+                var line = buildLines(readImmersiveFloats(httpRequest.response));
+                console.log("Loaded num line segments " + line.geometry.attributes.position.count / 2)
                 scene.add( line );
         }}}
 
@@ -584,7 +697,7 @@ function getSourceUrlParam() {
         return getQueryVariable(match[1], null);
     }
     // Viewer parameters that can follow an unencoded url= or name= value.
-    var viewerParams = ['url', 'name', 'mode', 'showAxes', 'autoRotate', 'jsonb64', 'base64'];
+    var viewerParams = ['url', 'name', 'mode', 'frames', 'fps', 'showAxes', 'autoRotate', 'jsonb64', 'base64', 'config'];
     var parts = raw.split('&');
     while (parts.length > 1 && viewerParams.indexOf(parts[parts.length - 1].split('=')[0]) !== -1) {
         parts.pop();
@@ -1047,8 +1160,254 @@ function startLoadingData(url, pointType, pointSize=1.5)
     httpRequest.send();
 }
       
+
+// ---------- Sequences: frames of points, boxes and lines that play over time ----------
+
+function fetchArrayBuffer(url){
+    return fetch(url).then(function(response){
+        if(!response.ok){
+            throw new Error('HTTP ' + response.status + ' for ' + url);
+        }
+        return response.arrayBuffer();
+    }, function(){
+        throw new Error('Could not download ' + url + ' (network error, or the server does not allow CORS)');
+    });
+}
+
+// The bytes of one points/bboxes/lines entry: from its url, or inline base64.
+function entryBuffer(entry){
+    if(entry.source === 'base64' || (!entry.url && entry.base64)){
+        return Promise.resolve(_base64ToArrayBuffer(entry.base64));
+    }
+    if(!entry.url){
+        return Promise.reject(new Error('Entry has no "url" or "base64": ' + JSON.stringify(entry)));
+    }
+    return fetchArrayBuffer(entry.url);
+}
+
+var sequencePointMaterials = {};
+function sequencePointMaterial(size){
+    if(!sequencePointMaterials[size]){
+        sequencePointMaterials[size] = new THREE.PointsMaterial( { size: size, vertexColors: THREE.VertexColors, sizeAttenuation: true } );
+    }
+    return sequencePointMaterials[size];
+}
+
+function loadPointsEntry(entry){
+    return entryBuffer(entry).then(function(buffer){
+        var type = entry.type ? String(entry.type).toUpperCase() : pointTypeForUrl(entry.url || '', null);
+        if(isCloudiniType(type) || isCloudini(buffer)){
+            return decodeCloudini(buffer).then(function(decoded){
+                return cloudToPoints(decoded.info, decoded.data);
+            });
+        }
+        return floatsToPointArrays(readImmersiveFloats(buffer), type);
+    }).then(function(cloud){
+        var geometry = new THREE.BufferGeometry();
+        geometry.setAttribute( 'position', new THREE.Float32BufferAttribute( cloud.positions, 3 ) );
+        geometry.setAttribute( 'color', new THREE.Float32BufferAttribute( cloud.colors, 3 ) );
+        geometry.computeBoundingSphere();
+        return new THREE.Points( geometry, sequencePointMaterial(entry.pointSize || 0.04) );
+    });
+}
+
+// Loads every entry of one frame into a single group that the player shows or hides.
+function loadSequenceFrame(frame){
+    var group = new THREE.Group();
+    var jobs = [];
+    (frame.points || []).forEach(function(entry){
+        jobs.push(loadPointsEntry(entry).then(function(object){ group.add(object); }));
+    });
+    (frame.bboxes || []).forEach(function(entry){
+        jobs.push(entryBuffer(entry).then(function(buffer){ group.add(buildBoxes(readImmersiveFloats(buffer))); }));
+    });
+    (frame.lines || []).forEach(function(entry){
+        jobs.push(entryBuffer(entry).then(function(buffer){ group.add(buildLines(readImmersiveFloats(buffer))); }));
+    });
+    return Promise.all(jobs).then(function(){ return group; });
+}
+
+function startSequencePlayback(config){
+    var frames;
+    try{
+        frames = expandFrames(config);
+        if(frames.length === 0){
+            throw new Error('"frames" is empty');
+        }
+    }
+    catch(error){
+        showError('Sequence Error', 'The sequence in the scene configuration is not valid.', 'Error: ' + error.message);
+        return;
+    }
+
+    var fpsParam = parseFloat(getQueryVariable('fps', ''));
+    sequenceRoot = new THREE.Group();
+    scene.add(sequenceRoot);
+
+    sequencePlayer = new SequencePlayer({
+        frames: frames,
+        parent: sequenceRoot,
+        loadFrame: loadSequenceFrame,
+        fps: fpsParam > 0 ? fpsParam : config.fps,
+        loop: config.loop,
+        autoplay: config.autoplay,
+        onChange: updateSequenceUI
+    });
+
+    updateLoadingProgress(0, 'Loading frame 1 of ' + frames.length + '...');
+    sequencePlayer.start().then(function(){
+        createSequenceControls();
+        updateSequenceUI(sequencePlayer);
+        hideLoadingOverlay();
+    }, function(error){
+        showError(
+            'Sequence Error',
+            'Failed to load the first frame of the sequence.',
+            'Error: ' + error.message + '\n\nFrames: ' + frames.length
+        );
+    });
+}
+
+function createSequenceControls(){
+    var bar = document.createElement('div');
+    bar.id = 'sequence-controls';
+    bar.innerHTML =
+        '<button type="button" id="seq-prev" title="Previous frame (Left arrow)" aria-label="Previous frame">&#9198;</button>' +
+        '<button type="button" id="seq-play" title="Play or pause (Space)" aria-label="Play or pause"></button>' +
+        '<button type="button" id="seq-next" title="Next frame (Right arrow)" aria-label="Next frame">&#9197;</button>' +
+        '<div class="seq-track"><div class="seq-buffered" id="seq-buffered"></div>' +
+        '<input type="range" id="seq-slider" min="0" step="1" value="0" aria-label="Frame"></div>' +
+        '<span class="seq-frame" id="seq-frame"></span>' +
+        '<label class="seq-fps">fps <input type="number" id="seq-fps" min="1" max="120" step="1"></label>';
+    document.body.appendChild(bar);
+
+    var slider = document.getElementById('seq-slider');
+    slider.max = String(sequencePlayer.length - 1);
+    document.getElementById('seq-fps').value = String(sequencePlayer.fps);
+
+    document.getElementById('seq-play').addEventListener('click', function(){ sequencePlayer.togglePlay(); });
+    document.getElementById('seq-prev').addEventListener('click', function(){ sequencePlayer.step(-1); });
+    document.getElementById('seq-next').addEventListener('click', function(){ sequencePlayer.step(1); });
+    slider.addEventListener('input', function(){
+        sequencePlayer.playing = false;
+        sequencePlayer.seek(parseInt(slider.value, 10));
+    });
+    document.getElementById('seq-fps').addEventListener('change', function(event){
+        var fps = parseFloat(event.target.value);
+        if(fps > 0){
+            sequencePlayer.fps = fps;
+        }
+        event.target.value = String(sequencePlayer.fps);
+    });
+
+    window.addEventListener('keydown', function(event){
+        if(event.target && (event.target.tagName === 'INPUT' || event.target.tagName === 'BUTTON')){
+            return;
+        }
+        if(event.code === 'Space'){
+            sequencePlayer.togglePlay();
+            event.preventDefault();
+        }
+        else if(event.code === 'ArrowRight' || event.key === '.'){
+            sequencePlayer.step(1);
+        }
+        else if(event.code === 'ArrowLeft' || event.key === ','){
+            sequencePlayer.step(-1);
+        }
+    });
+}
+
+function sequenceStatusText(player){
+    var text = 'Frame ' + (player.current + 1) + ' / ' + player.length;
+    var label = player.label();
+    if(label){
+        text += '  ' + label;
+    }
+    if(player.status[player.current] === 'failed'){
+        text += '  (failed to load)';
+    }
+    else if(player.buffering || player.status[player.current] !== 'ready'){
+        text += '  (loading)';
+    }
+    return text;
+}
+
+function updateSequenceUI(player){
+    updateSequenceLabel(player);
+    var bar = document.getElementById('sequence-controls');
+    if(!bar){
+        return;
+    }
+    document.getElementById('seq-play').innerHTML = player.playing ? '&#9208;' : '&#9654;';
+    var slider = document.getElementById('seq-slider');
+    if(document.activeElement !== slider){
+        slider.value = String(player.current);
+    }
+    var done = player.loadedCount + player.failedCount;
+    document.getElementById('seq-buffered').style.width = (100 * done / player.length) + '%';
+    var frameText = sequenceStatusText(player);
+    if(done < player.length){
+        frameText += '  · loaded ' + player.loadedCount + '/' + player.length;
+    }
+    if(player.failedCount){
+        frameText += '  · ' + player.failedCount + ' failed';
+    }
+    document.getElementById('seq-frame').textContent = frameText;
+}
+
+// A small panel on the first controller shows the frame number inside the headset.
+function updateSequenceLabel(player){
+    if(!sequenceLabel){
+        var canvas = document.createElement('canvas');
+        canvas.width = 512;
+        canvas.height = 96;
+        var texture = new THREE.CanvasTexture(canvas);
+        var material = new THREE.MeshBasicMaterial({ map: texture, transparent: true, depthTest: false });
+        sequenceLabel = new THREE.Mesh(new THREE.PlaneGeometry(0.16, 0.03), material);
+        sequenceLabel.position.set(0, 0.05, -0.05);
+        sequenceLabel.rotation.x = -Math.PI / 4;
+        sequenceLabel.renderOrder = 999;
+        sequenceLabel.visible = false;
+        sequenceLabel.userData = { canvas: canvas, texture: texture, text: null };
+        controller1.add(sequenceLabel);
+    }
+    var text = (player.playing ? '▶ ' : '⏸ ') + sequenceStatusText(player);
+    if(text === sequenceLabel.userData.text){
+        return;
+    }
+    sequenceLabel.userData.text = text;
+    var ctx = sequenceLabel.userData.canvas.getContext('2d');
+    ctx.clearRect(0, 0, 512, 96);
+    ctx.fillStyle = 'rgba(20, 30, 70, 0.85)';
+    ctx.fillRect(0, 0, 512, 96);
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '36px -apple-system, "Segoe UI", Arial, sans-serif';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(text, 16, 48, 480);
+    sequenceLabel.userData.texture.needsUpdate = true;
+}
+
+// In VR: A or X plays and pauses, B steps forward, Y steps back.
+var sequenceButtonState = {};
+function handleSequenceButtons(inputSource, key){
+    if(!inputSource || !inputSource.gamepad){
+        return;
+    }
+    var buttons = inputSource.gamepad.buttons;
+    var playPressed = buttons.length > 4 && buttons[4].pressed;
+    var stepPressed = buttons.length > 5 && buttons[5].pressed;
+    var previous = sequenceButtonState[key] || {};
+    if(playPressed && !previous.play){
+        sequencePlayer.togglePlay();
+    }
+    if(stepPressed && !previous.step){
+        sequencePlayer.step(inputSource.handedness === 'left' ? -1 : 1);
+    }
+    sequenceButtonState[key] = { play: playPressed, step: stepPressed };
+}
+
  function onSelectStart(){
-    movingSpeed = 1.0 * points.scale.x;
+    movingSpeed = 1.0 * (points ? points.scale.x : 1.0);
      
  }
  function onSelectEnd(){
@@ -1056,7 +1415,7 @@ function startLoadingData(url, pointType, pointSize=1.5)
  }
         
 function onSelectStartRight(){
-    movingSpeed = -1.0 * points.scale.x;
+    movingSpeed = -1.0 * (points ? points.scale.x : 1.0);
      
  }
  function onSelectEndRight(){
@@ -1166,6 +1525,18 @@ function onWindowResize(){
 function animate() {
     renderer.setAnimationLoop( function () {
         controls.update();
+
+        var dt = clock.getDelta();
+        if (sequencePlayer) {
+            if (renderer.xr.isPresenting) {
+                if (realcont1connected) handleSequenceButtons(realcont1, 'controller1');
+                if (realcont2connected) handleSequenceButtons(realcont2, 'controller2');
+            }
+            sequencePlayer.update(dt);
+            if (sequenceLabel) {
+                sequenceLabel.visible = renderer.xr.isPresenting;
+            }
+        }
 
         // Only process VR controller input when in an active XR session
         if (renderer.xr.isPresenting) {
