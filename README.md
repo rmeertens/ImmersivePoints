@@ -121,7 +121,8 @@ For per-frame boxes and lines, a static map, or files that aren't numbered, use 
 
 ## Documentation
 
-For detailed documentation, see: (https://immersivepoints.meertens.dev/)** - Live demos and viewer link generator
+- **[immersivepoints.meertens.dev](https://immersivepoints.meertens.dev/)** - Live demos and viewer link generator
+- **[For AI Agents](https://immersivepoints.meertens.dev/for-ai-agents.html)** - How agents and scripts turn data into a viewer link, and how to make it look good. The standalone helper is [`examples/viewer_link.py`](examples/viewer_link.py); a plain-text summary for language models is in [`llms.txt`](llms.txt).
 
 ---
 

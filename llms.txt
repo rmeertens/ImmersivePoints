@@ -1,0 +1,53 @@
+# ImmersivePoints
+
+> A free web viewer that shows 3D point clouds on desktop and in VR headsets (Quest, PC VR, any WebXR browser). It is driven entirely by its URL: an agent can turn a numpy array into one shareable link, with no upload, account or server.
+
+Full guide for agents: https://immersivepoints.meertens.dev/for-ai-agents.html
+
+## Quick recipe (Python, needs only numpy)
+
+    curl -O https://immersivepoints.meertens.dev/examples/viewer_link.py
+
+    import numpy as np
+    from viewer_link import fit_to_view, hue_from_values, viewer_link
+    xyz = fit_to_view(my_xyz)          # (N, 3): centered, about 8 units across, Z up
+    hue = hue_from_values(my_values)   # (N,): hue 0 (red) to 0.55 (cyan)
+    print(viewer_link(np.column_stack([xyz, hue])))
+
+## Link format
+
+1. Rows of float32 per point: x, y, z, hue (type XYZI) or x, y, z, r, g, b (type XYZRGB). Hue and RGB are 0 to 1.
+2. Encode the rows as BIG-ENDIAN float32 (numpy astype(">f4")), then base64.
+3. Config JSON: {"points": [{"source": "base64", "base64": "<data>", "type": "XYZI", "pointSize": 0.02}]}
+   For a hosted file: {"points": [{"source": "url", "url": "https://.../scan.xyzrgb", "type": "XYZRGB"}]}
+   The host must send CORS headers (raw.githubusercontent.com, GitHub Pages, S3 or GCS with CORS). Cloudini .cldn files use "type": "CLOUDINI".
+4. Link: https://immersivepoints.meertens.dev/oculus.html#jsonb64=<URL-encoded base64 of the config JSON>
+   Use "#" so the data never reaches a server (no server URL length limit). "?jsonb64=" also works for short links.
+
+Single hosted file shortcut: https://immersivepoints.meertens.dev/oculus.html?url=<file URL>&mode=xyzi|xyzrgb|cloudini (mode only if the extension does not say).
+Extra URL parameters: pointSize=0.02 (point diameter in scene units), autoRotate=true (desktop rotation), showAxes=true (X red, Y green, Z blue), axes=threejs (only for old files made Y up). Leave them out for the defaults.
+Sequences (animation, one file per frame): oculus.html?url=https://host/scan_{i:04}.xyzi&frames=0-199&fps=10, or "sequence"/"frames" in the config. A config can also be hosted as JSON and passed with config=<url>.
+Optional config keys: "bboxes" and "lines" (first entry, url source only), "objects" (glTF/GLB with position, rotation, scale).
+Box files: 13 big-endian float32 per box (center xyz, size xyz, rotation around x, y, z in radians, r, g, b, opacity); a heading is the rotation around z. Line files: 6 per segment (start xyz, end xyz).
+
+## Making it look good
+
+- Axes: X forward, Y left, Z up (the ROS convention). LiDAR, ROS, GIS and CAD data are already Z up: use them as they are. Rotate Y-up data (three.js, glTF, OBJ, game engines) with (x, y, z) -> (-z, -x, y). Never just swap two columns: that mirrors the scene.
+- Desktop camera is 20 units behind the origin looking along +X and sees about 9.5 units vertically: center the data and scale its largest side to about 8 (use 1st-99th percentiles, not min/max).
+- In VR the person starts at the origin on the floor z = 0, looking along +X. For walk-through scenes keep metres and put the ground at z = 0.
+- Point size (pointSize, default 0.02) is the point diameter in scene units, drawn at true size: 0.03-0.05 for under 20k points, 0.02 for 20k-300k, 0.01-0.015 for dense scans. Viewers can also scale it while viewing.
+- Background is blue (#2d4aa8): avoid hues 0.58-0.78. Continuous values: hue 0 to 0.55. Categories: distinct hues that skip blue.
+- XYZRGB colors are 0-1 floats; lift very dark colors (0.15 + 0.85 * rgb).
+- Keep under about 500k points for standalone headsets; subsample or host a Cloudini file for more.
+- Inline data costs about 28 link characters per XYZI point and 43 per XYZRGB point: inline up to about 30k points, host a file beyond that.
+
+## Checking a link
+
+The browser console prints "Loaded num points N" on success. Errors appear as a red panel (for example "Data Parsing Error", "File Not Found", "Network Error") with details.
+
+## Links
+
+- Guide: https://immersivepoints.meertens.dev/for-ai-agents.html
+- Helper: https://immersivepoints.meertens.dev/examples/viewer_link.py
+- Hosting your own files: https://immersivepoints.meertens.dev/upload.html
+- Example notebooks: https://github.com/rmeertens/ImmersivePoints/tree/master/examples

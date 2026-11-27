@@ -120,7 +120,7 @@ Project-specific requirements are listed in each folder's README.
 
 - 📖 Main documentation: [README.md](../README.md)
 - 🐛 Issues: [GitHub Issues](https://github.com/rmeertens/ImmersivePoints/issues)
-- 💡 Ideas: Check out our [blog](https://immersivepoints.meertens.dev/blog.html) for more use cases
+- 🤖 Using an AI agent or a script? See [For AI Agents](https://immersivepoints.meertens.dev/for-ai-agents.html) and the standalone link helper [`viewer_link.py`](viewer_link.py)
 
 ## Contributing
 
