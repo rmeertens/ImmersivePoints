@@ -577,7 +577,7 @@ else if(base64_str){
     }
 }
 else if(json_base64){
-    loadSceneConfig(JSON.parse(atob(json_base64)));
+    loadSceneConfig(JSON.parse(decodeBase64(json_base64)));
 }
 else{
     // For now: always load something just because it's cool... 
@@ -898,8 +898,18 @@ function getSourceUrlParam() {
     return parts.join('&');
 }
 
+// atob() that also accepts the URL-safe alphabet (- and _, as Python's urlsafe_b64encode
+// writes) and missing padding.
+function decodeBase64(text) {
+    var normalized = String(text).replace(/\s+/g, '').replace(/-/g, '+').replace(/_/g, '/');
+    while (normalized.length % 4) {
+        normalized += '=';
+    }
+    return window.atob(normalized);
+}
+
 function _base64ToArrayBuffer(base64) {
-    var binary_string = window.atob(base64);
+    var binary_string = decodeBase64(base64);
     var len = binary_string.length;
     var bytes = new Uint8Array(len);
     for (var i = 0; i < len; i++) {
