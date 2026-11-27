@@ -211,7 +211,9 @@ export function robustRange(values, count) {
 // Converts a decoded cloud into ImmersivePoints arrays.
 // Returns { count, positions: Float32Array(3n), colors: Float32Array(3n), hues: Float32Array|null, colorSource }.
 // Points with a non-finite x, y or z (e.g. lidar no-returns) are dropped.
-export function cloudToPoints(info, data) {
+// options.upIndex picks the axis used for height coloring: 2 (Z up, the default) or 1 (Y up).
+export function cloudToPoints(info, data, options = {}) {
+    const upIndex = options.upIndex === undefined ? 2 : options.upIndex;
     const fx = findField(info, 'x');
     const fy = findField(info, 'y');
     const fz = findField(info, 'z');
@@ -280,7 +282,7 @@ export function cloudToPoints(info, data) {
             for (let c = 0; c < 3; c++) colors[i * 3 + c] = Math.min(1, Math.max(0, readers[c](keep[i]) * scale));
         }
     } else {
-        // Scalar coloring: intensity if present, otherwise height (viewer Y axis is up).
+        // Scalar coloring: intensity if present, otherwise height along the up axis.
         let values = new Float32Array(count);
         if (fScalar) {
             colorSource = fScalar.name;
@@ -288,7 +290,7 @@ export function cloudToPoints(info, data) {
             for (let i = 0; i < count; i++) values[i] = rs(keep[i]);
         } else {
             colorSource = 'height';
-            for (let i = 0; i < count; i++) values[i] = positions[i * 3 + 1];
+            for (let i = 0; i < count; i++) values[i] = positions[i * 3 + upIndex];
         }
         const [lo, hi] = robustRange(values, count);
         const span = hi - lo || 1;

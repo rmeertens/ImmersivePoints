@@ -108,8 +108,10 @@ export function expandFrames(config) {
 }
 
 // Converts ImmersivePoints floats (XYZ, XYZI or XYZRGB rows) to position and color arrays.
-// XYZ points are colored by height (Y is up), blue (low) to red (high).
-export function floatsToPointArrays(floats, pointType) {
+// XYZ points are colored by height, blue (low) to red (high). upIndex is the up axis:
+// 2 for Z up (the default), 1 for Y up.
+export function floatsToPointArrays(floats, pointType, upIndex) {
+    var up = upIndex === undefined ? 2 : upIndex;
     var type = String(pointType || '').toUpperCase();
     var ppr = POINTS_PER_ROW[type];
     if (!ppr) throw new Error('Unknown point type "' + pointType + '": expected XYZ, XYZI, XYZRGB or CLOUDINI');
@@ -135,7 +137,7 @@ export function floatsToPointArrays(floats, pointType) {
     }
     if (type === 'XYZ') {
         var heights = new Float32Array(count);
-        for (var j = 0; j < count; j++) heights[j] = positions[j * 3 + 1];
+        for (var j = 0; j < count; j++) heights[j] = positions[j * 3 + up];
         var range = robustRange(heights, count);
         var span = range[1] - range[0] || 1;
         for (var p = 0; p < count; p++) {

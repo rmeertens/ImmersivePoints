@@ -427,6 +427,21 @@
         <h2>File format specifications</h2>
         <p>All binary files must be in <strong>float32</strong> format. ImmersivePoints supports two raw formats, plus <a href="#cloudini-format">compressed Cloudini files</a>:</p>
 
+        <div class="format-card" id="coordinates">
+            <h3>Coordinate system</h3>
+            <p>Give all positions in a right-handed frame with <strong>X forward, Y left and Z up</strong>. This is the ROS convention (REP 103) and the vehicle frame most lidar datasets use, so a cloud straight from a sensor shows up the right way round with no conversion.</p>
+            <table class="format-table">
+                <thead><tr><th>Axis</th><th>Direction</th><th>Axes helper color</th></tr></thead>
+                <tbody>
+                    <tr><td class="field-name">X</td><td>Forward</td><td>Red</td></tr>
+                    <tr><td class="field-name">Y</td><td>Left</td><td>Green</td></tr>
+                    <tr><td class="field-name">Z</td><td>Up</td><td>Blue</td></tr>
+                </tbody>
+            </table>
+            <p>Box sizes and rotations, line end points and object poses use the same axes, so a vehicle's heading is its rotation around Z. The viewer starts behind the origin, looking along +X. Add <code>&amp;showAxes=true</code> to check your data against the axes.</p>
+            <p class="mb-0"><small class="text-muted">Do not swap columns to make Y point up: swapping two axes mirrors the scene. Files made for the viewer's older convention (three.js axes: X right, Y up, Z toward the viewer) can still be shown as stored with <code>&amp;axes=threejs</code>, or <code>"axes": "threejs"</code> in a JSON config.</small></p>
+        </div>
+
         <div class="format-card">
             <h3>XYZI Format <span class="badge badge-primary">4 values per point</span></h3>
             <p>Position with hue-based coloring.</p>
@@ -489,7 +504,7 @@
                     <tr><td class="field-name">intensity</td><td class="field-type">any numeric type</td><td>Colored from blue (low) to red (high)</td></tr>
                 </tbody>
             </table>
-            <small class="text-muted">Colors use the first match in this order. With none of these fields, points are colored by height (Y). Other fields are ignored. Coordinates are shown as stored, with Y up; clouds from ROS usually have Z up.</small>
+            <small class="text-muted">Colors use the first match in this order. With none of these fields, points are colored by height (Z). Other fields are ignored. Coordinates use the <a href="#coordinates">X forward, Y left, Z up</a> convention, so clouds from ROS show up the right way round.</small>
         </div>
 
         <div class="format-card" style="opacity: 0.7;">
@@ -504,15 +519,15 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr><td class="field-name">Center X</td><td class="field-type">float32</td><td>Center position forwards</td></tr>
-                    <tr><td class="field-name">Center Y</td><td class="field-type">float32</td><td>Center position upwards</td></tr>
-                    <tr><td class="field-name">Center Z</td><td class="field-type">float32</td><td>Center position left</td></tr>
-                    <tr><td class="field-name">Size X</td><td class="field-type">float32</td><td>Box width</td></tr>
-                    <tr><td class="field-name">Size Y</td><td class="field-type">float32</td><td>Box height</td></tr>
-                    <tr><td class="field-name">Size Z</td><td class="field-type">float32</td><td>Box depth</td></tr>
-                    <tr><td class="field-name">Rotation X</td><td class="field-type">float32</td><td>Rotation around X axis</td></tr>
-                    <tr><td class="field-name">Rotation Y</td><td class="field-type">float32</td><td>Rotation around Y axis</td></tr>
-                    <tr><td class="field-name">Rotation Z</td><td class="field-type">float32</td><td>Rotation around Z axis</td></tr>
+                    <tr><td class="field-name">Center X</td><td class="field-type">float32</td><td>Center position, forward</td></tr>
+                    <tr><td class="field-name">Center Y</td><td class="field-type">float32</td><td>Center position, left</td></tr>
+                    <tr><td class="field-name">Center Z</td><td class="field-type">float32</td><td>Center position, up</td></tr>
+                    <tr><td class="field-name">Size X</td><td class="field-type">float32</td><td>Box length (along X)</td></tr>
+                    <tr><td class="field-name">Size Y</td><td class="field-type">float32</td><td>Box width (along Y)</td></tr>
+                    <tr><td class="field-name">Size Z</td><td class="field-type">float32</td><td>Box height (along Z)</td></tr>
+                    <tr><td class="field-name">Rotation X</td><td class="field-type">float32</td><td>Roll: rotation around X, in radians</td></tr>
+                    <tr><td class="field-name">Rotation Y</td><td class="field-type">float32</td><td>Pitch: rotation around Y, in radians</td></tr>
+                    <tr><td class="field-name">Rotation Z</td><td class="field-type">float32</td><td>Yaw (heading): rotation around Z, in radians</td></tr>
                     <tr><td class="field-name">Red</td><td class="field-type">float32</td><td>Red channel (0.0 – 1.0)</td></tr>
                     <tr><td class="field-name">Green</td><td class="field-type">float32</td><td>Green channel (0.0 – 1.0)</td></tr>
                     <tr><td class="field-name">Blue</td><td class="field-type">float32</td><td>Blue channel (0.0 – 1.0)</td></tr>
@@ -614,6 +629,7 @@
     }
   ]
 }</pre>
+            <p class="mb-0"><small class="text-muted">Object <code>position</code>, <code>rotation</code> (radians, around X, Y and Z) and <code>scale</code> use the <a href="#coordinates">data axes</a>. glTF models are made Y up with their front facing +Z; the viewer stands them up along Z with their front along +X. Add <code>"axes": "threejs"</code> to show a whole config as stored.</small></p>
         </div>
 
         <div class="format-card">
@@ -628,7 +644,8 @@
                 </thead>
                 <tbody>
                     <tr><td class="field-name">mode</td><td class="field-type">xyzi, xyzrgb, cloudini</td><td>Specify format when using <code>name</code> parameter (overrides the file extension)</td></tr>
-                    <tr><td class="field-name">showAxes</td><td class="field-type">true, false</td><td>Show XYZ axis helper in the scene</td></tr>
+                    <tr><td class="field-name">axes</td><td class="field-type">flu, threejs</td><td><code>flu</code> (default): X forward, Y left, Z up. <code>threejs</code>: show the data as stored, for files made for the older convention. See <a href="#coordinates">Coordinate system</a>.</td></tr>
+                    <tr><td class="field-name">showAxes</td><td class="field-type">true, false</td><td>Show the axes: X red, Y green, Z blue</td></tr>
                     <tr><td class="field-name">autoRotate</td><td class="field-type">true, false</td><td>Auto-rotate the camera around the scene</td></tr>
                 </tbody>
             </table>

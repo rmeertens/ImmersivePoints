@@ -73,6 +73,12 @@ ImmersivePoints supports three point cloud formats:
 
 All coordinates should be `float32` numpy arrays.
 
+### Coordinate system
+
+Positions use a right-handed frame with **X forward, Y left and Z up**, the ROS convention (REP 103) used by most lidar datasets, so sensor data needs no conversion. Boxes, lines and objects use the same axes; a box's heading is its rotation around Z. The viewer converts this to three.js axes internally with a rotation, so nothing is mirrored.
+
+Don't swap columns to make Y point up: that mirrors the scene. Files made for the older convention (three.js axes: X right, Y up, Z toward the viewer) can be shown as stored with `&axes=threejs`. The live examples below use it.
+
 ### Cloudini (compressed)
 
 The viewer also reads [Cloudini](https://github.com/facontidavide/cloudini) compressed point clouds (`.cldn`). Cloudini is the compression format used for ROS `point_cloud_interfaces/CompressedPointCloud2` messages, and it typically makes files several times smaller (a 115k-point lidar scan at 1 mm precision goes from 1.8 MB to 0.4 MB).
@@ -88,12 +94,12 @@ Encoding and decoding use the official Cloudini WebAssembly build (release 1.5.0
 
 Explore pre-loaded datasets:
 
-- [Astyx LiDAR + Radar Fusion](https://immersivepoints.meertens.dev/oculus.html?jsonb64=eyJwb2ludHMiOiBbeyJzb3VyY2UiOiAidXJsIiwgInVybCI6ICJodHRwczovL3BvaW50Y2xvdWR2aXN1YWxpemF0aW9uLnMzLmV1LWNlbnRyYWwtMS5hbWF6b25hd3MuY29tL2FzdHl4L2FzdHl4MDAwMDAwLnR4dC54eXpyZ2IiLCAidHlwZSI6ICJYWVpSR0IifV0sICJiYm94ZXMiOiBbeyJzb3VyY2UiOiAidXJsIiwgInVybCI6ICJodHRwczovL3BvaW50Y2xvdWR2aXN1YWxpemF0aW9uLnMzLmV1LWNlbnRyYWwtMS5hbWF6b25hd3MuY29tL2FzdHl4L2FzdHl4YmJveDAwMDAwMC50eHQuYmJveCJ9XX0=)
-- [PandaSet RGB Point Cloud](https://immersivepoints.meertens.dev/oculus.html?jsonb64=eyJwb2ludHMiOiBbeyJzb3VyY2UiOiAidXJsIiwgInVybCI6ICJodHRwczovL3BvaW50Y2xvdWR2aXN1YWxpemF0aW9uLnMzLmV1LWNlbnRyYWwtMS5hbWF6b25hd3MuY29tL3BhbmRhLWV4cG9ydC8wMjRfeHl6cmdiLm5weSIsICJ0eXBlIjogIlhZWlJHQiJ9XX0=)
-- [PandaSet Semantic Segmentation](https://immersivepoints.meertens.dev/oculus.html?jsonb64=eyJwb2ludHMiOiBbeyJzb3VyY2UiOiAidXJsIiwgInVybCI6ICJodHRwczovL3BvaW50Y2xvdWR2aXN1YWxpemF0aW9uLnMzLmV1LWNlbnRyYWwtMS5hbWF6b25hd3MuY29tL3BhbmRhLWV4cG9ydC8wMjRfeHl6aS5ucHkiLCAidHlwZSI6ICJYWVpJIn1dLCAiYmJveGVzIjogW3sic291cmNlIjogInVybCIsICJ1cmwiOiAiaHR0cHM6Ly9wb2ludGNsb3VkdmlzdWFsaXphdGlvbi5zMy5ldS1jZW50cmFsLTEuYW1hem9uYXdzLmNvbS9wYW5kYS1leHBvcnQvMDI0X2Jib3gubnB5In1dfQ==)
-- [AEV Autonomous Driving](https://immersivepoints.meertens.dev/oculus.html?name=e2652aab-4ace-4a09-86f4-374b23cb677b.xyzi)
-- [Notre Dame 3D Scan](https://immersivepoints.meertens.dev/oculus.html?name=d6263c4a-7121-432f-8712-b0de530a78ff.xyzrgb)
-- [Brain Clustering Visualization](https://immersivepoints.meertens.dev/oculus.html?name=77b04781-5d7c-445f-9e6a-65956758d644.xyzi)
+- [Astyx LiDAR + Radar Fusion](https://immersivepoints.meertens.dev/oculus.html?jsonb64=eyJwb2ludHMiOiBbeyJzb3VyY2UiOiAidXJsIiwgInVybCI6ICJodHRwczovL3BvaW50Y2xvdWR2aXN1YWxpemF0aW9uLnMzLmV1LWNlbnRyYWwtMS5hbWF6b25hd3MuY29tL2FzdHl4L2FzdHl4MDAwMDAwLnR4dC54eXpyZ2IiLCAidHlwZSI6ICJYWVpSR0IifV0sICJiYm94ZXMiOiBbeyJzb3VyY2UiOiAidXJsIiwgInVybCI6ICJodHRwczovL3BvaW50Y2xvdWR2aXN1YWxpemF0aW9uLnMzLmV1LWNlbnRyYWwtMS5hbWF6b25hd3MuY29tL2FzdHl4L2FzdHl4YmJveDAwMDAwMC50eHQuYmJveCJ9XX0=&axes=threejs)
+- [PandaSet RGB Point Cloud](https://immersivepoints.meertens.dev/oculus.html?jsonb64=eyJwb2ludHMiOiBbeyJzb3VyY2UiOiAidXJsIiwgInVybCI6ICJodHRwczovL3BvaW50Y2xvdWR2aXN1YWxpemF0aW9uLnMzLmV1LWNlbnRyYWwtMS5hbWF6b25hd3MuY29tL3BhbmRhLWV4cG9ydC8wMjRfeHl6cmdiLm5weSIsICJ0eXBlIjogIlhZWlJHQiJ9XX0=&axes=threejs)
+- [PandaSet Semantic Segmentation](https://immersivepoints.meertens.dev/oculus.html?jsonb64=eyJwb2ludHMiOiBbeyJzb3VyY2UiOiAidXJsIiwgInVybCI6ICJodHRwczovL3BvaW50Y2xvdWR2aXN1YWxpemF0aW9uLnMzLmV1LWNlbnRyYWwtMS5hbWF6b25hd3MuY29tL3BhbmRhLWV4cG9ydC8wMjRfeHl6aS5ucHkiLCAidHlwZSI6ICJYWVpJIn1dLCAiYmJveGVzIjogW3sic291cmNlIjogInVybCIsICJ1cmwiOiAiaHR0cHM6Ly9wb2ludGNsb3VkdmlzdWFsaXphdGlvbi5zMy5ldS1jZW50cmFsLTEuYW1hem9uYXdzLmNvbS9wYW5kYS1leHBvcnQvMDI0X2Jib3gubnB5In1dfQ==&axes=threejs)
+- [AEV Autonomous Driving](https://immersivepoints.meertens.dev/oculus.html?name=e2652aab-4ace-4a09-86f4-374b23cb677b.xyzi&axes=threejs)
+- [Notre Dame 3D Scan](https://immersivepoints.meertens.dev/oculus.html?name=d6263c4a-7121-432f-8712-b0de530a78ff.xyzrgb&axes=threejs)
+- [Brain Clustering Visualization](https://immersivepoints.meertens.dev/oculus.html?name=77b04781-5d7c-445f-9e6a-65956758d644.xyzi&axes=threejs)
 
 ---
 

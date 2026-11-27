@@ -308,6 +308,38 @@ var colorBuffer;
         
 var user = new THREE.Group();     
 
+// Coordinate systems. Data is read as X forward, Y left, Z up (the ROS convention, REP 103).
+// three.js uses X right, Y up and Z toward the viewer, so forward is -Z. Everything loaded
+// from data goes into `world`, whose rotation maps the data axes onto the three.js axes:
+//     three.x = -data.y    three.y = data.z    three.z = -data.x
+// This is a rotation (not an axis swap), so nothing is mirrored. Positions, box sizes and box
+// rotations are all read in the data frame: a vehicle's yaw is its rotation around Z.
+// axes=threejs uses the data as stored instead, which is what the files in the example
+// bucket were made for.
+var AXES = {
+    flu: {
+        matrix: new THREE.Matrix4().set( 0, -1, 0, 0,   0, 0, 1, 0,   -1, 0, 0, 0,   0, 0, 0, 1 ),
+        upIndex: 2,
+        // glTF models are Y up with their front facing +Z: stand them up along Z, front along +X.
+        model: new THREE.Matrix4().set( 0, 0, 1, 0,   1, 0, 0, 0,   0, 1, 0, 0,   0, 0, 0, 1 )
+    },
+    threejs: { matrix: new THREE.Matrix4(), upIndex: 1, model: new THREE.Matrix4() }
+};
+var AXES_ALIASES = { flu: 'flu', zup: 'flu', ros: 'flu', threejs: 'threejs', three: 'threejs', yup: 'threejs' };
+var world = new THREE.Group();
+var axes = 'flu';
+
+function setAxes(name){
+    var key = AXES_ALIASES[String(name).toLowerCase()];
+    if(!key){
+        console.warn('Unknown axes "' + name + '": use flu (X forward, Y left, Z up) or threejs. Keeping ' + axes + '.');
+        return;
+    }
+    axes = key;
+    world.quaternion.setFromRotationMatrix(AXES[axes].matrix);
+}
+setAxes(getQueryVariable('axes', 'flu'));
+
 // Sequence playback (see js/sequence.js)
 var sequencePlayer = null;
 var sequenceRoot = null;
@@ -389,7 +421,7 @@ else if(base64_str){
     }
     else{
         var tempPoints = getPointsFromBase64String(base64_str, "XYZI");
-        scene.add(tempPoints);
+        world.add(tempPoints);
     }
 }
 else if(json_base64){
@@ -397,6 +429,8 @@ else if(json_base64){
 }
 else{
     // For now: always load something just because it's cool... 
+    // This file predates the X forward, Y left, Z up convention, so it is shown as stored.
+    setAxes('threejs');
     var url = "https://pointcloudvisualization.s3.eu-central-1.amazonaws.com/cars3.npy";
     startLoadingData(url, "XYZI");
 }        
@@ -404,6 +438,9 @@ else{
 // Loads a JSON scene config: static points, bboxes, lines and objects, plus an optional
 // sequence of frames that plays over time (see js/sequence.js for the format).
 function loadSceneConfig(decodedData){
+    if(decodedData.axes && getQueryVariable('axes', null) === null){
+        setAxes(decodedData.axes);
+    }
     if("points" in decodedData){
         // Currently multiple point clouds are not fully supported, but I'll give it a try: 
         for (var i = 0; i < decodedData["points"].length; i++) {
@@ -424,7 +461,7 @@ function loadSceneConfig(decodedData){
                 }
                 else{
                     var tempPoints = getPointsFromBase64String(pointToLoad["base64"], pointToLoad["type"]);
-                    scene.add(tempPoints);
+                    world.add(tempPoints);
                 }
             }
         }
@@ -512,16 +549,16 @@ For the lines you give an array with X1, Y1, Z1, X2, Y2, Z2. It draws lines betw
 */ 
         
 /*
-For the boxes this goes: 
+For the boxes this goes (in data axes: X forward, Y left, Z up):
 Center X (forwards) float32
-Center Y (upwards) float32
-Center Z (left) float32
-Size X float32
-Size Y float32
-Size Z float32
-Rotation around X float32
-Rotation around Y float32
-Rotation around Z float32
+Center Y (left) float32
+Center Z (upwards) float32
+Size X (length) float32
+Size Y (width) float32
+Size Z (height) float32
+Rotation around X (roll, radians) float32
+Rotation around Y (pitch, radians) float32
+Rotation around Z (yaw, radians) float32
 Red (between 0 and 1) float32
 Green (between 0 and 1) float32
 Blue (between 0 and 1) float32
@@ -566,19 +603,19 @@ function loadObject(object){
              }
         }  );
 
-        gltf.scene.scale.x = object['scale'][0];
-        gltf.scene.scale.y = object['scale'][1];
-        gltf.scene.scale.z = object['scale'][2];
+        // The holder takes the pose from the config, in data axes; the model inside it is
+        // turned from glTF axes to data axes.
+        var holder = new THREE.Group();
+        var scale = object['scale'] || [1, 1, 1];
+        var rotation = object['rotation'] || [0, 0, 0];
+        var position = object['position'] || [0, 0, 0];
+        holder.scale.set(scale[0], scale[1], scale[2]);
+        holder.rotation.set(rotation[0], rotation[1], rotation[2]);
+        holder.position.set(position[0], position[1], position[2]);
 
-        gltf.scene.rotation.x = object['rotation'][0];
-        gltf.scene.rotation.y = object['rotation'][1];
-        gltf.scene.rotation.z = object['rotation'][2];
-
-        gltf.scene.position.x = object['position'][0];
-        gltf.scene.position.y = object['position'][1];
-        gltf.scene.position.z = object['position'][2];
-
-        scene.add( gltf.scene );
+        gltf.scene.quaternion.setFromRotationMatrix(AXES[axes].model);
+        holder.add( gltf.scene );
+        world.add( holder );
     }, undefined, function ( error ) {
         console.error( error );
     } );
@@ -623,7 +660,7 @@ function startLoadingBoxes(url){
             if ((httpRequest.status == 200) || (httpRequest.status == 0)){
                 var boxes = buildBoxes(readImmersiveFloats(httpRequest.response));
                 console.log("Loaded num bboxes " + boxes.children.length)
-                scene.add(boxes);
+                world.add(boxes);
         }}}
 
     
@@ -646,7 +683,7 @@ function startLoadingLines(url)
             if ((httpRequest.status == 200) || (httpRequest.status == 0)){
                 var line = buildLines(readImmersiveFloats(httpRequest.response));
                 console.log("Loaded num line segments " + line.geometry.attributes.position.count / 2)
-                scene.add( line );
+                world.add( line );
         }}}
 
     
@@ -697,7 +734,7 @@ function getSourceUrlParam() {
         return getQueryVariable(match[1], null);
     }
     // Viewer parameters that can follow an unencoded url= or name= value.
-    var viewerParams = ['url', 'name', 'mode', 'frames', 'fps', 'showAxes', 'autoRotate', 'jsonb64', 'base64', 'config'];
+    var viewerParams = ['url', 'name', 'mode', 'frames', 'fps', 'axes', 'showAxes', 'autoRotate', 'jsonb64', 'base64', 'config'];
     var parts = raw.split('&');
     while (parts.length > 1 && viewerParams.indexOf(parts[parts.length - 1].split('=')[0]) !== -1) {
         parts.pop();
@@ -851,7 +888,7 @@ function addCloudiniPoints(buffer, sourceLabel){
     updateLoadingProgress(100, 'Decompressing Cloudini point cloud...');
     return decodeCloudini(buffer).then(function(decoded){
         updateLoadingProgress(100, 'Building 3D geometry...');
-        var cloud = cloudToPoints(decoded.info, decoded.data);
+        var cloud = cloudToPoints(decoded.info, decoded.data, { upIndex: AXES[axes].upIndex });
         if (cloud.count === 0) {
             throw new Error('The Cloudini point cloud contains no valid points');
         }
@@ -866,7 +903,7 @@ function addCloudiniPoints(buffer, sourceLabel){
 
         var material = new THREE.PointsMaterial( { size: 0.04, vertexColors: THREE.VertexColors, sizeAttenuation: true } );
         points = new THREE.Points( geometry, material );
-        scene.add( points );
+        world.add( points );
 
         setTimeout(() => {
             hideLoadingOverlay();
@@ -1108,7 +1145,7 @@ function startLoadingData(url, pointType, pointSize=1.5)
 
                     var material = new THREE.PointsMaterial( { size: 0.04, vertexColors: THREE.VertexColors, sizeAttenuation: true } );
                     points = new THREE.Points( geometry, material );
-                    scene.add( points );
+                    world.add( points );
 
                     // Hide loading overlay after a short delay
                     setTimeout(() => {
@@ -1198,10 +1235,10 @@ function loadPointsEntry(entry){
         var type = entry.type ? String(entry.type).toUpperCase() : pointTypeForUrl(entry.url || '', null);
         if(isCloudiniType(type) || isCloudini(buffer)){
             return decodeCloudini(buffer).then(function(decoded){
-                return cloudToPoints(decoded.info, decoded.data);
+                return cloudToPoints(decoded.info, decoded.data, { upIndex: AXES[axes].upIndex });
             });
         }
-        return floatsToPointArrays(readImmersiveFloats(buffer), type);
+        return floatsToPointArrays(readImmersiveFloats(buffer), type, AXES[axes].upIndex);
     }).then(function(cloud){
         var geometry = new THREE.BufferGeometry();
         geometry.setAttribute( 'position', new THREE.Float32BufferAttribute( cloud.positions, 3 ) );
@@ -1242,7 +1279,7 @@ function startSequencePlayback(config){
 
     var fpsParam = parseFloat(getQueryVariable('fps', ''));
     sequenceRoot = new THREE.Group();
-    scene.add(sequenceRoot);
+    world.add(sequenceRoot);
 
     sequencePlayer = new SequencePlayer({
         frames: frames,
@@ -1430,6 +1467,7 @@ function init() {
     scene = new THREE.Scene();
     scene.background = new THREE.Color( 0x2d4aa8 );
     scene.add( user );
+    scene.add( world );
 
     
     
@@ -1506,7 +1544,7 @@ function init() {
     // Possibly add an axis helper to the scene. 
     if(showAxes){
         var axesHelper = new THREE.AxesHelper( 5 );
-        scene.add( axesHelper );
+        world.add( axesHelper );
     }
     
     window.addEventListener( 'resize', onWindowResize, false );
