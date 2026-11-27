@@ -235,9 +235,8 @@
                 const openBtn = document.getElementById('openViewerBtn');
                 
                 if (fileUrl) {
-                    const config = {points: [{source: 'url', url: fileUrl, type: format.toUpperCase()}]};
                     const baseUrl = window.location.origin;
-                    const viewerLink = `${baseUrl}/oculus.html?jsonb64=${encodeURIComponent(btoa(JSON.stringify(config)))}`;
+                    const viewerLink = `${baseUrl}/oculus.html?url=${encodeURIComponent(fileUrl)}&mode=${format}`;
                     viewerLinkInput.value = viewerLink;
                     openBtn.href = viewerLink;
                     container.style.display = 'block';
@@ -507,8 +506,8 @@
         <div class="format-card">
             <h3>Simple file URL <span class="badge badge-primary">Recommended</span></h3>
             <p>Pass a URL to your hosted binary file. The file extension determines the format.</p>
-            <pre>oculus.html?name=https://example.com/mycloud.xyzi</pre>
-            <p class="mb-0"><small class="text-muted">Use <code>.xyzi</code>, <code>.xyzrgb</code> or <code>.cldn</code> file extension to auto-detect format, or add <code>&amp;mode=xyzi</code>, <code>xyzrgb</code> or <code>cloudini</code> for other file names. If the URL itself has a query string (<code>&amp;</code> or <code>=</code>), encode it with <code>encodeURIComponent</code> first.</small></p>
+            <pre>oculus.html?url=https://example.com/mycloud.xyzi</pre>
+            <p class="mb-0"><small class="text-muted">Use <code>.xyzi</code>, <code>.xyzrgb</code> or <code>.cldn</code> file extension to auto-detect format, or add <code>&amp;mode=xyzi</code>, <code>xyzrgb</code> or <code>cloudini</code> for other file names. URLs with their own query string, such as presigned links, can be pasted as they are: put <code>url=</code> last, or after it only the viewer options <code>mode</code>, <code>showAxes</code> and <code>autoRotate</code>. Encoding the URL with <code>encodeURIComponent</code> also works. The older <code>name=</code> parameter works the same way.</small></p>
         </div>
 
         <div class="format-card">

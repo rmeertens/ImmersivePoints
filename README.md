@@ -77,7 +77,7 @@ All coordinates should be `float32` numpy arrays.
 
 The viewer also reads [Cloudini](https://github.com/facontidavide/cloudini) compressed point clouds (`.cldn`). Cloudini is the compression format used for ROS `point_cloud_interfaces/CompressedPointCloud2` messages, and it typically makes files several times smaller (a 115k-point lidar scan at 1 mm precision goes from 1.8 MB to 0.4 MB).
 
-- **View**: use `"type": "CLOUDINI"` in a `jsonb64` config, or just point at a `.cldn` URL. Cloudini data is detected automatically from its `CLOUDINI_V` header.
+- **View**: use `"type": "CLOUDINI"` in a `jsonb64` config, or just point at a `.cldn` URL (`oculus.html?url=https://example.com/scan.cldn`). Cloudini data is detected automatically from its `CLOUDINI_V` header.
 - **Convert**: the [Your files](https://immersivepoints.meertens.dev/upload.html#cloudini) page compresses `.xyz`/`.xyzi`/`.xyzrgb` files to `.cldn` and decompresses `.cldn` files back, entirely in your browser.
 - **Fields**: `x`, `y`, `z` are required. Colors come from `hue`, packed `rgb`/`rgba`, separate `r`/`g`/`b`, or `intensity` (in that order), otherwise from height.
 
@@ -96,6 +96,10 @@ Explore pre-loaded datasets:
 - [Brain Clustering Visualization](https://immersivepoints.meertens.dev/oculus.html?name=77b04781-5d7c-445f-9e6a-65956758d644.xyzi)
 
 ---
+
+### Your own files
+
+Host the file anywhere that serves it over HTTPS with CORS allowed, then open `https://immersivepoints.meertens.dev/oculus.html?url=<your file URL>`. Presigned or other URLs with their own query string can be pasted unencoded, as long as `url=` comes last (or is followed only by `mode`, `showAxes` or `autoRotate`). Add `&mode=xyzi`, `xyzrgb` or `cloudini` when the file extension doesn't give the format.
 
 ## Documentation
 

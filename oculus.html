@@ -228,8 +228,8 @@ init();
 animate();   
 
 
-// Option 1 (legacy?): pass the name variable to download that specific file from S3        
-var filename = getQueryVariable('name', null);
+// Option 1: pass a file URL with url= (or the older name=). A bare file name in name= refers to the example bucket.
+var filename = getSourceUrlParam();
 
 // Option 2: get a base64 encoded json from the header...
 var json_base64 = getQueryVariable('jsonb64', null);
@@ -548,16 +548,48 @@ function startLoadingLines(url)
 // Takes the text in the address-bar in the browser, and parses what's behind the ampersend (&) character. 
 // You can query a variable, and if the string contains variable=value it returns the value. 
 // If not found it will return the elsevalue supplied by whoever calls the function
+// Not URLSearchParams: it turns '+' into a space, which would break unencoded base64 values.
 function getQueryVariable(variable, elsevalue) {
     var query = window.location.search.substring(1);
     var vars = query.split('&');
     for (var i = 0; i < vars.length; i++) {
-        var pair = vars[i].split('=');
-        if (decodeURIComponent(pair[0]) == variable) {
-            return decodeURIComponent(pair[1]);
+        var eq = vars[i].indexOf('=');
+        var key = eq === -1 ? vars[i] : vars[i].substring(0, eq);
+        if (safeDecodeURIComponent(key) == variable) {
+            return eq === -1 ? '' : safeDecodeURIComponent(vars[i].substring(eq + 1));
         }
     }
     return elsevalue;
+}
+
+function safeDecodeURIComponent(value) {
+    try {
+        return decodeURIComponent(value);
+    } catch (e) {
+        return value;
+    }
+}
+
+// Returns the file URL from url= or name=. Encoded URLs are decoded as usual. A URL pasted
+// without encoding, such as a presigned link with its own query string, runs to the end
+// of the query string, minus any viewer parameters after it, and is used exactly as given.
+function getSourceUrlParam() {
+    var query = window.location.search.substring(1);
+    var match = /(?:^|&)(url|name)=/.exec(query);
+    if (!match) {
+        return null;
+    }
+    var raw = query.substring(match.index + match[0].length);
+    if (raw.indexOf('?') === -1) {
+        return getQueryVariable(match[1], null);
+    }
+    // Viewer parameters that can follow an unencoded url= or name= value.
+    var viewerParams = ['url', 'name', 'mode', 'showAxes', 'autoRotate', 'jsonb64', 'base64'];
+    var parts = raw.split('&');
+    while (parts.length > 1 && viewerParams.indexOf(parts[parts.length - 1].split('=')[0]) !== -1) {
+        parts.pop();
+    }
+    return parts.join('&');
 }
 
 function _base64ToArrayBuffer(base64) {
