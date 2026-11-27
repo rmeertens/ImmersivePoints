@@ -1,0 +1,740 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-50W6WV16DJ"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'G-50W6WV16DJ');
+    </script>
+
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="How AI agents and scripts turn 3D data into an ImmersivePoints viewer link for desktop and VR: the URL format, a copy-paste Python helper, and rules for making point clouds look good on the first try.">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://immersivepoints.meertens.dev/for-ai-agents.html">
+    <meta property="og:title" content="For AI Agents | ImmersivePoints">
+    <meta property="og:description" content="Turn any 3D data into a shareable desktop and VR link in one step. The URL format, a copy-paste helper, and how to make it look good.">
+    <meta property="og:image" content="https://immersivepoints.meertens.dev/images/for_ai_agents_knot.jpg">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://immersivepoints.meertens.dev/for-ai-agents.html">
+    <meta property="twitter:title" content="For AI Agents | ImmersivePoints">
+    <meta property="twitter:description" content="Turn any 3D data into a shareable desktop and VR link in one step. The URL format, a copy-paste helper, and how to make it look good.">
+    <meta property="twitter:image" content="https://immersivepoints.meertens.dev/images/for_ai_agents_knot.jpg">
+
+    <link rel="canonical" href="https://immersivepoints.meertens.dev/for-ai-agents.html">
+    <link rel="alternate" type="text/plain" href="/llms.txt" title="ImmersivePoints for LLMs">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+    <style>
+        :root {
+            --ip-blue: #2d4aa8;
+            --ip-blue-dark: #1f347a;
+            --ip-ink: #1d2433;
+            --ip-muted: #5b6475;
+            --ip-line: #e3e7ef;
+            --ip-soft: #f5f7fb;
+            --ip-code: #0f172a;
+        }
+
+        body {
+            color: var(--ip-ink);
+            background: #fff;
+            padding-bottom: 3rem;
+        }
+
+        .hero {
+            background: var(--ip-blue);
+            background: radial-gradient(circle at 80% 20%, #3b5cc4 0%, var(--ip-blue) 45%, var(--ip-blue-dark) 100%);
+            color: #fff;
+            padding: 3.5rem 0 3rem 0;
+            margin-bottom: 2.5rem;
+        }
+
+        .hero .eyebrow {
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            font-size: 0.8rem;
+            font-weight: 600;
+            opacity: 0.8;
+        }
+
+        .hero h1 {
+            font-weight: 700;
+            font-size: 2.75rem;
+            margin: 0.25rem 0 1rem 0;
+        }
+
+        .hero .lead {
+            max-width: 38rem;
+            opacity: 0.95;
+        }
+
+        .hero img {
+            width: 100%;
+            border-radius: 0.75rem;
+            box-shadow: 0 1rem 2.5rem rgba(0, 0, 0, 0.35);
+        }
+
+        .hero .btn-light {
+            color: var(--ip-blue-dark);
+            font-weight: 600;
+        }
+
+        .hero .btn-outline-light {
+            font-weight: 600;
+        }
+
+        .toc {
+            position: sticky;
+            top: 1.5rem;
+            font-size: 0.92rem;
+        }
+
+        .toc a {
+            display: block;
+            color: var(--ip-muted);
+            padding: 0.2rem 0 0.2rem 0.75rem;
+            border-left: 2px solid var(--ip-line);
+        }
+
+        .toc a:hover {
+            color: var(--ip-blue);
+            border-left-color: var(--ip-blue);
+            text-decoration: none;
+        }
+
+        section {
+            margin-bottom: 3rem;
+            scroll-margin-top: 1rem;
+        }
+
+        section h2 {
+            font-weight: 700;
+            font-size: 1.6rem;
+            margin-bottom: 0.75rem;
+        }
+
+        section h3 {
+            font-size: 1.15rem;
+            font-weight: 600;
+            margin-top: 1.5rem;
+        }
+
+        .step-num {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 1.9rem;
+            height: 1.9rem;
+            border-radius: 50%;
+            background: var(--ip-blue);
+            color: #fff;
+            font-size: 0.95rem;
+            font-weight: 700;
+            margin-right: 0.5rem;
+            vertical-align: 0.15em;
+        }
+
+        .callout {
+            background: var(--ip-soft);
+            border-left: 4px solid var(--ip-blue);
+            border-radius: 0.35rem;
+            padding: 1rem 1.25rem;
+            margin: 1.25rem 0;
+        }
+
+        .callout p:last-child, .callout ul:last-child {
+            margin-bottom: 0;
+        }
+
+        .prompt-box {
+            background: #fff8e6;
+            border: 1px solid #f3dc9b;
+            border-radius: 0.5rem;
+            padding: 1rem 1.25rem;
+        }
+
+        .code-wrap {
+            position: relative;
+            margin: 1rem 0 1.25rem 0;
+        }
+
+        pre {
+            background: var(--ip-code);
+            color: #e2e8f0;
+            border-radius: 0.5rem;
+            padding: 1rem 1.25rem;
+            font-size: 0.85rem;
+            line-height: 1.5;
+            overflow-x: auto;
+            margin: 0;
+        }
+
+        pre .c { color: #8b9ab3; }
+        pre .s { color: #a5e3a1; }
+        pre .k { color: #93c5fd; }
+
+        .copy-btn {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            font-size: 0.75rem;
+            padding: 0.15rem 0.6rem;
+            color: #e2e8f0;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 0.3rem;
+        }
+
+        .copy-btn:hover {
+            background: rgba(255, 255, 255, 0.18);
+        }
+
+        code {
+            color: #b0306b;
+        }
+
+        .table td, .table th {
+            vertical-align: top;
+        }
+
+        .table code {
+            white-space: nowrap;
+        }
+
+        .rule {
+            border: 1px solid var(--ip-line);
+            border-radius: 0.6rem;
+            padding: 1.1rem 1.25rem;
+            height: 100%;
+        }
+
+        .rule h3 {
+            margin-top: 0;
+            font-size: 1.05rem;
+        }
+
+        .rule p {
+            margin-bottom: 0.5rem;
+            font-size: 0.95rem;
+        }
+
+        .rule .why {
+            color: var(--ip-muted);
+            font-size: 0.88rem;
+        }
+
+        .swatches {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.35rem;
+            margin: 0.5rem 0;
+        }
+
+        .swatch {
+            width: 2rem;
+            height: 1.4rem;
+            border-radius: 0.25rem;
+            border: 2px solid var(--ip-blue);
+            box-shadow: inset 0 0 0 2px var(--ip-blue);
+        }
+
+        .swatch.bad {
+            position: relative;
+            opacity: 0.9;
+        }
+
+        .swatch.bad::after {
+            content: "";
+            position: absolute;
+            left: -2px;
+            right: -2px;
+            top: 50%;
+            border-top: 2px solid #fff;
+            transform: rotate(-25deg);
+        }
+
+        .checklist li {
+            margin-bottom: 0.4rem;
+        }
+
+        .recipe-card {
+            border: 1px solid var(--ip-line);
+            border-radius: 0.6rem;
+            padding: 1rem 1.1rem;
+            height: 100%;
+        }
+
+        .recipe-card h3 {
+            font-size: 1rem;
+            margin-top: 0;
+        }
+
+        .recipe-card p {
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+
+        @media (max-width: 767.98px) {
+            .hero h1 {
+                font-size: 2.1rem;
+            }
+
+            .hero {
+                padding-top: 2.25rem;
+            }
+
+            pre {
+                font-size: 0.78rem;
+                padding-top: 2.25rem;
+            }
+        }
+    </style>
+    <title>For AI Agents | ImmersivePoints</title>
+
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "HowTo",
+      "name": "Turn 3D data into an ImmersivePoints VR viewer link",
+      "description": "How an AI agent or script encodes a point cloud into an ImmersivePoints viewer link that opens on desktop and in VR headsets.",
+      "step": [
+        {"@type": "HowToStep", "name": "Prepare the array", "text": "Make an Nx4 (x, y, z, hue) or Nx6 (x, y, z, r, g, b) array with Y up, centered on the origin and scaled to about 8 units."},
+        {"@type": "HowToStep", "name": "Encode", "text": "Write the rows as big-endian float32 bytes and base64-encode them."},
+        {"@type": "HowToStep", "name": "Wrap in a config", "text": "Put the data in {\"points\": [{\"source\": \"base64\", \"base64\": DATA, \"type\": \"XYZI\"}]} and base64-encode the JSON."},
+        {"@type": "HowToStep", "name": "Build the link", "text": "Append it to https://immersivepoints.meertens.dev/oculus.html#jsonb64= (URL-encoded)."}
+      ]
+    }
+    </script>
+</head>
+
+<body>
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+            <a class="navbar-brand" href="#">
+                <img src="images/immersive_points_logo/logo_cutout.png" height="40" class="d-inline-block align-top" alt="">
+            </a>
+
+            <div class="navbar-nav">
+                <a class="nav-item nav-link" href="/index.html">Home</a>
+                <a class="nav-item nav-link" href="/upload.html">Your files</a>
+                <a class="nav-item nav-link" href="/examples.html">Examples</a>
+                <a class="nav-item nav-link active" href="/for-ai-agents.html">For AI Agents <span class="sr-only">(current)</span></a>
+            </div>
+        </nav>
+    </header>
+
+    <div class="hero">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-7 mb-4 mb-lg-0">
+                    <div class="eyebrow">For AI Agents</div>
+                    <h1>From numpy array to VR link in one step</h1>
+                    <p class="lead">
+                        The ImmersivePoints viewer is driven entirely by its URL. If you are an AI agent (or a script) holding 3D data,
+                        you can hand a person one link that opens in a desktop browser and in a VR headset, with no upload,
+                        account or server. This page explains how to build that link and how to make the result look good the first time.
+                    </p>
+                    <p class="mb-0">
+                        <a href="#recipe" class="btn btn-light btn-lg mr-2 mb-2">Show me the recipe</a>
+                        <a href="/examples/viewer_link.py" class="btn btn-outline-light btn-lg mb-2">Download viewer_link.py</a>
+                    </p>
+                </div>
+                <div class="col-lg-5">
+                    <img src="images/for_ai_agents_knot.jpg" alt="A trefoil knot of 12,000 points colored from red through yellow and green to cyan on the viewer's blue background">
+                    <p class="small mt-2 mb-0" style="opacity:0.8">Built with the helper on this page: 12,000 points, fitted to the view, colored along their length.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <main role="main" class="container">
+        <div class="row">
+            <nav class="col-lg-3 d-none d-lg-block" aria-label="On this page">
+                <div class="toc">
+                    <a href="#for-humans">Tell your agent</a>
+                    <a href="#recipe">The recipe</a>
+                    <a href="#format">The link format</a>
+                    <a href="#look-good">Make it look good</a>
+                    <a href="#size">Inline or hosted?</a>
+                    <a href="#verify">Check before you share</a>
+                    <a href="#recipes">Recipes by data type</a>
+                    <a href="#reference">Reference</a>
+                </div>
+            </nav>
+
+            <div class="col-lg-9">
+
+                <section id="for-humans">
+                    <h2>Tell your agent</h2>
+                    <p>If you are a person working with Claude, ChatGPT, Cursor or any other coding agent, paste something like this:</p>
+                    <div class="prompt-box">
+                        <p class="mb-2"><em>"Show this data in 3D with ImmersivePoints. Follow
+                        https://immersivepoints.meertens.dev/for-ai-agents.html and give me the viewer link."</em></p>
+                        <p class="small text-muted mb-0">Works for point clouds, LiDAR scans, 3D embeddings, molecules, star catalogs, tracking data:
+                        anything with three coordinates. A plain-text version of this page for language models is at
+                        <a href="/llms.txt">/llms.txt</a>.</p>
+                    </div>
+                </section>
+
+                <section id="recipe">
+                    <h2>The recipe</h2>
+                    <p>
+                        <span class="step-num">1</span>Get the helper. It is one file that needs only numpy.
+                    </p>
+                    <div class="code-wrap">
+<pre><code>curl -O https://immersivepoints.meertens.dev/examples/viewer_link.py</code></pre>
+                    </div>
+                    <p>
+                        <span class="step-num">2</span>Fit the data to the view, pick colors, and build the link.
+                    </p>
+                    <div class="code-wrap">
+<pre><code><span class="k">import</span> numpy <span class="k">as</span> np
+<span class="k">from</span> viewer_link <span class="k">import</span> fit_to_view, hue_from_values, viewer_link
+
+xyz = fit_to_view(my_xyz)            <span class="c"># (N, 3): centered, about 8 units across, Y up</span>
+hue = hue_from_values(my_values)     <span class="c"># (N,): red = low ... cyan = high</span>
+link = viewer_link(np.column_stack([xyz, hue]))
+print(link)</code></pre>
+                    </div>
+                    <p>
+                        <span class="step-num">3</span>Give the person the link. It opens in any modern browser; in a Quest or PC VR headset
+                        they press <strong>Enter VR</strong>.
+                    </p>
+                    <div class="callout">
+                        <p class="mb-2"><strong>The helper also has:</strong></p>
+                        <ul class="mb-0">
+                            <li><code>z_up_to_y_up(xyz)</code> for LiDAR, ROS, GIS and CAD data, which is usually Z-up.</li>
+                            <li><code>hue_from_labels(labels)</code> for class labels or clusters.</li>
+                            <li><code>subsample(points, max_points=500_000)</code> to keep headsets smooth.</li>
+                            <li><code>viewer_link(url=...)</code> for a hosted file instead of inline data, plus <code>point_size</code>, <code>auto_rotate</code>, <code>show_axes</code>, <code>bboxes_url</code> and <code>lines_url</code>.</li>
+                        </ul>
+                    </div>
+                    <p>Run <code>python viewer_link.py</code> without arguments to get a demo link and check that everything works.</p>
+                </section>
+
+                <section id="format">
+                    <h2>The link format</h2>
+                    <p>No Python, or want to know what the helper does? A viewer link is built in four steps.</p>
+                    <ol>
+                        <li><strong>Rows of float32.</strong> One row per point: <code>x, y, z, hue</code> (type <code>XYZI</code>)
+                            or <code>x, y, z, r, g, b</code> (type <code>XYZRGB</code>). Hue and RGB values are 0 to 1.</li>
+                        <li><strong>Big-endian bytes, then base64.</strong> The viewer reads big-endian float32 (numpy <code>astype("&gt;f4")</code>).
+                            Little-endian bytes still load, but every number comes out as garbage, so this is the most common mistake.</li>
+                        <li><strong>A JSON config, base64 encoded:</strong>
+                            <code>{"points": [{"source": "base64", "base64": "&lt;data&gt;", "type": "XYZI"}]}</code></li>
+                        <li><strong>The URL:</strong> <code>https://immersivepoints.meertens.dev/oculus.html#jsonb64=&lt;URL-encoded config&gt;</code></li>
+                    </ol>
+                    <p>
+                        Use <code>#</code>, not <code>?</code>. Everything after <code>#</code> stays in the browser: it is never sent to a
+                        web server, so there is no server-side length limit and the data stays private. The older <code>?jsonb64=</code>
+                        form still works for short links.
+                    </p>
+
+                    <h3>The same thing in JavaScript</h3>
+                    <div class="code-wrap">
+<pre><code><span class="c">// xyzi: a flat array, 4 numbers per point (x, y, z, hue 0-1)</span>
+<span class="k">function</span> viewerLink(xyzi) {
+  <span class="k">const</span> bytes = <span class="k">new</span> DataView(<span class="k">new</span> ArrayBuffer(xyzi.length * 4));
+  xyzi.forEach((v, i) =&gt; bytes.setFloat32(i * 4, v, <span class="k">false</span>));   <span class="c">// false = big-endian</span>
+  <span class="k">let</span> bin = <span class="s">''</span>;
+  <span class="k">new</span> Uint8Array(bytes.buffer).forEach(b =&gt; bin += String.fromCharCode(b));
+  <span class="k">const</span> config = {points: [{source: <span class="s">'base64'</span>, base64: btoa(bin), type: <span class="s">'XYZI'</span>}]};
+  <span class="k">return</span> <span class="s">'https://immersivepoints.meertens.dev/oculus.html#jsonb64='</span> +
+         encodeURIComponent(btoa(JSON.stringify(config)));
+}</code></pre>
+                    </div>
+
+                    <h3>A hosted file instead of inline data</h3>
+                    <p>
+                        Write the same big-endian bytes to a file (<code>.xyzi</code> or <code>.xyzrgb</code>), host it anywhere that sends
+                        CORS headers, and point the config at it:
+                        <code>{"points": [{"source": "url", "url": "https://.../scan.xyzrgb", "type": "XYZRGB"}]}</code>.
+                        Compressed <a href="/upload.html#cloudini">Cloudini</a> files (<code>.cldn</code>) work too, with <code>"type": "CLOUDINI"</code>.
+                    </p>
+                </section>
+
+                <section id="look-good">
+                    <h2>Make it look good</h2>
+                    <p>
+                        The viewer has few knobs, so a good result comes from preparing the data. These rules follow from how the viewer
+                        renders: a blue background (<code>#2d4aa8</code>), a camera 20 units from the origin with a narrow field of view,
+                        and square points 0.04 units wide by default.
+                    </p>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <div class="rule">
+                                <h3>1. Y is up</h3>
+                                <p>The viewer's vertical axis is Y. LiDAR, ROS, GIS and most CAD data is Z-up and shows up lying on its side.
+                                    Rotate it with <code>(x, y, z) → (x, z, −y)</code>, which is what <code>z_up_to_y_up</code> does.</p>
+                                <p class="why">Not sure? Add <code>showAxes=true</code> to the link: red is X, green is Y (up), blue is Z.</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="rule">
+                                <h3>2. Center it and scale it to about 8 units</h3>
+                                <p>The desktop camera sits 20 units from the origin and sees about 9.5 units from top to bottom.
+                                    Data in kilometres is a speck; data in millimetres fills the screen. Center on the origin and scale the
+                                    largest side to roughly 8.</p>
+                                <p class="why">Scale on the 1st to 99th percentile, not on the min and max, so a few stray points do not shrink everything else.</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="rule">
+                                <h3>3. For walk-through scenes, use metres</h3>
+                                <p>In VR the person starts at the origin, standing on <code>y = 0</code>, looking toward −Z. For streets,
+                                    rooms or buildings, keep real-world metres, put the ground at <code>y = 0</code>
+                                    (<code>fit_to_view(..., floor=True)</code> does this after scaling) and put the most interesting spot near the origin.</p>
+                                <p class="why">Rule 2 gives the best first impression on a laptop; rule 3 gives the best one in a headset. Choose based on who will open the link.</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="rule">
+                                <h3>4. Match point size to density</h3>
+                                <p>Points should almost touch their neighbours. After fitting to 8 units:</p>
+                                <ul class="small mb-2 pl-3">
+                                    <li>under 20k points: <code>point_size</code> 0.06 to 0.1</li>
+                                    <li>20k to 300k points: the default 0.04</li>
+                                    <li>dense scans above 300k: 0.02 to 0.03</li>
+                                </ul>
+                                <p class="why">Too small looks like faint dust; too large turns into blobs. Set it with <code>"pointSize"</code> in the config.</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="rule">
+                                <h3>5. Pick colors that show up on blue</h3>
+                                <p>XYZI hue runs red (0) → yellow (0.17) → green (0.33) → cyan (0.5) → blue (0.67) → magenta (0.83). Blues and
+                                    violets (about 0.58 to 0.78) blend into the background.</p>
+                                <div class="swatches" aria-hidden="true">
+                                    <span class="swatch" style="background:hsl(0,100%,50%)"></span>
+                                    <span class="swatch" style="background:hsl(29,100%,50%)"></span>
+                                    <span class="swatch" style="background:hsl(50,100%,50%)"></span>
+                                    <span class="swatch" style="background:hsl(90,100%,50%)"></span>
+                                    <span class="swatch" style="background:hsl(119,100%,50%)"></span>
+                                    <span class="swatch" style="background:hsl(151,100%,50%)"></span>
+                                    <span class="swatch" style="background:hsl(180,100%,50%)"></span>
+                                    <span class="swatch bad" style="background:hsl(220,100%,50%)" title="hard to see"></span>
+                                    <span class="swatch bad" style="background:hsl(250,100%,50%)" title="hard to see"></span>
+                                    <span class="swatch" style="background:hsl(306,100%,50%)"></span>
+                                    <span class="swatch" style="background:hsl(335,100%,50%)"></span>
+                                </div>
+                                <p class="why">For a continuous value use hue 0 to 0.55 (<code>hue_from_values</code>). For categories use
+                                    <code>hue_from_labels</code>, which skips the blues. With no meaningful value, color by height: <code>hue_from_values(xyz[:, 1])</code>.</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="rule">
+                                <h3>6. RGB: 0 to 1, and not too dark</h3>
+                                <p>XYZRGB colors are floats from 0 to 1, so divide 8-bit colors by 255. Very dark points vanish against the
+                                    background; lift them with <code>rgb = 0.15 + 0.85 * rgb</code>.</p>
+                                <p class="why">Camera-colored scans (photogrammetry, colored LiDAR) usually look best as XYZRGB; everything else usually reads better as XYZI.</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="rule">
+                                <h3>7. Keep the point count sensible</h3>
+                                <p>Stay under about 500k points for standalone headsets such as the Quest. More points rarely look better than
+                                    a well-chosen point size. Use <code>subsample()</code>, or average points per voxel for scans.</p>
+                                <p class="why">For larger data, host a file and compress it with Cloudini.</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="rule">
+                                <h3>8. Show it off on desktop</h3>
+                                <p>Add <code>autoRotate=true</code> to the link (<code>viewer_link(..., auto_rotate=True)</code>) so the shape reads
+                                    immediately in a browser. It does nothing in VR.</p>
+                                <p class="why">Desktop controls: drag to rotate, scroll to zoom, right-drag or arrow keys to pan.</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="size">
+                    <h2>Inline or hosted?</h2>
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr><th></th><th>Inline (<code>"source": "base64"</code>)</th><th>Hosted file (<code>"source": "url"</code>)</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr><th>Best for</th><td>Up to about 30k points</td><td>Anything bigger, or a link that must stay short</td></tr>
+                                <tr><th>Link length</th><td>About 28 characters per XYZI point, 43 per XYZRGB point</td><td>A few hundred characters</td></tr>
+                                <tr><th>Needs</th><td>Nothing</td><td>A host that sends CORS headers</td></tr>
+                                <tr><th>Privacy</th><td>The data lives in the link only</td><td>Anyone with the file URL can download it</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <p>
+                        Hosts that work: a public GitHub repository (<code>https://raw.githubusercontent.com/&lt;user&gt;/&lt;repo&gt;/&lt;branch&gt;/scan.xyzrgb</code>),
+                        GitHub Pages, or an S3 or Google Cloud Storage bucket with CORS enabled. ImmersivePoints itself does not host files.
+                    </p>
+                    <div class="callout">
+                        <p>Long inline links can be cut off by chat apps, email and terminals. If you show the link in a chat, use a markdown link
+                            (<code>[Open in VR](https://...)</code>), or save it to a small HTML file with a button, or host the data instead.</p>
+                    </div>
+                </section>
+
+                <section id="verify">
+                    <h2>Check before you share</h2>
+                    <ul class="checklist">
+                        <li>The array is 2-D with 4 (XYZI) or 6 (XYZRGB) columns, and contains no NaN or inf values.</li>
+                        <li>The bytes are big-endian float32: <code>astype("&gt;f4")</code>.</li>
+                        <li>Hue and RGB values are between 0 and 1.</li>
+                        <li>The data is Y-up, centered and scaled (or in metres with the ground at <code>y = 0</code>).</li>
+                        <li>The link uses <code>#jsonb64=</code> and the config was URL-encoded.</li>
+                    </ul>
+                    <p>
+                        If you can run a browser (for example Playwright), open the link and take a screenshot. The browser console prints
+                        <code>Loaded num points N</code> on success. Problems show a red panel with a title such as
+                        <em>Data Parsing Error</em>, <em>File Not Found</em> or <em>Network Error</em>, plus details. Headless Chromium needs
+                        WebGL, for example the flags <code>--use-gl=swiftshader --enable-unsafe-swiftshader</code>.
+                    </p>
+                </section>
+
+                <section id="recipes">
+                    <h2>Recipes by data type</h2>
+                    <p>Each recipe links to a complete notebook with real data.</p>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <div class="recipe-card">
+                                <h3>🛰️ LiDAR and scans (LAS, LAZ, PLY, PCD)</h3>
+                                <p>Read x, y, z with <code>laspy</code> or <code>open3d</code>, apply <code>z_up_to_y_up</code>, keep metres with
+                                    <code>floor=True</code> for walk-throughs, color by height or intensity, subsample to 500k.</p>
+                                <a href="https://github.com/rmeertens/ImmersivePoints/blob/master/examples/03_lidar_urban_planning/lidar_visualization.ipynb">LiDAR notebook →</a>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="recipe-card">
+                                <h3>🧠 Embeddings and clusters</h3>
+                                <p>Reduce to 3 dimensions with UMAP, t-SNE or PCA, <code>fit_to_view</code>, color with
+                                    <code>hue_from_labels(cluster_ids)</code>, and use a larger point size because embeddings are sparse.</p>
+                                <a href="https://github.com/rmeertens/ImmersivePoints/blob/master/examples/04_ml_embeddings/ml_embeddings_visualization.ipynb">Embeddings notebook →</a>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="recipe-card">
+                                <h3>🧬 Molecules</h3>
+                                <p>Atom coordinates from a PDB file, colored by element with <code>hue_from_labels(elements)</code>. Proteins
+                                    are small, so scale up and use point size 0.1 or more.</p>
+                                <a href="https://github.com/rmeertens/ImmersivePoints/blob/master/examples/01_molecular_structures/molecular_visualization.ipynb">Molecules notebook →</a>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="recipe-card">
+                                <h3>🌌 Stars and galaxies</h3>
+                                <p>Convert right ascension, declination and distance to Cartesian coordinates, compress distance with a log so
+                                    near and far stars both fit, and color by star temperature.</p>
+                                <a href="https://github.com/rmeertens/ImmersivePoints/blob/master/examples/02_astronomy_data/astronomy_visualization.ipynb">Astronomy notebook →</a>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="recipe-card">
+                                <h3>⚽ Tracking and time series</h3>
+                                <p>Use x and y as the ground plane, time as height, and color by team or player. This shows trajectories as
+                                    trails you can walk through.</p>
+                                <a href="https://github.com/rmeertens/ImmersivePoints/blob/master/examples/05_sports_analytics/sports_tracking_visualization.ipynb">Tracking notebook →</a>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="recipe-card">
+                                <h3>📄 CSV and DataFrames</h3>
+                                <p>Pick three numeric columns for position and one for color: <code>df[["x", "y", "z"]].to_numpy()</code>.
+                                    Drop rows with missing values first.</p>
+                                <a href="https://github.com/rmeertens/ImmersivePoints/blob/master/examples/export_csv.ipynb">CSV notebook →</a>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="reference">
+                    <h2>Reference</h2>
+
+                    <h3>URL parameters</h3>
+                    <p>Put them after <code>#</code> (recommended) or <code>?</code>, joined with <code>&amp;</code>.</p>
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead><tr><th>Parameter</th><th>Value</th></tr></thead>
+                            <tbody>
+                                <tr><td><code>jsonb64</code></td><td>Base64 of the JSON config below, URL-encoded. Standard and URL-safe base64 both work.</td></tr>
+                                <tr><td><code>name</code></td><td>Shortcut for a single hosted file: a full URL. Add <code>mode=xyzi</code>, <code>xyzrgb</code> or <code>cloudini</code> if the file extension does not say.</td></tr>
+                                <tr><td><code>base64</code></td><td>Shortcut for inline XYZI data without a config.</td></tr>
+                                <tr><td><code>autoRotate</code></td><td><code>true</code> rotates the scene on desktop. Leave the parameter out to turn it off.</td></tr>
+                                <tr><td><code>showAxes</code></td><td><code>true</code> draws X (red), Y (green) and Z (blue) axes 5 units long. Leave the parameter out to turn it off.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <h3>JSON config</h3>
+                    <div class="code-wrap">
+<pre><code>{
+  <span class="s">"points"</span>: [                                   <span class="c">// one or more point clouds</span>
+    {<span class="s">"source"</span>: <span class="s">"base64"</span>, <span class="s">"base64"</span>: <span class="s">"..."</span>, <span class="s">"type"</span>: <span class="s">"XYZI"</span>, <span class="s">"pointSize"</span>: 0.04},
+    {<span class="s">"source"</span>: <span class="s">"url"</span>, <span class="s">"url"</span>: <span class="s">"https://.../scan.xyzrgb"</span>, <span class="s">"type"</span>: <span class="s">"XYZRGB"</span>}
+  ],
+  <span class="s">"bboxes"</span>:  [{<span class="s">"source"</span>: <span class="s">"url"</span>, <span class="s">"url"</span>: <span class="s">"https://.../boxes.bbox"</span>}],   <span class="c">// first entry only</span>
+  <span class="s">"lines"</span>:   [{<span class="s">"source"</span>: <span class="s">"url"</span>, <span class="s">"url"</span>: <span class="s">"https://.../edges.lines"</span>}],  <span class="c">// first entry only</span>
+  <span class="s">"objects"</span>: [{<span class="s">"source"</span>: <span class="s">"url"</span>, <span class="s">"url"</span>: <span class="s">"https://.../car.glb"</span>,
+               <span class="s">"position"</span>: [0, 0, 0], <span class="s">"rotation"</span>: [0, 0, 0], <span class="s">"scale"</span>: [1, 1, 1]}]
+}</code></pre>
+                    </div>
+                    <p class="small text-muted">The comments are for reading only: JSON itself does not allow them.</p>
+
+                    <h3>Binary layouts</h3>
+                    <p>All files are rows of big-endian float32 values, with no header.</p>
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead><tr><th>Type</th><th>Values per row</th><th>Columns</th></tr></thead>
+                            <tbody>
+                                <tr><td><code>XYZI</code></td><td>4</td><td>x, y, z, hue (0 to 1)</td></tr>
+                                <tr><td><code>XYZRGB</code></td><td>6</td><td>x, y, z, red, green, blue (0 to 1)</td></tr>
+                                <tr><td>Boxes (<code>bboxes</code>)</td><td>13</td><td>center x, y, z; size x, y, z; rotation around x, y, z (radians); red, green, blue, opacity (0 to 1)</td></tr>
+                                <tr><td>Lines (<code>lines</code>)</td><td>6</td><td>start x, y, z; end x, y, z</td></tr>
+                                <tr><td><code>CLOUDINI</code></td><td>-</td><td>A <a href="https://github.com/facontidavide/cloudini">Cloudini</a> file; detected from its header</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <p>
+                        Objects (<code>objects</code>) are glTF or GLB models; <code>position</code>, <code>rotation</code> and <code>scale</code>
+                        are all required, and models are drawn half transparent so the points stay visible.
+                    </p>
+
+                    <h3>VR controls</h3>
+                    <p>Hold one trigger to fly forward in the direction you look and the other to fly backward. One thumbstick moves you
+                        around, the other turns you.</p>
+                </section>
+
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Add a copy button to every code block.
+        document.querySelectorAll('.code-wrap').forEach(function (wrap) {
+            var btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'copy-btn';
+            btn.textContent = 'Copy';
+            btn.addEventListener('click', function () {
+                var text = wrap.querySelector('pre').innerText;
+                navigator.clipboard.writeText(text).then(function () {
+                    btn.textContent = 'Copied';
+                    setTimeout(function () { btn.textContent = 'Copy'; }, 1500);
+                });
+            });
+            wrap.appendChild(btn);
+        });
+    </script>
+</body>
+
+</html>

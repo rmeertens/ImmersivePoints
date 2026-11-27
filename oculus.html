@@ -252,10 +252,11 @@ else if(base64_str){
     else{
         var tempPoints = getPointsFromBase64String(base64_str, "XYZI");
         scene.add(tempPoints);
+        hideLoadingOverlay();
     }
 }
 else if(json_base64){
-    var decodedData = JSON.parse(atob(json_base64));            
+    var decodedData = JSON.parse(atob(normalizeBase64(json_base64)));            
     // Parse the JSON 
     if("points" in decodedData){
         // Currently multiple point clouds are not fully supported, but I'll give it a try: 
@@ -273,11 +274,12 @@ else if(json_base64){
             }
             else if(pointToLoad['source'] == 'base64'){
                 if(isCloudiniType(pointToLoad["type"]) || base64IsCloudini(pointToLoad["base64"])){
-                    addCloudiniPoints(_base64ToArrayBuffer(pointToLoad["base64"]), 'base64 entry in jsonb64');
+                    addCloudiniPoints(_base64ToArrayBuffer(pointToLoad["base64"]), 'base64 entry in jsonb64', pointSize);
                 }
                 else{
-                    var tempPoints = getPointsFromBase64String(pointToLoad["base64"], pointToLoad["type"]);
+                    var tempPoints = getPointsFromBase64String(pointToLoad["base64"], pointToLoad["type"], pointSize);
                     scene.add(tempPoints);
+                    hideLoadingOverlay();
                 }
             }
         }
@@ -548,15 +550,19 @@ function startLoadingLines(url)
 // Takes the text in the address-bar in the browser, and parses what's behind the ampersend (&) character. 
 // You can query a variable, and if the string contains variable=value it returns the value. 
 // If not found it will return the elsevalue supplied by whoever calls the function
+// Looks in the query string (?a=b) first, then in the fragment (#a=b). The fragment is never
+// sent to the web server, so it can carry large inline point clouds without hitting URL limits.
 // Not URLSearchParams: it turns '+' into a space, which would break unencoded base64 values.
 function getQueryVariable(variable, elsevalue) {
-    var query = window.location.search.substring(1);
-    var vars = query.split('&');
-    for (var i = 0; i < vars.length; i++) {
-        var eq = vars[i].indexOf('=');
-        var key = eq === -1 ? vars[i] : vars[i].substring(0, eq);
-        if (safeDecodeURIComponent(key) == variable) {
-            return eq === -1 ? '' : safeDecodeURIComponent(vars[i].substring(eq + 1));
+    var sources = [window.location.search.substring(1), window.location.hash.substring(1)];
+    for (var s = 0; s < sources.length; s++) {
+        var vars = sources[s].split('&');
+        for (var i = 0; i < vars.length; i++) {
+            var eq = vars[i].indexOf('=');
+            var key = eq === -1 ? vars[i] : vars[i].substring(0, eq);
+            if (key !== '' && safeDecodeURIComponent(key) == variable) {
+                return eq === -1 ? '' : safeDecodeURIComponent(vars[i].substring(eq + 1));
+            }
         }
     }
     return elsevalue;
@@ -592,8 +598,13 @@ function getSourceUrlParam() {
     return parts.join('&');
 }
 
+// Accepts both standard and URL-safe base64 ('-' and '_' instead of '+' and '/').
+function normalizeBase64(str){
+    return str.replace(/-/g, '+').replace(/_/g, '/').replace(/\s/g, '');
+}
+
 function _base64ToArrayBuffer(base64) {
-    var binary_string = window.atob(base64);
+    var binary_string = window.atob(normalizeBase64(base64));
     var len = binary_string.length;
     var bytes = new Uint8Array(len);
     for (var i = 0; i < len; i++) {
@@ -623,7 +634,7 @@ function fillNodes(nodes, ints, pointsPerRow){
     }
 }
         
-function getPointsFromBase64String(buffer, pointType){
+function getPointsFromBase64String(buffer, pointType, pointSize=0.04){
     try {
         updateLoadingProgress(50, 'Decoding base64 data...');
 
@@ -694,7 +705,7 @@ function getPointsFromBase64String(buffer, pointType){
         geometry.setAttribute( 'color', colorBuffer );
         geometry.computeBoundingSphere();
 
-        var material = new THREE.PointsMaterial( { size: 0.04, vertexColors: THREE.VertexColors, sizeAttenuation: true } );
+        var material = new THREE.PointsMaterial( { size: pointSize, vertexColors: THREE.VertexColors, sizeAttenuation: true } );
         var tempPoints = new THREE.Points( geometry, material );
 
         updateLoadingProgress(100, 'Ready!');
@@ -734,7 +745,7 @@ function base64IsCloudini(base64){
 }
 
 // Decompresses a Cloudini buffer with the Cloudini WASM library and adds the points to the scene.
-function addCloudiniPoints(buffer, sourceLabel){
+function addCloudiniPoints(buffer, sourceLabel, pointSize=0.04){
     updateLoadingProgress(100, 'Decompressing Cloudini point cloud...');
     return decodeCloudini(buffer).then(function(decoded){
         updateLoadingProgress(100, 'Building 3D geometry...');
@@ -751,7 +762,7 @@ function addCloudiniPoints(buffer, sourceLabel){
         geometry.setAttribute( 'color', colorBuffer );
         geometry.computeBoundingSphere();
 
-        var material = new THREE.PointsMaterial( { size: 0.04, vertexColors: THREE.VertexColors, sizeAttenuation: true } );
+        var material = new THREE.PointsMaterial( { size: pointSize, vertexColors: THREE.VertexColors, sizeAttenuation: true } );
         points = new THREE.Points( geometry, material );
         scene.add( points );
 
@@ -886,7 +897,7 @@ function hideLoadingOverlay() {
     }
 }
 
-function startLoadingData(url, pointType, pointSize=1.5)
+function startLoadingData(url, pointType, pointSize=0.04)
 {
     var httpRequest = new XMLHttpRequest();
 
@@ -937,7 +948,7 @@ function startLoadingData(url, pointType, pointSize=1.5)
 
                     // Cloudini compressed point clouds are recognised by type or by their magic bytes
                     if (isCloudiniType(pointType) || isCloudini(buffer)) {
-                        addCloudiniPoints(buffer, url);
+                        addCloudiniPoints(buffer, url, pointSize);
                         return;
                     }
 
@@ -993,7 +1004,7 @@ function startLoadingData(url, pointType, pointSize=1.5)
                     geometry.setAttribute( 'color', colorBuffer );
                     geometry.computeBoundingSphere();
 
-                    var material = new THREE.PointsMaterial( { size: 0.04, vertexColors: THREE.VertexColors, sizeAttenuation: true } );
+                    var material = new THREE.PointsMaterial( { size: pointSize, vertexColors: THREE.VertexColors, sizeAttenuation: true } );
                     points = new THREE.Points( geometry, material );
                     scene.add( points );
 
