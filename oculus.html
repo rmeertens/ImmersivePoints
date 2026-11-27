@@ -325,6 +325,7 @@
         import { XRControllerModelFactory } from 'https://cdn.jsdelivr.net/npm/three@0.121.1/examples/jsm/webxr/XRControllerModelFactory.js';
         import { isCloudini, decodeCloudini, cloudToPoints, readImmersiveFloats } from './js/cloudini.js';
         import { SequencePlayer, expandFrames, isFrameTemplate, parseFrameRange, floatsToPointArrays } from './js/sequence.js';
+        import { download, normalizeVersion } from './js/filecache.js';
 
 var camera, scene, renderer;
 var geometry, material, mesh;
@@ -392,6 +393,16 @@ var pointMaterials = {};
 var pointViewportScale = { value: 1 };
 var controllerLabel = null;
 var controllerMessage = { text: null, until: 0 };
+
+// Versioned caching (see js/filecache.js). With ?version= or "version" in a config, downloaded
+// files are kept in the browser until the version changes; a new version downloads them again.
+// A "version" on a points, bboxes, lines or objects entry wins over the default.
+var defaultVersion = normalizeVersion(getQueryVariable('version', null));
+
+function versionFor(entry){
+    var own = entry ? normalizeVersion(entry.version) : null;
+    return own || defaultVersion;
+}
 
 function positiveNumber(value){
     var n = parseFloat(value);
@@ -546,7 +557,7 @@ if(filename){
         }
     }
     else{
-        startLoadingData(url, pointType);
+        startLoadingData(url, pointType, undefined, defaultVersion);
     }
 }
 else if(config_url){
@@ -594,6 +605,9 @@ function loadSceneConfig(decodedData){
     if(decodedData.axes && getQueryVariable('axes', null) === null){
         setAxes(decodedData.axes);
     }
+    if(decodedData.version !== undefined && getQueryVariable('version', null) === null){
+        defaultVersion = normalizeVersion(decodedData.version);
+    }
     if(decodedData.pointSize !== undefined && getQueryVariable('pointSize', null) === null){
         if(positiveNumber(decodedData.pointSize)){
             defaultPointSize = positiveNumber(decodedData.pointSize);
@@ -610,7 +624,7 @@ function loadSceneConfig(decodedData){
             var pointSize = pointToLoad['pointSize'];  // undefined: the default size
             if(pointToLoad['source'] == 'url'){
                 
-                startLoadingData(pointToLoad['url'], pointToLoad["type"], pointSize);
+                startLoadingData(pointToLoad['url'], pointToLoad["type"], pointSize, versionFor(pointToLoad));
             }
             else if(pointToLoad['source'] == 'base64'){
                 if(isCloudiniType(pointToLoad["type"]) || base64IsCloudini(pointToLoad["base64"])){
@@ -629,13 +643,13 @@ function loadSceneConfig(decodedData){
         var pointToLoad = decodedData["lines"][0];
 
         if(pointToLoad['source'] == 'url'){
-            startLoadingLines(pointToLoad['url']);
+            startLoadingLines(pointToLoad['url'], versionFor(pointToLoad));
         }        
     }
     if("bboxes" in decodedData){
         var boxesToLoad = decodedData["bboxes"][0];
         if(boxesToLoad['source'] == 'url'){
-            startLoadingBoxes(boxesToLoad['url']);
+            startLoadingBoxes(boxesToLoad['url'], versionFor(boxesToLoad));
         }
     }
     if("objects" in decodedData){
@@ -752,32 +766,37 @@ function get_bbox_vehicle(posx, posy, posz, sizex, sizey, sizez, rotationx, rota
         
 
 function loadObject(object){
-    const loader = new GLTFLoader();
-    loader.load( object['url'], function ( gltf ) {
-        gltf.scene.traverse( function ( child ) {
-            if ( child.isMesh ) { 
-                child.material.opacity = 0.5;
-                child.material.transparent = true;
-             }
-        }  );
+    var url = object['url'];
+    var path = url.split(/[?#]/)[0];
+    path = path.substring(0, path.lastIndexOf('/') + 1);  // for textures next to a .gltf file
+    download(url, { version: versionFor(object) }).then(function(result){
+        new GLTFLoader().parse( result.buffer, path, function ( gltf ) {
+            gltf.scene.traverse( function ( child ) {
+                if ( child.isMesh ) { 
+                    child.material.opacity = 0.5;
+                    child.material.transparent = true;
+                 }
+            }  );
 
-        // The holder takes the pose from the config, in data axes; the model inside it is
-        // turned from glTF axes to data axes.
-        var holder = new THREE.Group();
-        var scale = object['scale'] || [1, 1, 1];
-        var rotation = object['rotation'] || [0, 0, 0];
-        var position = object['position'] || [0, 0, 0];
-        holder.scale.set(scale[0], scale[1], scale[2]);
-        holder.rotation.set(rotation[0], rotation[1], rotation[2]);
-        holder.position.set(position[0], position[1], position[2]);
+            // The holder takes the pose from the config, in data axes; the model inside it is
+            // turned from glTF axes to data axes.
+            var holder = new THREE.Group();
+            var scale = object['scale'] || [1, 1, 1];
+            var rotation = object['rotation'] || [0, 0, 0];
+            var position = object['position'] || [0, 0, 0];
+            holder.scale.set(scale[0], scale[1], scale[2]);
+            holder.rotation.set(rotation[0], rotation[1], rotation[2]);
+            holder.position.set(position[0], position[1], position[2]);
 
-        gltf.scene.quaternion.setFromRotationMatrix(AXES[axes].model);
-        holder.add( gltf.scene );
-        world.add( holder );
-    }, undefined, function ( error ) {
-        console.error( error );
-    } );
-    
+            gltf.scene.quaternion.setFromRotationMatrix(AXES[axes].model);
+            holder.add( gltf.scene );
+            world.add( holder );
+        }, function ( error ) {
+            console.error( 'Could not read the model ' + url + ':', error );
+        } );
+    }).catch(function(error){
+        console.error( 'Could not load the model ' + url + ':', error );
+    });
 }
 
 function startLoadingObjects(objectsToLoad){
@@ -810,48 +829,26 @@ function buildLines(floats){
     return new THREE.LineSegments( geometry, material );
 }
 
-function startLoadingBoxes(url){
-    var httpRequest = new XMLHttpRequest();
-    httpRequest.onreadystatechange = function() {
-        if (httpRequest.readyState === 4){
-            // everything is good, the response is received
-            if ((httpRequest.status == 200) || (httpRequest.status == 0)){
-                var boxes = buildBoxes(readImmersiveFloats(httpRequest.response));
-                console.log("Loaded num bboxes " + boxes.children.length)
-                world.add(boxes);
-        }}}
-
-    
-    // Send the request
-    console.log("Getting url for boxes", url)
-    httpRequest.open("GET", url, true);
-    httpRequest.responseType = "arraybuffer";
-
-    httpRequest.send();
+function startLoadingBoxes(url, version){
+    download(url, { version: version }).then(function(result){
+        var boxes = buildBoxes(readImmersiveFloats(result.buffer));
+        console.log("Loaded num bboxes " + boxes.children.length + (result.fromCache ? " (from cache)" : ""));
+        world.add(boxes);
+    }).catch(function(error){
+        console.error('Could not load boxes from ' + url + ':', error);
+    });
 }
-        
-        
-        
-function startLoadingLines(url)
-{
-    var httpRequest = new XMLHttpRequest();
-    httpRequest.onreadystatechange = function() {
-        if (httpRequest.readyState === 4){
-            // everything is good, the response is received
-            if ((httpRequest.status == 200) || (httpRequest.status == 0)){
-                var line = buildLines(readImmersiveFloats(httpRequest.response));
-                console.log("Loaded num line segments " + line.geometry.attributes.position.count / 2)
-                world.add( line );
-        }}}
 
-    
-    // Send the request
-    httpRequest.open("GET", url, true);
-    httpRequest.responseType = "arraybuffer";
-
-    httpRequest.send();
+function startLoadingLines(url, version){
+    download(url, { version: version }).then(function(result){
+        var line = buildLines(readImmersiveFloats(result.buffer));
+        console.log("Loaded num line segments " + line.geometry.attributes.position.count / 2 + (result.fromCache ? " (from cache)" : ""));
+        world.add( line );
+    }).catch(function(error){
+        console.error('Could not load lines from ' + url + ':', error);
+    });
 }
-    
+
 
 // Takes the text in the address-bar in the browser, and parses what's behind the ampersend (&) character. 
 // You can query a variable, and if the string contains variable=value it returns the value. 
@@ -896,7 +893,7 @@ function getSourceUrlParam() {
         return getQueryVariable(match[1], null);
     }
     // Viewer parameters that can follow an unencoded url= or name= value.
-    var viewerParams = ['url', 'name', 'mode', 'frames', 'fps', 'axes', 'pointSize', 'showAxes', 'autoRotate', 'jsonb64', 'base64', 'config'];
+    var viewerParams = ['url', 'name', 'mode', 'frames', 'fps', 'axes', 'pointSize', 'version', 'showAxes', 'autoRotate', 'jsonb64', 'base64', 'config'];
     var parts = raw.split('&');
     while (parts.length > 1 && viewerParams.indexOf(parts[parts.length - 1].split('=')[0]) !== -1) {
         parts.pop();
@@ -1206,179 +1203,151 @@ function hideLoadingOverlay() {
     }
 }
 
-function startLoadingData(url, pointType, pointSize)
-{
-    var httpRequest = new XMLHttpRequest();
-
-    // Track download progress
-    httpRequest.addEventListener('progress', function(e) {
-        if (e.lengthComputable) {
-            const percentComplete = (e.loaded / e.total) * 100;
-            updateLoadingProgress(percentComplete, 'Downloading point cloud data...');
-        }
-    });
-
-    // Track when download starts
-    httpRequest.addEventListener('loadstart', function() {
-        updateLoadingProgress(0, 'Starting download...');
-    });
-
-    // Handle network errors
-    httpRequest.addEventListener('error', function() {
+// Shows a failed download (see js/filecache.js) in the loading overlay.
+function showDownloadError(error, url, what){
+    if (error.kind === 'http' && error.status === 404) {
         showError(
-            'Network Error',
-            'Failed to download point cloud data.',
-            'Error: Could not connect to the server. Please check your internet connection and try again.'
+            'File Not Found',
+            'The requested ' + what + ' file does not exist.',
+            `Error 404: Could not find file at:\n${url}\n\nThe file may have been moved or deleted.`
         );
-    });
-
-    // Handle timeout
-    httpRequest.addEventListener('timeout', function() {
+    } else if (error.kind === 'http' && error.status === 403) {
+        showError(
+            'Access Denied',
+            'You do not have permission to access this file.',
+            `Error 403: Access forbidden to:\n${url}\n\nThe file may be private or require authentication.`
+        );
+    } else if (error.kind === 'http' && error.status >= 500) {
+        showError(
+            'Server Error',
+            'The server encountered an error.',
+            `Error ${error.status}: Server error when requesting:\n${url}\n\nPlease try again later.`
+        );
+    } else if (error.kind === 'http') {
+        showError(
+            'HTTP Error',
+            `Request failed with status ${error.status}`,
+            `Error ${error.status}: ${error.statusText}\n\nURL: ${url}`
+        );
+    } else if (error.kind === 'timeout') {
         showError(
             'Request Timeout',
-            'The download took too long.',
-            'Error: Request timed out after 30 seconds. The file may be too large or your connection too slow.'
+            'The download stopped making progress.',
+            'Error: No data arrived for 30 seconds. Your connection may be too slow or the server stopped responding.\n\nURL: ' + url
         );
-    });
-
-    httpRequest.onreadystatechange = function() {
-        if (httpRequest.readyState === 4){
-            // everything is good, the response is received
-            if ((httpRequest.status == 200) || (httpRequest.status == 0)){
-                try {
-                    updateLoadingProgress(100, 'Processing point cloud...');
-
-                    var buffer = httpRequest.response;
-
-                    // Validate buffer
-                    if (!buffer || buffer.byteLength === 0) {
-                        throw new Error('Empty or invalid data received (0 bytes)');
-                    }
-
-                    // Cloudini compressed point clouds are recognised by type or by their magic bytes
-                    if (isCloudiniType(pointType) || isCloudini(buffer)) {
-                        addCloudiniPoints(buffer, url, pointSize);
-                        return;
-                    }
-
-                    // Check minimum size (at least one point)
-                    const minSize = get_points_per_row(pointType) * 4; // 4 bytes per float32
-                    if (buffer.byteLength < minSize) {
-                        throw new Error(`Data too small: ${buffer.byteLength} bytes (expected at least ${minSize} bytes for one ${pointType} point)`);
-                    }
-
-                    // Check if data size is valid for point type
-                    const points_per_row = get_points_per_row(pointType);
-                    if ((buffer.byteLength / 4) % points_per_row !== 0) {
-                        throw new Error(`Invalid data format: ${buffer.byteLength} bytes cannot be evenly divided into ${pointType} points (${points_per_row} floats per point)`);
-                    }
-
-                    var dataview = new DataView(buffer);
-
-                    // Note: divide by 4 because of float32 has 4 bytes
-                    var ints = dataViewToFloat32Array(dataview, buffer.byteLength / 4)
-
-                    // Validate parsed data
-                    if (!ints || ints.length === 0) {
-                        throw new Error('Failed to parse point cloud data');
-                    }
-
-                    fillNodes(nodes, ints, points_per_row);
-
-                    if (nodes.length === 0) {
-                        throw new Error('No valid points found in data');
-                    }
-
-                    console.log("Loaded num points " + nodes.length + " of point type " + pointType + " with ppr: " + points_per_row)
-
-                    updateLoadingProgress(100, 'Building 3D geometry...');
-
-                    var particles = nodes.length;
-                    var geometry = new THREE.BufferGeometry();
-
-                    var temp = getPositionsAndColors(nodes, pointType);
-
-                    // Validate positions and colors
-                    if (!temp.positions || temp.positions.length === 0) {
-                        throw new Error('Failed to extract point positions');
-                    }
-
-                    if (!temp.colors || temp.colors.length === 0) {
-                        throw new Error('Failed to extract point colors');
-                    }
-
-                    geometry.setAttribute( 'position', new THREE.Float32BufferAttribute( temp.positions, 3 ) );
-                    colorBuffer = new THREE.Float32BufferAttribute( temp.colors, 3 );
-
-                    geometry.setAttribute( 'color', colorBuffer );
-                    geometry.computeBoundingSphere();
-
-                    points = new THREE.Points( geometry, pointsMaterial(pointSize) );
-                    world.add( points );
-
-                    // Hide loading overlay after a short delay
-                    setTimeout(() => {
-                        hideLoadingOverlay();
-                    }, 500);
-
-                } catch (error) {
-                    // Handle parsing errors
-                    showError(
-                        'Data Parsing Error',
-                        'Failed to parse the point cloud data.',
-                        `Error: ${error.message}\n\nURL: ${url}\nPoint Type: ${pointType}\nData Size: ${buffer ? buffer.byteLength : 0} bytes`
-                    );
-                }
-
-        } else if (httpRequest.status == 404) {
-            showError(
-                'File Not Found',
-                'The requested point cloud file does not exist.',
-                `Error 404: Could not find file at:\n${url}\n\nThe file may have been moved or deleted.`
-            );
-        } else if (httpRequest.status == 403) {
-            showError(
-                'Access Denied',
-                'You do not have permission to access this file.',
-                `Error 403: Access forbidden to:\n${url}\n\nThe file may be private or require authentication.`
-            );
-        } else if (httpRequest.status >= 500) {
-            showError(
-                'Server Error',
-                'The server encountered an error.',
-                `Error ${httpRequest.status}: Server error when requesting:\n${url}\n\nPlease try again later.`
-            );
-        } else if (httpRequest.status > 0) {
-            showError(
-                'HTTP Error',
-                `Request failed with status ${httpRequest.status}`,
-                `Error ${httpRequest.status}: ${httpRequest.statusText}\n\nURL: ${url}`
-            );
-        }
-    }}
-
-
-    // Send the request
-    httpRequest.open("GET", url, true);
-    httpRequest.responseType = "arraybuffer";
-    httpRequest.timeout = 30000; // 30 second timeout
-
-    httpRequest.send();
+    } else {
+        showError(
+            'Network Error',
+            'Failed to download ' + what + ' data.',
+            'Error: Could not connect to the server, or the server does not allow cross-origin requests (CORS).\n\nURL: ' + url
+        );
+    }
 }
-      
+
+// Downloads a point cloud (from the versioned cache when it has this version) and adds it.
+function startLoadingData(url, pointType, pointSize, version)
+{
+    updateLoadingProgress(0, 'Starting download...');
+    download(url, {
+        version: version,
+        onProgress: function(percent){ updateLoadingProgress(percent, 'Downloading point cloud data...'); }
+    }).then(function(result){
+        if (result.fromCache) {
+            console.log('Read ' + url + ' (version ' + result.version + ') from the cache');
+        }
+        updateLoadingProgress(100, result.fromCache ? 'Loaded from cache (version ' + result.version + ')' : 'Processing point cloud...');
+        addPointsFromBuffer(result.buffer, url, pointType, pointSize);
+    }, function(error){
+        showDownloadError(error, url, 'point cloud');
+    });
+}
+
+function addPointsFromBuffer(buffer, url, pointType, pointSize)
+{
+    try {
+        // Validate buffer
+        if (!buffer || buffer.byteLength === 0) {
+            throw new Error('Empty or invalid data received (0 bytes)');
+        }
+
+        // Cloudini compressed point clouds are recognised by type or by their magic bytes
+        if (isCloudiniType(pointType) || isCloudini(buffer)) {
+            addCloudiniPoints(buffer, url, pointSize);
+            return;
+        }
+
+        // Check minimum size (at least one point)
+        const minSize = get_points_per_row(pointType) * 4; // 4 bytes per float32
+        if (buffer.byteLength < minSize) {
+            throw new Error(`Data too small: ${buffer.byteLength} bytes (expected at least ${minSize} bytes for one ${pointType} point)`);
+        }
+
+        // Check if data size is valid for point type
+        const points_per_row = get_points_per_row(pointType);
+        if ((buffer.byteLength / 4) % points_per_row !== 0) {
+            throw new Error(`Invalid data format: ${buffer.byteLength} bytes cannot be evenly divided into ${pointType} points (${points_per_row} floats per point)`);
+        }
+
+        var dataview = new DataView(buffer);
+
+        // Note: divide by 4 because of float32 has 4 bytes
+        var ints = dataViewToFloat32Array(dataview, buffer.byteLength / 4)
+
+        // Validate parsed data
+        if (!ints || ints.length === 0) {
+            throw new Error('Failed to parse point cloud data');
+        }
+
+        fillNodes(nodes, ints, points_per_row);
+
+        if (nodes.length === 0) {
+            throw new Error('No valid points found in data');
+        }
+
+        console.log("Loaded num points " + nodes.length + " of point type " + pointType + " with ppr: " + points_per_row)
+
+        updateLoadingProgress(100, 'Building 3D geometry...');
+
+        var particles = nodes.length;
+        var geometry = new THREE.BufferGeometry();
+
+        var temp = getPositionsAndColors(nodes, pointType);
+
+        // Validate positions and colors
+        if (!temp.positions || temp.positions.length === 0) {
+            throw new Error('Failed to extract point positions');
+        }
+
+        if (!temp.colors || temp.colors.length === 0) {
+            throw new Error('Failed to extract point colors');
+        }
+
+        geometry.setAttribute( 'position', new THREE.Float32BufferAttribute( temp.positions, 3 ) );
+        colorBuffer = new THREE.Float32BufferAttribute( temp.colors, 3 );
+
+        geometry.setAttribute( 'color', colorBuffer );
+        geometry.computeBoundingSphere();
+
+        points = new THREE.Points( geometry, pointsMaterial(pointSize) );
+        world.add( points );
+
+        // Hide loading overlay after a short delay
+        setTimeout(() => {
+            hideLoadingOverlay();
+        }, 500);
+
+    } catch (error) {
+        // Handle parsing errors
+        showError(
+            'Data Parsing Error',
+            'Failed to parse the point cloud data.',
+            `Error: ${error.message}\n\nURL: ${url}\nPoint Type: ${pointType}\nData Size: ${buffer ? buffer.byteLength : 0} bytes`
+        );
+    }
+}
+
 
 // ---------- Sequences: frames of points, boxes and lines that play over time ----------
-
-function fetchArrayBuffer(url){
-    return fetch(url).then(function(response){
-        if(!response.ok){
-            throw new Error('HTTP ' + response.status + ' for ' + url);
-        }
-        return response.arrayBuffer();
-    }, function(){
-        throw new Error('Could not download ' + url + ' (network error, or the server does not allow CORS)');
-    });
-}
 
 // The bytes of one points/bboxes/lines entry: from its url, or inline base64.
 function entryBuffer(entry){
@@ -1388,7 +1357,7 @@ function entryBuffer(entry){
     if(!entry.url){
         return Promise.reject(new Error('Entry has no "url" or "base64": ' + JSON.stringify(entry)));
     }
-    return fetchArrayBuffer(entry.url);
+    return download(entry.url, { version: versionFor(entry) }).then(function(result){ return result.buffer; });
 }
 
 function loadPointsEntry(entry){

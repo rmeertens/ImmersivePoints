@@ -25,7 +25,7 @@ Full guide for agents: https://immersivepoints.meertens.dev/for-ai-agents.html
    Use "#" so the data never reaches a server (no server URL length limit). "?jsonb64=" also works for short links.
 
 Single hosted file shortcut: https://immersivepoints.meertens.dev/oculus.html?url=<file URL>&mode=xyzi|xyzrgb|cloudini (mode only if the extension does not say).
-Extra URL parameters: pointSize=0.02 (point diameter in scene units), autoRotate=true (desktop rotation), showAxes=true (X red, Y green, Z blue), axes=threejs (only for old files made Y up). Leave them out for the defaults.
+Extra URL parameters: version=<any text> (viewers cache the files until the version changes; also "version" in the config, top level or per entry), pointSize=0.02 (point diameter in scene units), autoRotate=true (desktop rotation), showAxes=true (X red, Y green, Z blue), axes=threejs (only for old files made Y up). Leave them out for the defaults.
 Sequences (animation, one file per frame): oculus.html?url=https://host/scan_{i:04}.xyzi&frames=0-199&fps=10, or "sequence"/"frames" in the config. A config can also be hosted as JSON and passed with config=<url>.
 Optional config keys: "bboxes" and "lines" (first entry, url source only), "objects" (glTF/GLB with position, rotation, scale).
 Box files: 13 big-endian float32 per box (center xyz, size xyz, rotation around x, y, z in radians, r, g, b, opacity); a heading is the rotation around z. Line files: 6 per segment (start xyz, end xyz).

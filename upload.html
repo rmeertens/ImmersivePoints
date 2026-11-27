@@ -226,6 +226,10 @@
                 <label for="pointSizeInput"><strong>Point size</strong> <small class="text-muted">(optional: diameter in your data's units, usually meters; default 0.02)</small></label>
                 <input type="number" class="form-control" id="pointSizeInput" placeholder="0.02" min="0" step="0.005" oninput="generateViewerLink()">
             </div>
+            <div class="form-group">
+                <label for="versionInput"><strong>Version</strong> <small class="text-muted">(optional: viewers keep the file cached until you change this, see <a href="#caching">Caching</a>)</small></label>
+                <input type="text" class="form-control" id="versionInput" placeholder="e.g. 1 or 2024-06-01" oninput="generateViewerLink()">
+            </div>
             <p id="sequenceHint" class="text-muted" style="display: none;"><small>Put <code>{i}</code> (or zero-padded <code>{i:04}</code>) in the file URL where the frame number goes, e.g. <code>https://example.com/scan_{i:04}.xyzi</code>.</small></p>
 
             <div id="viewerLinkContainer" style="display: none;">
@@ -267,6 +271,10 @@
                     const pointSize = parseFloat(document.getElementById('pointSizeInput').value);
                     if (pointSize > 0) {
                         viewerLink += `&pointSize=${pointSize}`;
+                    }
+                    const version = document.getElementById('versionInput').value.trim();
+                    if (version) {
+                        viewerLink += `&version=${encodeURIComponent(version)}`;
                     }
                     viewerLinkInput.value = viewerLink;
                     openBtn.href = viewerLink;
@@ -458,6 +466,17 @@
                 <li><strong>In a JSON config:</strong> <code>"pointSize": 0.05</code> at the top level sets the size for every cloud, and <code>"pointSize"</code> on a points entry (or on <code>sequence.points</code>) sets it for that cloud only. A <code>pointSize</code> URL parameter replaces the top-level value, but not per-cloud ones.</li>
                 <li><strong>While viewing:</strong> the Point size buttons in the top right, or the <kbd>+</kbd>, <kbd>-</kbd> and <kbd>0</kbd> (reset) keys, scale every cloud. In VR, hold the right grip button to make points bigger and the left grip to make them smaller.</li>
             </ul>
+        </div>
+
+        <div class="format-card" id="caching">
+            <h3>Caching with a version</h3>
+            <p>Give your files a <strong>version</strong> and every viewer keeps a copy in their browser: the next time they open the link, the points load straight from that copy, with no download. When you update a file, change its version and every viewer downloads it again and throws the old copy away.</p>
+            <ul>
+                <li><strong>For a link:</strong> add <code>&amp;version=3</code>. Any text works, such as a number, a date or a commit hash.</li>
+                <li><strong>In a JSON config:</strong> <code>"version": "3"</code> at the top level applies to every file (points, boxes, lines, objects and every frame of a sequence). A <code>"version"</code> on a single entry applies to that file only, so you can bump one file without making viewers download the rest. A <code>version</code> URL parameter replaces the top-level value, but not per-file ones.</li>
+                <li><strong>Without a version</strong> nothing is cached by ImmersivePoints, and files are downloaded as your server's cache headers allow.</li>
+            </ul>
+            <p class="mb-0"><small class="text-muted">A version is a promise that the file behind that URL hasn't changed: if you replace a file and keep its version, viewers who already have it keep seeing the old copy. The cache lives in each viewer's own browser (it needs HTTPS), and browsers may clear it when they run low on space.</small></p>
         </div>
 
         <div class="format-card">
@@ -664,6 +683,7 @@
                     <tr><td class="field-name">mode</td><td class="field-type">xyzi, xyzrgb, cloudini</td><td>Specify format when using <code>name</code> parameter (overrides the file extension)</td></tr>
                     <tr><td class="field-name">axes</td><td class="field-type">flu, threejs</td><td><code>flu</code> (default): X forward, Y left, Z up. <code>threejs</code>: show the data as stored, for files made for the older convention. See <a href="#coordinates">Coordinate system</a>.</td></tr>
                     <tr><td class="field-name">pointSize</td><td class="field-type">number &gt; 0</td><td>Point diameter in your data's units (usually meters). Default <code>0.02</code>. See <a href="#point-size">Point size</a>.</td></tr>
+                    <tr><td class="field-name">version</td><td class="field-type">any text</td><td>Cache the files in the viewer's browser until the version changes. See <a href="#caching">Caching</a>.</td></tr>
                     <tr><td class="field-name">showAxes</td><td class="field-type">true, false</td><td>Show the axes: X red, Y green, Z blue</td></tr>
                     <tr><td class="field-name">autoRotate</td><td class="field-type">true, false</td><td>Auto-rotate the camera around the scene</td></tr>
                 </tbody>

@@ -96,12 +96,14 @@ def encode_points(points):
 
 
 def viewer_link(points=None, url=None, point_type=None, point_size=None,
-                bboxes_url=None, lines_url=None, auto_rotate=False, show_axes=False):
+                bboxes_url=None, lines_url=None, auto_rotate=False, show_axes=False, version=None):
     """Build a viewer link.
 
     points: numpy array embedded in the link itself (good up to roughly 30k points).
     url:    a hosted, CORS-enabled .xyzi / .xyzrgb / .cldn file (for anything bigger).
     point_size: point diameter in scene units (the viewer's default is 0.02).
+    version: any text; viewers cache hosted files (url=, bboxes_url=, lines_url=) until it changes.
+            Bump it whenever you replace those files. Inline points are in the link and never cached.
     The data goes after '#', so it never reaches a web server and has no server URL limit.
     """
     if (points is None) == (url is None):
@@ -118,6 +120,8 @@ def viewer_link(points=None, url=None, point_type=None, point_size=None,
         entry["pointSize"] = float(point_size)
 
     config = {"points": [entry]}
+    if version is not None:
+        config["version"] = str(version)
     if bboxes_url:
         config["bboxes"] = [{"source": "url", "url": bboxes_url}]
     if lines_url:

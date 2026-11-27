@@ -83,6 +83,10 @@ Don't swap columns to make Y point up: that mirrors the scene. Files made for th
 
 `pointSize` is a point's diameter in your data's units (usually meters), drawn at its real perspective size on desktop and in VR. The default is `0.02`. Set it with `&pointSize=0.05` in a link, or `"pointSize"` in a JSON config: at the top level for every cloud, or on a points entry for that cloud. While viewing, use the Point size buttons, the `+`/`-`/`0` keys, or hold the right (bigger) or left (smaller) grip in VR.
 
+### Caching with a version
+
+Add `&version=3` to a link, or `"version"` to a JSON config, and viewers keep the files in their browser: the next visit loads them without downloading. Change the version after updating a file and every viewer downloads it again and discards the old copy. A top-level `"version"` covers every file in the config; a `"version"` on one entry covers just that file. Without a version nothing is cached. See [Caching](https://immersivepoints.meertens.dev/upload.html#caching).
+
 ### Cloudini (compressed)
 
 The viewer also reads [Cloudini](https://github.com/facontidavide/cloudini) compressed point clouds (`.cldn`). Cloudini is the compression format used for ROS `point_cloud_interfaces/CompressedPointCloud2` messages, and it typically makes files several times smaller (a 115k-point lidar scan at 1 mm precision goes from 1.8 MB to 0.4 MB).
